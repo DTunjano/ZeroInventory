@@ -1,0 +1,38 @@
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { ClienteEntity } from './cliente.orm-entity';
+import { PedidoEntity } from './pedido.orm-entity';
+
+@Entity({ name: 'direccion' })
+export class DireccionEntity {
+  @PrimaryGeneratedColumn({ name: 'direccion_id' })
+  direccionId!: number;
+
+  @Column({ name: 'cliente_id', type: 'int' })
+  clienteId!: number;
+
+  @Column({ name: 'linea_dir', type: 'varchar' })
+  lineaDir!: string;
+
+  @Column({ name: 'barrio', type: 'varchar' })
+  barrio!: string;
+
+  @Column({ name: 'codigo_postal', type: 'varchar', length: 8, nullable: true })
+  codigoPostal!: string | null;
+
+  @Column({ name: 'info_adiccional', type: 'text', nullable: true })
+  infoAdiccional!: string | null;
+
+  @ManyToOne(() => ClienteEntity, (cliente) => cliente.direcciones)
+  @JoinColumn({ name: 'cliente_id' })
+  cliente!: ClienteEntity;
+
+  @OneToMany(() => PedidoEntity, (pedido) => pedido.direccion)
+  pedidos!: PedidoEntity[];
+}

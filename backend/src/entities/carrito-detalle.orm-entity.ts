@@ -1,0 +1,32 @@
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { CarritoEntity } from './carrito.orm-entity';
+import { ProductoEntity } from './producto.orm-entity';
+
+@Entity({ name: 'carrito_detalle' })
+export class CarritoDetalleEntity {
+  @PrimaryGeneratedColumn({ name: 'carrito_detalle_id' })
+  carritoDetalleId!: number;
+
+  @Column({ name: 'carrito_id', type: 'int' })
+  carritoId!: number;
+
+  @Column({ name: 'producto_id', type: 'int' })
+  productoId!: number;
+
+  @Column({ name: 'cantidad', type: 'int' })
+  cantidad!: number;
+
+  @ManyToOne(() => CarritoEntity, (carrito) => carrito.detalles)
+  @JoinColumn({ name: 'carrito_id' })
+  carrito!: CarritoEntity;
+
+  @ManyToOne(() => ProductoEntity, (producto) => producto.carritoDetalles)
+  @JoinColumn({ name: 'producto_id' })
+  producto!: ProductoEntity;
+}
