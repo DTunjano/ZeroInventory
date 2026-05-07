@@ -4,8 +4,10 @@ import { IsOptional } from 'class-validator';
 export class FiltersProductDTO {
   @IsOptional()
   sku?: string;
+
   @IsOptional()
   nombre?: string;
+
   @IsOptional()
   marca?: string;
 

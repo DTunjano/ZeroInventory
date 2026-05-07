@@ -24,6 +24,7 @@ import { CreateProductSwagger } from '../documentation/create-product.swagger';
 import { GetAllProductSwagger } from '../documentation/get-all-product.swagger';
 import { UpdateProductSwagger } from '../documentation/update-product.swagger';
 import { DeleteProductSwagger } from '../documentation/delete-product.swagger';
+import { GetProductByIdSwagger } from '../documentation/get-product-by-id.swagger';
 
 @ApiTags('Productos')
 @Controller('productos')
@@ -53,6 +54,7 @@ export class ProductoController {
   }
 
   @Get(':id')
+  @GetProductByIdSwagger()
   async getById(
     @Param('id', ParseIntPipe) productoId: number,
   ): Promise<Producto> {

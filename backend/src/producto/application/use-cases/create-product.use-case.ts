@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { ProductoRepository } from '../../domain/repository/producto.repository';
 import { Producto } from '../../domain/entity/producto.entity';
 
@@ -17,6 +17,17 @@ export class CreateProductUseCase {
     peso: string | null;
     medida: string | null;
   }): Promise<Producto> {
+    const existingProduct = await this.productoRepo.getAll();
+
+    existingProduct.forEach((product) => {
+      if (product.nombre === data.nombre) {
+        throw new ConflictException('Ya existe un producto con ese nombre');
+      }
+      if (product.sku === data.sku) {
+        throw new ConflictException('Ya existe un producto con ese SKU');
+      }
+    });
+
     const producto = new Producto(
       0,
       data.nombre,

@@ -80,4 +80,12 @@ export class UpdateProductDTO {
   })
   @IsOptional()
   medida!: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Indica si el producto está activo',
+    example: true,
+    type: Boolean,
+  })
+  @IsOptional()
+  isActive!: boolean;
 }

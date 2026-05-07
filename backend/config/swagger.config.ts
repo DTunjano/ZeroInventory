@@ -1,9 +1,9 @@
 import { DocumentBuilder } from '@nestjs/swagger';
 
 export const swaggerConfig = new DocumentBuilder()
-  .setTitle('ZeroInventory API')
+  .setTitle('Zero Inventory API')
   .setDescription(
-    'API de gestión de pedidos, productos, compras y más para ZeroInventory',
+    'API de gestión de pedidos, productos, compras y más para Zero Inventory',
   )
   .setVersion('1.0.0')
   .addBearerAuth(

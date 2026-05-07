@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ProductoRepository } from '../../domain/repository/producto.repository';
 import { Producto } from '../../domain/entity/producto.entity';
 
@@ -25,6 +29,20 @@ export class UpdateProductUseCase {
     if (!actual) {
       throw new NotFoundException('Producto no encontrado');
     }
+
+    const existingProducts = await this.productoRepo.getAll();
+
+    existingProducts.forEach((product) => {
+      if (
+        product.nombre === cambios.nombre &&
+        product.productoId !== productoId
+      ) {
+        throw new ConflictException('Ya existe un producto con ese nombre');
+      }
+      if (product.sku === cambios.sku && product.productoId !== productoId) {
+        throw new ConflictException('Ya existe un producto con ese SKU');
+      }
+    });
 
     const producto = new Producto(
       actual.productoId,
