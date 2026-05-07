@@ -14,11 +14,11 @@ import { PagoEntity } from '../src/entities/pago.orm-entity';
 import { PedidoDetalleEntity } from '../src/entities/pedido-detalle.orm-entity';
 import { PedidoEntity } from '../src/entities/pedido.orm-entity';
 import { ProductoImagenEntity } from '../src/entities/producto-imagen.orm-entity';
-import { ProductoEntity } from '../src/entities/producto.orm-entity';
 import { ProveedorEntity } from '../src/entities/proveedor.orm-entity';
 import { RolEntity } from '../src/entities/rol.orm-entity';
 import { UsuarioRolEntity } from '../src/entities/usuario-rol.orm-entity';
 import { UsuarioEntity } from '../src/entities/usuario.orm-entity';
+import { ProductoORMEntity } from '../src/producto/infrastructure/persistence/producto.orm-entity';
 
 export default registerAs('database', (): TypeOrmModuleOptions => {
   const databaseUrl = process.env.DATABASE_URL;
@@ -38,7 +38,7 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     PedidoDetalleEntity,
     PedidoEntity,
     ProductoImagenEntity,
-    ProductoEntity,
+    ProductoORMEntity,
     ProveedorEntity,
     RolEntity,
     UsuarioRolEntity,

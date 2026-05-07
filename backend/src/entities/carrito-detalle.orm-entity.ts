@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CarritoEntity } from './carrito.orm-entity';
-import { ProductoEntity } from './producto.orm-entity';
+import { ProductoORMEntity } from '../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'carrito_detalle' })
 export class CarritoDetalleEntity {
@@ -26,7 +26,7 @@ export class CarritoDetalleEntity {
   @JoinColumn({ name: 'carrito_id' })
   carrito!: CarritoEntity;
 
-  @ManyToOne(() => ProductoEntity, (producto) => producto.carritoDetalles)
+  @ManyToOne(() => ProductoORMEntity, (producto) => producto.carritoDetalles)
   @JoinColumn({ name: 'producto_id' })
-  producto!: ProductoEntity;
+  producto!: ProductoORMEntity;
 }

@@ -5,7 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ProductoEntity } from './producto.orm-entity';
+import { ProductoORMEntity } from '../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'producto_imagen' })
 export class ProductoImagenEntity {
@@ -18,7 +18,7 @@ export class ProductoImagenEntity {
   @Column({ name: 'url', type: 'varchar' })
   url!: string;
 
-  @ManyToOne(() => ProductoEntity, (producto) => producto.imagenes)
+  @ManyToOne(() => ProductoORMEntity, (producto) => producto.imagenes)
   @JoinColumn({ name: 'producto_id' })
-  producto!: ProductoEntity;
+  producto!: ProductoORMEntity;
 }

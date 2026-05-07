@@ -3,6 +3,7 @@ import databaseConfig from '../config/database.config';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import { DatabaseModule } from '../infrastructure/database/database.module';
 import { CloudinaryModule } from '../infrastructure/cloudinary/cloudinary.module';
+import { ProductoModule } from './producto/producto.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { CloudinaryModule } from '../infrastructure/cloudinary/cloudinary.module
     }),
     DatabaseModule,
     CloudinaryModule,
+    ProductoModule,
   ],
 })
 export class AppModule {}

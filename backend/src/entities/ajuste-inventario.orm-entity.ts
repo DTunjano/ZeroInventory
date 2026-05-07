@@ -6,8 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ProductoEntity } from './producto.orm-entity';
 import { UsuarioEntity } from './usuario.orm-entity';
+import { ProductoORMEntity } from '../producto/infrastructure/persistence/producto.orm-entity';
 
 export enum TipoMovimientoEnum {
   ENTRADA = 'ENTRADA',
@@ -38,9 +38,9 @@ export class AjusteInventarioEntity {
   @CreateDateColumn({ name: 'fecha', type: 'timestamp' })
   fecha!: Date;
 
-  @ManyToOne(() => ProductoEntity, (producto) => producto.ajustesInventario)
+  @ManyToOne(() => ProductoORMEntity, (producto) => producto.ajustesInventario)
   @JoinColumn({ name: 'producto_id' })
-  producto!: ProductoEntity;
+  producto!: ProductoORMEntity;
 
   @ManyToOne(() => UsuarioEntity, (usuario) => usuario.ajustesInventario)
   @JoinColumn({ name: 'usuario_id' })

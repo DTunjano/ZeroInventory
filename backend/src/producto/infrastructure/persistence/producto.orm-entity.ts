@@ -1,14 +1,14 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { KardexEntity } from './kardex.orm-entity';
-import { ProductoImagenEntity } from './producto-imagen.orm-entity';
-import { CategoriaProductoEntity } from './categoria-producto.orm-entity';
-import { CarritoDetalleEntity } from './carrito-detalle.orm-entity';
-import { PedidoDetalleEntity } from './pedido-detalle.orm-entity';
-import { CompraDetalleEntity } from './compra-detalle.orm-entity';
-import { AjusteInventarioEntity } from './ajuste-inventario.orm-entity';
+import { KardexEntity } from '../../../entities/kardex.orm-entity';
+import { ProductoImagenEntity } from '../../../entities/producto-imagen.orm-entity';
+import { CategoriaProductoEntity } from '../../../entities/categoria-producto.orm-entity';
+import { CarritoDetalleEntity } from '../../../entities/carrito-detalle.orm-entity';
+import { PedidoDetalleEntity } from '../../../entities/pedido-detalle.orm-entity';
+import { CompraDetalleEntity } from '../../../entities/compra-detalle.orm-entity';
+import { AjusteInventarioEntity } from '../../../entities/ajuste-inventario.orm-entity';
 
 @Entity({ name: 'producto' })
-export class ProductoEntity {
+export class ProductoORMEntity {
   @PrimaryGeneratedColumn({ name: 'producto_id' })
   productoId!: number;
 
@@ -17,6 +17,9 @@ export class ProductoEntity {
 
   @Column({ name: 'cantidad', type: 'int' })
   cantidad!: number;
+
+  @Column({ name: 'precio', precision: 10, scale: 2, type: 'numeric' })
+  precio!: number;
 
   @Column({ name: 'descripcion', type: 'text', nullable: true })
   descripcion!: string | null;

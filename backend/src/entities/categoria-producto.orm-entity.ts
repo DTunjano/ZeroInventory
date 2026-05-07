@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CategoriaEntity } from './categoria.orm-entity';
-import { ProductoEntity } from './producto.orm-entity';
+import { ProductoORMEntity } from '../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'categoria_producto' })
 export class CategoriaProductoEntity {
@@ -23,7 +23,7 @@ export class CategoriaProductoEntity {
   @JoinColumn({ name: 'categoria_id' })
   categoria!: CategoriaEntity;
 
-  @ManyToOne(() => ProductoEntity, (producto) => producto.categorias)
+  @ManyToOne(() => ProductoORMEntity, (producto) => producto.categorias)
   @JoinColumn({ name: 'producto_id' })
-  producto!: ProductoEntity;
+  producto!: ProductoORMEntity;
 }
