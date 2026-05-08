@@ -7,7 +7,13 @@ import { FiltersProductDTO } from '../dto/filters-product-dto';
 export class GetAllProductosUseCase {
   constructor(private readonly productoRepo: ProductoRepository) {}
 
-  async ejecutar(filters?: FiltersProductDTO): Promise<Producto[]> {
+  async ejecutar(filters?: FiltersProductDTO): Promise<{
+    data: Producto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     return this.productoRepo.getAll(filters);
   }
 }

@@ -7,12 +7,12 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ProveedorEntity } from './proveedor.orm-entity';
-import { UsuarioEntity } from './usuario.orm-entity';
-import { CompraDetalleEntity } from './compra-detalle.orm-entity';
+import { ProveedorEntityORM } from './proveedor.orm-entity';
+import { UsuarioEntityORM } from '../usuario/infrastructure/persistence/usuario.orm-entity';
+import { CompraDetalleEntityORM } from './compra-detalle.orm-entity';
 
 @Entity({ name: 'compra' })
-export class CompraEntity {
+export class CompraEntityORM {
   @PrimaryGeneratedColumn({ name: 'compra_id' })
   compraId!: number;
 
@@ -28,14 +28,14 @@ export class CompraEntity {
   @CreateDateColumn({ name: 'fecha_compra', type: 'timestamp' })
   fechaCompra!: Date;
 
-  @ManyToOne(() => ProveedorEntity, (proveedor) => proveedor.compras)
+  @ManyToOne(() => ProveedorEntityORM, (proveedor) => proveedor.compras)
   @JoinColumn({ name: 'proveedor_id' })
-  proveedor!: ProveedorEntity;
+  proveedor!: ProveedorEntityORM;
 
-  @ManyToOne(() => UsuarioEntity, (usuario) => usuario.compras)
+  @ManyToOne(() => UsuarioEntityORM, (usuario) => usuario.compras)
   @JoinColumn({ name: 'usuario_id' })
-  usuario!: UsuarioEntity;
+  usuario!: UsuarioEntityORM;
 
-  @OneToMany(() => CompraDetalleEntity, (detalle) => detalle.compra)
-  detalles!: CompraDetalleEntity[];
+  @OneToMany(() => CompraDetalleEntityORM, (detalle) => detalle.compra)
+  detalles!: CompraDetalleEntityORM[];
 }

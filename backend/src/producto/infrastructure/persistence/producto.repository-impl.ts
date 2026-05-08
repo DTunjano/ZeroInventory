@@ -33,10 +33,14 @@ export class ProductoRepositoryImpl implements ProductoRepository {
     return entity ? ProductoMapper.toDomain(entity) : null;
   }
 
-  async getAll(filters?: FiltersProductDTO): Promise<Producto[]> {
+  async getAll(filters?: FiltersProductDTO): Promise<{
+    data: Producto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const query = this.repo.createQueryBuilder('producto');
-    console.log(filters?.precioMin);
-    console.log(typeof filters?.precioMin);
 
     if (filters?.nombre) {
       query.andWhere('producto.nombre ILIKE :nombre', {
@@ -59,9 +63,21 @@ export class ProductoRepositoryImpl implements ProductoRepository {
         precioMax: filters.precioMax,
       });
     }
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 10;
 
-    const entities = await query.getMany();
-    return entities.map((entity) => ProductoMapper.toDomain(entity));
+    query.skip((page - 1) * limit);
+    query.take(limit);
+
+    const [entities, total] = await query.getManyAndCount();
+
+    return {
+      data: entities.map((entity) => ProductoMapper.toDomain(entity)),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async delete(productoId: number): Promise<boolean> {

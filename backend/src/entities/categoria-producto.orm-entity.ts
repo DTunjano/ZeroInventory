@@ -5,11 +5,11 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { CategoriaEntity } from './categoria.orm-entity';
+import { CategoriaEntityORM } from './categoria.orm-entity';
 import { ProductoORMEntity } from '../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'categoria_producto' })
-export class CategoriaProductoEntity {
+export class CategoriaProductoEntityORM {
   @PrimaryGeneratedColumn({ name: 'categoria_producto_id' })
   categoriaProductoId!: number;
 
@@ -19,9 +19,12 @@ export class CategoriaProductoEntity {
   @Column({ name: 'producto_id', type: 'int' })
   productoId!: number;
 
-  @ManyToOne(() => CategoriaEntity, (categoria) => categoria.categoriasProducto)
+  @ManyToOne(
+    () => CategoriaEntityORM,
+    (categoria) => categoria.categoriasProducto,
+  )
   @JoinColumn({ name: 'categoria_id' })
-  categoria!: CategoriaEntity;
+  categoria!: CategoriaEntityORM;
 
   @ManyToOne(() => ProductoORMEntity, (producto) => producto.categorias)
   @JoinColumn({ name: 'producto_id' })

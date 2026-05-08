@@ -6,9 +6,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UsuarioEntity } from './usuario.orm-entity';
-import { DireccionEntity } from './direccion.orm-entity';
-import { PedidoEntity } from './pedido.orm-entity';
+import { UsuarioEntityORM } from '../usuario/infrastructure/persistence/usuario.orm-entity';
+import { DireccionEntityORM } from './direccion.orm-entity';
+import { PedidoEntityORM } from './pedido.orm-entity';
 
 export enum TipoDocumentoEnum {
   CC = 'CC',
@@ -17,7 +17,7 @@ export enum TipoDocumentoEnum {
 }
 
 @Entity({ name: 'cliente' })
-export class ClienteEntity {
+export class ClienteEntityORM {
   @PrimaryGeneratedColumn({ name: 'cliente_id' })
   clienteId!: number;
 
@@ -30,13 +30,13 @@ export class ClienteEntity {
   @Column({ name: 'documento', type: 'varchar' })
   documento!: string;
 
-  @ManyToOne(() => UsuarioEntity, (usuario) => usuario.clientes)
+  @ManyToOne(() => UsuarioEntityORM, (usuario) => usuario.clientes)
   @JoinColumn({ name: 'usuario_id' })
-  usuario!: UsuarioEntity;
+  usuario!: UsuarioEntityORM;
 
-  @OneToMany(() => DireccionEntity, (direccion) => direccion.cliente)
-  direcciones!: DireccionEntity[];
+  @OneToMany(() => DireccionEntityORM, (direccion) => direccion.cliente)
+  direcciones!: DireccionEntityORM[];
 
-  @OneToMany(() => PedidoEntity, (pedido) => pedido.cliente)
-  pedidos!: PedidoEntity[];
+  @OneToMany(() => PedidoEntityORM, (pedido) => pedido.cliente)
+  pedidos!: PedidoEntityORM[];
 }

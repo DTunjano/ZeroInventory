@@ -1,8 +1,8 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { CompraEntity } from './compra.orm-entity';
+import { CompraEntityORM } from './compra.orm-entity';
 
 @Entity({ name: 'proveedor' })
-export class ProveedorEntity {
+export class ProveedorEntityORM {
   @PrimaryGeneratedColumn({ name: 'proveedor_id' })
   proveedorId!: number;
 
@@ -15,6 +15,6 @@ export class ProveedorEntity {
   @Column({ name: 'email', type: 'varchar', nullable: true })
   email!: string | null;
 
-  @OneToMany(() => CompraEntity, (compra) => compra.proveedor)
-  compras!: CompraEntity[];
+  @OneToMany(() => CompraEntityORM, (compra) => compra.proveedor)
+  compras!: CompraEntityORM[];
 }

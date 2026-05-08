@@ -21,7 +21,7 @@ export enum TipoReferenciaEnum {
 }
 
 @Entity({ name: 'kardex' })
-export class KardexEntity {
+export class KardexEntityORM {
   @PrimaryGeneratedColumn({ name: 'kardex_id' })
   kardexId!: number;
 

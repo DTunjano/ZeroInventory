@@ -2,48 +2,39 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsOptional, Max, Min } from 'class-validator';
 
-export class FiltersProductDTO {
+export class FiltersUsuarioDTO {
   @ApiPropertyOptional({
-    description: 'Filtrar productos por SKU',
+    description: 'Filtrar usuarios por username',
     type: String,
-    example: 'PRO-000000001',
+    example: 'WILDKILL',
   })
   @IsOptional()
-  sku?: string;
+  username?: string;
 
   @ApiPropertyOptional({
-    description: 'Filtrar productos por nombre',
+    description: 'Filtrar usuarios por nombre',
     type: String,
-    example: 'Vaso',
+    example: 'Wilder',
   })
   @IsOptional()
-  nombre?: string;
+  primerNombre?: string;
 
   @ApiPropertyOptional({
-    description: 'Filtrar productos por marca',
+    description: 'Filtrar usuarios por apellido',
     type: String,
-    example: 'Cristal',
+    example: 'Gayming',
   })
   @IsOptional()
-  marca?: string;
+  primerApellido?: string;
 
   @ApiPropertyOptional({
-    description: 'Precio mínimo del producto',
-    type: Number,
-    example: 20000,
+    description: 'Filtrar usuarios por estado',
+    type: Boolean,
+    example: true,
   })
   @IsOptional()
-  @Type(() => Number)
-  precioMin?: number;
-
-  @ApiPropertyOptional({
-    description: 'Precio máximo del producto',
-    type: Number,
-    example: 50000,
-  })
-  @IsOptional()
-  @Type(() => Number)
-  precioMax?: number;
+  @Type(() => Boolean)
+  isActive?: boolean;
 
   //Pagination
   @ApiPropertyOptional({

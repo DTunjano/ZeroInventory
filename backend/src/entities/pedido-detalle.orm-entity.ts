@@ -5,11 +5,11 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { PedidoEntity } from './pedido.orm-entity';
+import { PedidoEntityORM } from './pedido.orm-entity';
 import { ProductoORMEntity } from '../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'pedido_detalle' })
-export class PedidoDetalleEntity {
+export class PedidoDetalleEntityORM {
   @PrimaryGeneratedColumn({ name: 'pedido_detalle_id' })
   pedidoDetalleId!: number;
 
@@ -28,9 +28,9 @@ export class PedidoDetalleEntity {
   @Column({ name: 'subtotal', precision: 10, scale: 2, type: 'numeric' })
   subtotal!: number;
 
-  @ManyToOne(() => PedidoEntity, (pedido) => pedido.detalles)
+  @ManyToOne(() => PedidoEntityORM, (pedido) => pedido.detalles)
   @JoinColumn({ name: 'pedido_id' })
-  pedido!: PedidoEntity;
+  pedido!: PedidoEntityORM;
 
   @ManyToOne(() => ProductoORMEntity, (producto) => producto.pedidoDetalles)
   @JoinColumn({ name: 'producto_id' })

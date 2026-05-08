@@ -32,7 +32,7 @@ export class UpdateProductUseCase {
 
     const existingProducts = await this.productoRepo.getAll();
 
-    existingProducts.forEach((product) => {
+    existingProducts.data.forEach((product) => {
       if (
         product.nombre === cambios.nombre &&
         product.productoId !== productoId

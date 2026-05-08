@@ -6,7 +6,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UsuarioEntity } from './usuario.orm-entity';
+import { UsuarioEntityORM } from '../usuario/infrastructure/persistence/usuario.orm-entity';
 import { ProductoORMEntity } from '../producto/infrastructure/persistence/producto.orm-entity';
 
 export enum TipoMovimientoEnum {
@@ -16,7 +16,7 @@ export enum TipoMovimientoEnum {
 }
 
 @Entity({ name: 'ajuste_inventario' })
-export class AjusteInventarioEntity {
+export class AjusteInventarioEntityORM {
   @PrimaryGeneratedColumn({ name: 'ajuste_inventario_id' })
   ajusteInventarioId!: number;
 
@@ -42,7 +42,7 @@ export class AjusteInventarioEntity {
   @JoinColumn({ name: 'producto_id' })
   producto!: ProductoORMEntity;
 
-  @ManyToOne(() => UsuarioEntity, (usuario) => usuario.ajustesInventario)
+  @ManyToOne(() => UsuarioEntityORM, (usuario) => usuario.ajustesInventario)
   @JoinColumn({ name: 'usuario_id' })
-  usuario!: UsuarioEntity;
+  usuario!: UsuarioEntityORM;
 }

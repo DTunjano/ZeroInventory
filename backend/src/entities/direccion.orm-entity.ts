@@ -6,11 +6,11 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ClienteEntity } from './cliente.orm-entity';
-import { PedidoEntity } from './pedido.orm-entity';
+import { ClienteEntityORM } from './cliente.orm-entity';
+import { PedidoEntityORM } from './pedido.orm-entity';
 
 @Entity({ name: 'direccion' })
-export class DireccionEntity {
+export class DireccionEntityORM {
   @PrimaryGeneratedColumn({ name: 'direccion_id' })
   direccionId!: number;
 
@@ -29,10 +29,10 @@ export class DireccionEntity {
   @Column({ name: 'info_adiccional', type: 'text', nullable: true })
   infoAdiccional!: string | null;
 
-  @ManyToOne(() => ClienteEntity, (cliente) => cliente.direcciones)
+  @ManyToOne(() => ClienteEntityORM, (cliente) => cliente.direcciones)
   @JoinColumn({ name: 'cliente_id' })
-  cliente!: ClienteEntity;
+  cliente!: ClienteEntityORM;
 
-  @OneToMany(() => PedidoEntity, (pedido) => pedido.direccion)
-  pedidos!: PedidoEntity[];
+  @OneToMany(() => PedidoEntityORM, (pedido) => pedido.direccion)
+  pedidos!: PedidoEntityORM[];
 }

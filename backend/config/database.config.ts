@@ -1,48 +1,48 @@
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { AjusteInventarioEntity } from '../src/entities/ajuste-inventario.orm-entity';
+import { AjusteInventarioEntityORM } from '../src/entities/ajuste-inventario.orm-entity';
 import { CarritoDetalleEntity } from '../src/entities/carrito-detalle.orm-entity';
-import { CarritoEntity } from '../src/entities/carrito.orm-entity';
-import { CategoriaProductoEntity } from '../src/entities/categoria-producto.orm-entity';
-import { CategoriaEntity } from '../src/entities/categoria.orm-entity';
-import { ClienteEntity } from '../src/entities/cliente.orm-entity';
-import { CompraDetalleEntity } from '../src/entities/compra-detalle.orm-entity';
-import { CompraEntity } from '../src/entities/compra.orm-entity';
-import { DireccionEntity } from '../src/entities/direccion.orm-entity';
-import { KardexEntity } from '../src/entities/kardex.orm-entity';
-import { PagoEntity } from '../src/entities/pago.orm-entity';
-import { PedidoDetalleEntity } from '../src/entities/pedido-detalle.orm-entity';
-import { PedidoEntity } from '../src/entities/pedido.orm-entity';
-import { ProductoImagenEntity } from '../src/entities/producto-imagen.orm-entity';
-import { ProveedorEntity } from '../src/entities/proveedor.orm-entity';
-import { RolEntity } from '../src/entities/rol.orm-entity';
-import { UsuarioRolEntity } from '../src/entities/usuario-rol.orm-entity';
-import { UsuarioEntity } from '../src/entities/usuario.orm-entity';
+import { CarritoEntityORM } from '../src/entities/carrito.orm-entity';
+import { CategoriaProductoEntityORM } from '../src/entities/categoria-producto.orm-entity';
+import { CategoriaEntityORM } from '../src/entities/categoria.orm-entity';
+import { ClienteEntityORM } from '../src/entities/cliente.orm-entity';
+import { CompraDetalleEntityORM } from '../src/entities/compra-detalle.orm-entity';
+import { CompraEntityORM } from '../src/entities/compra.orm-entity';
+import { DireccionEntityORM } from '../src/entities/direccion.orm-entity';
+import { KardexEntityORM } from '../src/entities/kardex.orm-entity';
+import { PagoEntityORM } from '../src/entities/pago.orm-entity';
+import { PedidoDetalleEntityORM } from '../src/entities/pedido-detalle.orm-entity';
+import { PedidoEntityORM } from '../src/entities/pedido.orm-entity';
+import { ProductoImagenEntityORM } from '../src/entities/producto-imagen.orm-entity';
+import { ProveedorEntityORM } from '../src/entities/proveedor.orm-entity';
+import { RolEntityORM } from '../src/entities/rol.orm-entity';
+import { UsuarioRolEntityORM } from '../src/entities/usuario-rol.orm-entity';
+import { UsuarioEntityORM } from '../src/usuario/infrastructure/persistence/usuario.orm-entity';
 import { ProductoORMEntity } from '../src/producto/infrastructure/persistence/producto.orm-entity';
 
 export default registerAs('database', (): TypeOrmModuleOptions => {
   const databaseUrl = process.env.DATABASE_URL;
 
   const entities = [
-    AjusteInventarioEntity,
+    AjusteInventarioEntityORM,
     CarritoDetalleEntity,
-    CarritoEntity,
-    CategoriaProductoEntity,
-    CategoriaEntity,
-    ClienteEntity,
-    CompraDetalleEntity,
-    CompraEntity,
-    DireccionEntity,
-    KardexEntity,
-    PagoEntity,
-    PedidoDetalleEntity,
-    PedidoEntity,
-    ProductoImagenEntity,
+    CarritoEntityORM,
+    CategoriaProductoEntityORM,
+    CategoriaEntityORM,
+    ClienteEntityORM,
+    CompraDetalleEntityORM,
+    CompraEntityORM,
+    DireccionEntityORM,
+    KardexEntityORM,
+    PagoEntityORM,
+    PedidoDetalleEntityORM,
+    PedidoEntityORM,
+    ProductoImagenEntityORM,
     ProductoORMEntity,
-    ProveedorEntity,
-    RolEntity,
-    UsuarioRolEntity,
-    UsuarioEntity,
+    ProveedorEntityORM,
+    RolEntityORM,
+    UsuarioRolEntityORM,
+    UsuarioEntityORM,
   ];
 
   // PRODUCCIÓN

@@ -1,8 +1,8 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { CategoriaProductoEntity } from './categoria-producto.orm-entity';
+import { CategoriaProductoEntityORM } from './categoria-producto.orm-entity';
 
 @Entity({ name: 'categoria' })
-export class CategoriaEntity {
+export class CategoriaEntityORM {
   @PrimaryGeneratedColumn({ name: 'categoria_id' })
   categoriaId!: number;
 
@@ -10,8 +10,8 @@ export class CategoriaEntity {
   nombre!: string;
 
   @OneToMany(
-    () => CategoriaProductoEntity,
+    () => CategoriaProductoEntityORM,
     (categoriaProducto) => categoriaProducto.categoria,
   )
-  categoriasProducto!: CategoriaProductoEntity[];
+  categoriasProducto!: CategoriaProductoEntityORM[];
 }

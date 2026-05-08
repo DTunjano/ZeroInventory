@@ -5,7 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { CarritoEntity } from './carrito.orm-entity';
+import { CarritoEntityORM } from './carrito.orm-entity';
 import { ProductoORMEntity } from '../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'carrito_detalle' })
@@ -22,9 +22,9 @@ export class CarritoDetalleEntity {
   @Column({ name: 'cantidad', type: 'int' })
   cantidad!: number;
 
-  @ManyToOne(() => CarritoEntity, (carrito) => carrito.detalles)
+  @ManyToOne(() => CarritoEntityORM, (carrito) => carrito.detalles)
   @JoinColumn({ name: 'carrito_id' })
-  carrito!: CarritoEntity;
+  carrito!: CarritoEntityORM;
 
   @ManyToOne(() => ProductoORMEntity, (producto) => producto.carritoDetalles)
   @JoinColumn({ name: 'producto_id' })

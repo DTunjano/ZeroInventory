@@ -8,7 +8,7 @@ import {
 import { ProductoORMEntity } from '../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'producto_imagen' })
-export class ProductoImagenEntity {
+export class ProductoImagenEntityORM {
   @PrimaryGeneratedColumn({ name: 'imagen_producto_id' })
   imagenProductoId!: number;
 

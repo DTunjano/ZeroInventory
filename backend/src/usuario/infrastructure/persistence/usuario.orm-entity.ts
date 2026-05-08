@@ -7,14 +7,14 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ClienteEntity } from './cliente.orm-entity';
-import { UsuarioRolEntity } from './usuario-rol.orm-entity';
-import { CarritoEntity } from './carrito.orm-entity';
-import { CompraEntity } from './compra.orm-entity';
-import { AjusteInventarioEntity } from './ajuste-inventario.orm-entity';
+import { ClienteEntityORM } from '../../../entities/cliente.orm-entity';
+import { UsuarioRolEntityORM } from '../../../entities/usuario-rol.orm-entity';
+import { CarritoEntityORM } from '../../../entities/carrito.orm-entity';
+import { CompraEntityORM } from '../../../entities/compra.orm-entity';
+import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity';
 
 @Entity({ name: 'usuario' })
-export class UsuarioEntity {
+export class UsuarioEntityORM {
   @PrimaryGeneratedColumn({ name: 'usuario_id' })
   usuarioId!: number;
 
@@ -45,18 +45,18 @@ export class UsuarioEntity {
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt!: Date;
 
-  @OneToOne(() => ClienteEntity, (cliente) => cliente.usuario)
-  clientes!: ClienteEntity[];
+  @OneToOne(() => ClienteEntityORM, (cliente) => cliente.usuario)
+  clientes!: ClienteEntityORM[];
 
-  @OneToMany(() => UsuarioRolEntity, (usuarioRol) => usuarioRol.usuario)
-  usuarioRoles!: UsuarioRolEntity[];
+  @OneToMany(() => UsuarioRolEntityORM, (usuarioRol) => usuarioRol.usuario)
+  usuarioRoles!: UsuarioRolEntityORM[];
 
-  @OneToMany(() => CarritoEntity, (carrito) => carrito.usuario)
-  carritos!: CarritoEntity[];
+  @OneToOne(() => CarritoEntityORM, (carrito) => carrito.usuario)
+  carritos!: CarritoEntityORM[];
 
-  @OneToMany(() => CompraEntity, (compra) => compra.usuario)
-  compras!: CompraEntity[];
+  @OneToMany(() => CompraEntityORM, (compra) => compra.usuario)
+  compras!: CompraEntityORM[];
 
-  @OneToMany(() => AjusteInventarioEntity, (ajuste) => ajuste.usuario)
-  ajustesInventario!: AjusteInventarioEntity[];
+  @OneToMany(() => AjusteInventarioEntityORM, (ajuste) => ajuste.usuario)
+  ajustesInventario!: AjusteInventarioEntityORM[];
 }

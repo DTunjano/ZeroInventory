@@ -49,7 +49,13 @@ export class ProductoController {
 
   @Get()
   @GetAllProductSwagger()
-  async getAll(@Query() filters?: FiltersProductDTO): Promise<Producto[]> {
+  async getAll(@Query() filters?: FiltersProductDTO): Promise<{
+    data: Producto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     return this.getAllProductosUseCase.ejecutar(filters);
   }
 

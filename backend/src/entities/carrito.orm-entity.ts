@@ -3,11 +3,11 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UsuarioEntity } from './usuario.orm-entity';
+import { UsuarioEntityORM } from '../usuario/infrastructure/persistence/usuario.orm-entity';
 import { CarritoDetalleEntity } from './carrito-detalle.orm-entity';
 
 export enum EstadoCarritoEnum {
@@ -16,7 +16,7 @@ export enum EstadoCarritoEnum {
 }
 
 @Entity({ name: 'carrito' })
-export class CarritoEntity {
+export class CarritoEntityORM {
   @PrimaryGeneratedColumn({ name: 'carrito_id' })
   carritoId!: number;
 
@@ -29,9 +29,9 @@ export class CarritoEntity {
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt!: Date;
 
-  @ManyToOne(() => UsuarioEntity, (usuario) => usuario.carritos)
+  @OneToOne(() => UsuarioEntityORM, (usuario) => usuario.carritos)
   @JoinColumn({ name: 'usuario_id' })
-  usuario!: UsuarioEntity;
+  usuario!: UsuarioEntityORM;
 
   @OneToMany(() => CarritoDetalleEntity, (detalle) => detalle.carrito)
   detalles!: CarritoDetalleEntity[];

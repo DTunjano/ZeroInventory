@@ -6,7 +6,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { PedidoEntity } from './pedido.orm-entity';
+import { PedidoEntityORM } from './pedido.orm-entity';
 
 export enum MetodoPagoEnum {
   EFECTIVO = 'EFECTIVO',
@@ -20,7 +20,7 @@ export enum EstadoPagoEnum {
 }
 
 @Entity({ name: 'pago' })
-export class PagoEntity {
+export class PagoEntityORM {
   @PrimaryGeneratedColumn({ name: 'pago_id' })
   pagoId!: number;
 
@@ -39,7 +39,7 @@ export class PagoEntity {
   @CreateDateColumn({ name: 'fecha_pago', type: 'timestamp' })
   fechaPago!: Date;
 
-  @ManyToOne(() => PedidoEntity, (pedido) => pedido.pagos)
+  @ManyToOne(() => PedidoEntityORM, (pedido) => pedido.pagos)
   @JoinColumn({ name: 'pedido_id' })
-  pedido!: PedidoEntity;
+  pedido!: PedidoEntityORM;
 }

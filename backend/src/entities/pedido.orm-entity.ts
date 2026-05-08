@@ -7,10 +7,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ClienteEntity } from './cliente.orm-entity';
-import { DireccionEntity } from './direccion.orm-entity';
-import { PedidoDetalleEntity } from './pedido-detalle.orm-entity';
-import { PagoEntity } from './pago.orm-entity';
+import { ClienteEntityORM } from './cliente.orm-entity';
+import { DireccionEntityORM } from './direccion.orm-entity';
+import { PedidoDetalleEntityORM } from './pedido-detalle.orm-entity';
+import { PagoEntityORM } from './pago.orm-entity';
 
 export enum EstadoPedidoEnum {
   PENDIENTE = 'PENDIENTE',
@@ -20,7 +20,7 @@ export enum EstadoPedidoEnum {
 }
 
 @Entity({ name: 'pedido' })
-export class PedidoEntity {
+export class PedidoEntityORM {
   @PrimaryGeneratedColumn({ name: 'pedido_id' })
   pedidoId!: number;
 
@@ -39,17 +39,17 @@ export class PedidoEntity {
   @CreateDateColumn({ name: 'fecha', type: 'timestamp' })
   fecha!: Date;
 
-  @ManyToOne(() => ClienteEntity, (cliente) => cliente.pedidos)
+  @ManyToOne(() => ClienteEntityORM, (cliente) => cliente.pedidos)
   @JoinColumn({ name: 'cliente_id' })
-  cliente!: ClienteEntity;
+  cliente!: ClienteEntityORM;
 
-  @ManyToOne(() => DireccionEntity, (direccion) => direccion.pedidos)
+  @ManyToOne(() => DireccionEntityORM, (direccion) => direccion.pedidos)
   @JoinColumn({ name: 'direccion_id' })
-  direccion!: DireccionEntity;
+  direccion!: DireccionEntityORM;
 
-  @OneToMany(() => PedidoDetalleEntity, (detalle) => detalle.pedido)
-  detalles!: PedidoDetalleEntity[];
+  @OneToMany(() => PedidoDetalleEntityORM, (detalle) => detalle.pedido)
+  detalles!: PedidoDetalleEntityORM[];
 
-  @OneToMany(() => PagoEntity, (pago) => pago.pedido)
-  pagos!: PagoEntity[];
+  @OneToMany(() => PagoEntityORM, (pago) => pago.pedido)
+  pagos!: PagoEntityORM[];
 }

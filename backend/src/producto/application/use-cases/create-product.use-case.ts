@@ -19,7 +19,7 @@ export class CreateProductUseCase {
   }): Promise<Producto> {
     const existingProduct = await this.productoRepo.getAll();
 
-    existingProduct.forEach((product) => {
+    existingProduct.data.forEach((product) => {
       if (product.nombre === data.nombre) {
         throw new ConflictException('Ya existe un producto con ese nombre');
       }

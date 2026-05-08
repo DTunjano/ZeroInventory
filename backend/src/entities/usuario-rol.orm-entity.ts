@@ -5,11 +5,11 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UsuarioEntity } from './usuario.orm-entity';
-import { RolEntity } from './rol.orm-entity';
+import { UsuarioEntityORM } from '../usuario/infrastructure/persistence/usuario.orm-entity';
+import { RolEntityORM } from './rol.orm-entity';
 
 @Entity({ name: 'usuario_rol' })
-export class UsuarioRolEntity {
+export class UsuarioRolEntityORM {
   @PrimaryGeneratedColumn({ name: 'usuario_rol_id' })
   usuarioRolId!: number;
 
@@ -19,11 +19,11 @@ export class UsuarioRolEntity {
   @Column({ name: 'rol_id', type: 'int' })
   rolId!: number;
 
-  @ManyToOne(() => UsuarioEntity, (usuario) => usuario.usuarioRoles)
+  @ManyToOne(() => UsuarioEntityORM, (usuario) => usuario.usuarioRoles)
   @JoinColumn({ name: 'usuario_id' })
-  usuario!: UsuarioEntity;
+  usuario!: UsuarioEntityORM;
 
-  @ManyToOne(() => RolEntity, (rol) => rol.usuarioRoles)
+  @ManyToOne(() => RolEntityORM, (rol) => rol.usuarioRoles)
   @JoinColumn({ name: 'rol_id' })
-  rol!: RolEntity;
+  rol!: RolEntityORM;
 }

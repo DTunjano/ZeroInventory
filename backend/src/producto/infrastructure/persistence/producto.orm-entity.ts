@@ -1,11 +1,11 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { KardexEntity } from '../../../entities/kardex.orm-entity';
-import { ProductoImagenEntity } from '../../../entities/producto-imagen.orm-entity';
-import { CategoriaProductoEntity } from '../../../entities/categoria-producto.orm-entity';
+import { KardexEntityORM } from '../../../entities/kardex.orm-entity';
+import { ProductoImagenEntityORM } from '../../../entities/producto-imagen.orm-entity';
+import { CategoriaProductoEntityORM } from '../../../entities/categoria-producto.orm-entity';
 import { CarritoDetalleEntity } from '../../../entities/carrito-detalle.orm-entity';
-import { PedidoDetalleEntity } from '../../../entities/pedido-detalle.orm-entity';
-import { CompraDetalleEntity } from '../../../entities/compra-detalle.orm-entity';
-import { AjusteInventarioEntity } from '../../../entities/ajuste-inventario.orm-entity';
+import { PedidoDetalleEntityORM } from '../../../entities/pedido-detalle.orm-entity';
+import { CompraDetalleEntityORM } from '../../../entities/compra-detalle.orm-entity';
+import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity';
 
 @Entity({ name: 'producto' })
 export class ProductoORMEntity {
@@ -48,27 +48,27 @@ export class ProductoORMEntity {
   @Column({ name: 'updated_at', type: 'timestamp' })
   updatedAt!: Date;
 
-  @OneToMany(() => KardexEntity, (kardex) => kardex.producto)
-  kardexMovimientos!: KardexEntity[];
+  @OneToMany(() => KardexEntityORM, (kardex) => kardex.producto)
+  kardexMovimientos!: KardexEntityORM[];
 
-  @OneToMany(() => ProductoImagenEntity, (imagen) => imagen.producto)
-  imagenes!: ProductoImagenEntity[];
+  @OneToMany(() => ProductoImagenEntityORM, (imagen) => imagen.producto)
+  imagenes!: ProductoImagenEntityORM[];
 
   @OneToMany(
-    () => CategoriaProductoEntity,
+    () => CategoriaProductoEntityORM,
     (categoriaProducto) => categoriaProducto.producto,
   )
-  categorias!: CategoriaProductoEntity[];
+  categorias!: CategoriaProductoEntityORM[];
 
   @OneToMany(() => CarritoDetalleEntity, (detalle) => detalle.producto)
   carritoDetalles!: CarritoDetalleEntity[];
 
-  @OneToMany(() => PedidoDetalleEntity, (detalle) => detalle.producto)
-  pedidoDetalles!: PedidoDetalleEntity[];
+  @OneToMany(() => PedidoDetalleEntityORM, (detalle) => detalle.producto)
+  pedidoDetalles!: PedidoDetalleEntityORM[];
 
-  @OneToMany(() => CompraDetalleEntity, (detalle) => detalle.producto)
-  compraDetalles!: CompraDetalleEntity[];
+  @OneToMany(() => CompraDetalleEntityORM, (detalle) => detalle.producto)
+  compraDetalles!: CompraDetalleEntityORM[];
 
-  @OneToMany(() => AjusteInventarioEntity, (ajuste) => ajuste.producto)
-  ajustesInventario!: AjusteInventarioEntity[];
+  @OneToMany(() => AjusteInventarioEntityORM, (ajuste) => ajuste.producto)
+  ajustesInventario!: AjusteInventarioEntityORM[];
 }
