@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { KardexEntityORM } from '../../../entities/kardex.orm-entity';
-import { CategoriaProductoEntityORM } from '../../../entities/categoria-producto.orm-entity';
+import { CategoriaProductoEntityORM } from '../../../categoria-producto/infrastructure/persistence/categoria-producto.orm-entity';
 import { CarritoDetalleEntity } from '../../../entities/carrito-detalle.orm-entity';
 import { PedidoDetalleEntityORM } from '../../../entities/pedido-detalle.orm-entity';
 import { CompraDetalleEntityORM } from '../../../entities/compra-detalle.orm-entity';

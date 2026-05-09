@@ -5,8 +5,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { CategoriaEntityORM } from './categoria.orm-entity';
-import { ProductoEntityORM } from '../producto/infrastructure/persistence/producto.orm-entity';
+import { CategoriaEntityORM } from '../../../categoria/infrastructure/persistence/categoria.orm-entity';
+import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'categoria_producto' })
 export class CategoriaProductoEntityORM {
@@ -18,6 +18,12 @@ export class CategoriaProductoEntityORM {
 
   @Column({ name: 'producto_id', type: 'int' })
   productoId!: number;
+
+  @Column({ name: 'created_at', type: 'timestamp' })
+  createdAt!: Date;
+
+  @Column({ name: 'updated_at', type: 'timestamp' })
+  updatedAt!: Date;
 
   @ManyToOne(
     () => CategoriaEntityORM,
