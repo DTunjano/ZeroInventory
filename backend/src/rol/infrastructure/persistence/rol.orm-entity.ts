@@ -1,11 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { UsuarioRolEntityORM } from './usuario-rol.orm-entity';
-
-export enum RolNombreEnum {
-  ADMIN = 'ADMIN',
-  EMPLOYEE = 'EMPLOYEE',
-  CUSTOMER = 'CUSTOMER',
-}
+import { UsuarioRolEntityORM } from '../../../usuario-rol/infrastructure/persistence/usuario-rol.orm-entity';
+import { RolNombreEnum } from '../../domain/entity/rol.entity';
 
 @Entity({ name: 'rol' })
 export class RolEntityORM {
@@ -13,7 +8,7 @@ export class RolEntityORM {
   rolId!: number;
 
   @Column({ name: 'nombre', type: 'enum', enum: RolNombreEnum })
-  nombre!: string | null;
+  nombre!: RolNombreEnum;
 
   @OneToMany(() => UsuarioRolEntityORM, (usuarioRol) => usuarioRol.rol)
   usuarioRoles!: UsuarioRolEntityORM[];

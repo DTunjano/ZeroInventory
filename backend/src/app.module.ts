@@ -13,6 +13,8 @@ import { DireccionModule } from './direccion/direccion.module';
 import { PedidoModule } from './pedido/pedido.module';
 import { PagoModule } from './pago/pago.module';
 import { PedidoDetalleModule } from './pedido-detalle/pedido-detalle.module';
+import { RolModule } from './rol/rol.module';
+import { UsuarioRolModule } from './usuario-rol/usuario-rol.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { PedidoDetalleModule } from './pedido-detalle/pedido-detalle.module';
     PedidoModule,
     PagoModule,
     PedidoDetalleModule,
+    RolModule,
+    UsuarioRolModule,
   ],
 })
 export class AppModule {}

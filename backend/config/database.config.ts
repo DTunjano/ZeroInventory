@@ -13,8 +13,8 @@ import { PagoEntityORM } from '../src/pago/infrastructure/persistence/pago.orm-e
 import { PedidoDetalleEntityORM } from '../src/pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity';
 import { PedidoEntityORM } from '../src/pedido/infrastructure/persistence/pedido.orm-entity';
 import { ProveedorEntityORM } from '../src/entities/proveedor.orm-entity';
-import { RolEntityORM } from '../src/entities/rol.orm-entity';
-import { UsuarioRolEntityORM } from '../src/entities/usuario-rol.orm-entity';
+import { RolEntityORM } from '../src/rol/infrastructure/persistence/rol.orm-entity';
+import { UsuarioRolEntityORM } from '../src/usuario-rol/infrastructure/persistence/usuario-rol.orm-entity';
 import { UsuarioEntityORM } from '../src/usuario/infrastructure/persistence/usuario.orm-entity';
 import { ProductoEntityORM } from '../src/producto/infrastructure/persistence/producto.orm-entity';
 import { ProductoImagenEntityORM } from '../src/producto-imagen/infrastructure/persistence/producto-imagen.orm-entity';

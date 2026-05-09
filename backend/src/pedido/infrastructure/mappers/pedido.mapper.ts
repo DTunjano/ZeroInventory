@@ -1,4 +1,4 @@
-import { Pedido, EstadoPedidoEnum } from '../../domain/entity/pedido.entity';
+import { Pedido } from '../../domain/entity/pedido.entity';
 import { PedidoEntityORM } from '../persistence/pedido.orm-entity';
 
 export class PedidoMapper {

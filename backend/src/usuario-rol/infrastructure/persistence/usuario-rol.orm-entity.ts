@@ -5,8 +5,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UsuarioEntityORM } from '../usuario/infrastructure/persistence/usuario.orm-entity';
-import { RolEntityORM } from './rol.orm-entity';
+import { UsuarioEntityORM } from '../../../usuario/infrastructure/persistence/usuario.orm-entity';
+import { RolEntityORM } from '../../../rol/infrastructure/persistence/rol.orm-entity';
 
 @Entity({ name: 'usuario_rol' })
 export class UsuarioRolEntityORM {

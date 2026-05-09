@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { UsuarioRolEntityORM } from '../../../entities/usuario-rol.orm-entity';
+import { UsuarioRolEntityORM } from '../../../usuario-rol/infrastructure/persistence/usuario-rol.orm-entity';
 import { CarritoEntityORM } from '../../../entities/carrito.orm-entity';
 import { CompraEntityORM } from '../../../entities/compra.orm-entity';
 import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity';
