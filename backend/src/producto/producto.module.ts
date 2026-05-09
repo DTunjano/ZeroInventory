@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProductoORMEntity } from './infrastructure/persistence/producto.orm-entity';
+import { ProductoEntityORM } from './infrastructure/persistence/producto.orm-entity';
 import { ProductoController } from './adapters/controllers/producto.controller';
 import { ProductoRepositoryImpl } from './infrastructure/persistence/producto.repository-impl';
 import { ProductoRepository } from './domain/repository/producto.repository';
@@ -11,7 +11,7 @@ import { UpdateProductUseCase } from './application/use-cases/update-product.use
 import { DeleteProductUseCase } from './application/use-cases/delete-product.use-case';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProductoORMEntity])],
+  imports: [TypeOrmModule.forFeature([ProductoEntityORM])],
   controllers: [ProductoController],
   providers: [
     CreateProductUseCase,

@@ -1,14 +1,14 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { KardexEntityORM } from '../../../entities/kardex.orm-entity';
-import { ProductoImagenEntityORM } from '../../../entities/producto-imagen.orm-entity';
 import { CategoriaProductoEntityORM } from '../../../entities/categoria-producto.orm-entity';
 import { CarritoDetalleEntity } from '../../../entities/carrito-detalle.orm-entity';
 import { PedidoDetalleEntityORM } from '../../../entities/pedido-detalle.orm-entity';
 import { CompraDetalleEntityORM } from '../../../entities/compra-detalle.orm-entity';
 import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity';
+import { ProductoImagenEntityORM } from '../../../producto-imagen/infrastructure/persistence/producto-imagen.orm-entity';
 
 @Entity({ name: 'producto' })
-export class ProductoORMEntity {
+export class ProductoEntityORM {
   @PrimaryGeneratedColumn({ name: 'producto_id' })
   productoId!: number;
 

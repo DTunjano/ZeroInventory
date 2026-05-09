@@ -6,8 +6,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ClienteEntityORM } from './cliente.orm-entity';
+
 import { PedidoEntityORM } from './pedido.orm-entity';
+import { ClienteEntityORM } from '../cliente/infrastructure/persistence/cliente.orm-entity';
 
 @Entity({ name: 'direccion' })
 export class DireccionEntityORM {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ProductoORMEntity } from './producto.orm-entity';
+import { ProductoEntityORM } from './producto.orm-entity';
 import { ProductoRepository } from '../../domain/repository/producto.repository';
 import { ProductoMapper } from '../mappers/producto.mapper';
 import { Producto } from '../../domain/entity/producto.entity';
@@ -10,8 +10,8 @@ import { FiltersProductDTO } from '../../application/dto/filters-product-dto';
 @Injectable()
 export class ProductoRepositoryImpl implements ProductoRepository {
   constructor(
-    @InjectRepository(ProductoORMEntity)
-    private readonly repo: Repository<ProductoORMEntity>,
+    @InjectRepository(ProductoEntityORM)
+    private readonly repo: Repository<ProductoEntityORM>,
   ) {}
 
   async create(producto: Producto): Promise<Producto> {

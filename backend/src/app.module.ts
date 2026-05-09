@@ -6,6 +6,7 @@ import { CloudinaryModule } from '../infrastructure/cloudinary/cloudinary.module
 import { ProductoModule } from './producto/producto.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { ClienteModule } from './cliente/cliente.module';
+import { ProductoImagenModule } from './producto-imagen/producto-imagen.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ClienteModule } from './cliente/cliente.module';
     ProductoModule,
     UsuarioModule,
     ClienteModule,
+    ProductoImagenModule,
   ],
 })
 export class AppModule {}

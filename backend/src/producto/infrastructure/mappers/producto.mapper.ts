@@ -1,8 +1,8 @@
 import { Producto } from '../../domain/entity/producto.entity';
-import { ProductoORMEntity } from '../persistence/producto.orm-entity';
+import { ProductoEntityORM } from '../persistence/producto.orm-entity';
 
 export class ProductoMapper {
-  static toDomain(entity: ProductoORMEntity): Producto {
+  static toDomain(entity: ProductoEntityORM): Producto {
     return new Producto(
       entity.productoId,
       entity.nombre,
@@ -20,8 +20,8 @@ export class ProductoMapper {
     );
   }
 
-  static toPersistence(domain: Producto): ProductoORMEntity {
-    const entity = new ProductoORMEntity();
+  static toPersistence(domain: Producto): ProductoEntityORM {
+    const entity = new ProductoEntityORM();
     entity.productoId = domain.productoId;
     entity.nombre = domain.nombre;
     entity.cantidad = domain.cantidad;

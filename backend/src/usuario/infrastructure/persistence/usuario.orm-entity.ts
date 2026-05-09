@@ -7,11 +7,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ClienteEntityORM } from '../../../entities/cliente.orm-entity';
+
 import { UsuarioRolEntityORM } from '../../../entities/usuario-rol.orm-entity';
 import { CarritoEntityORM } from '../../../entities/carrito.orm-entity';
 import { CompraEntityORM } from '../../../entities/compra.orm-entity';
 import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity';
+import { ClienteEntityORM } from '../../../cliente/infrastructure/persistence/cliente.orm-entity';
 
 @Entity({ name: 'usuario' })
 export class UsuarioEntityORM {

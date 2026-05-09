@@ -7,10 +7,11 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ClienteEntityORM } from './cliente.orm-entity';
+
 import { DireccionEntityORM } from './direccion.orm-entity';
 import { PedidoDetalleEntityORM } from './pedido-detalle.orm-entity';
 import { PagoEntityORM } from './pago.orm-entity';
+import { ClienteEntityORM } from '../cliente/infrastructure/persistence/cliente.orm-entity';
 
 export enum EstadoPedidoEnum {
   PENDIENTE = 'PENDIENTE',

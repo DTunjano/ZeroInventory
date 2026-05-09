@@ -5,7 +5,6 @@ import { CarritoDetalleEntity } from '../src/entities/carrito-detalle.orm-entity
 import { CarritoEntityORM } from '../src/entities/carrito.orm-entity';
 import { CategoriaProductoEntityORM } from '../src/entities/categoria-producto.orm-entity';
 import { CategoriaEntityORM } from '../src/entities/categoria.orm-entity';
-import { ClienteEntityORM } from '../src/entities/cliente.orm-entity';
 import { CompraDetalleEntityORM } from '../src/entities/compra-detalle.orm-entity';
 import { CompraEntityORM } from '../src/entities/compra.orm-entity';
 import { DireccionEntityORM } from '../src/entities/direccion.orm-entity';
@@ -13,12 +12,13 @@ import { KardexEntityORM } from '../src/entities/kardex.orm-entity';
 import { PagoEntityORM } from '../src/entities/pago.orm-entity';
 import { PedidoDetalleEntityORM } from '../src/entities/pedido-detalle.orm-entity';
 import { PedidoEntityORM } from '../src/entities/pedido.orm-entity';
-import { ProductoImagenEntityORM } from '../src/entities/producto-imagen.orm-entity';
 import { ProveedorEntityORM } from '../src/entities/proveedor.orm-entity';
 import { RolEntityORM } from '../src/entities/rol.orm-entity';
 import { UsuarioRolEntityORM } from '../src/entities/usuario-rol.orm-entity';
 import { UsuarioEntityORM } from '../src/usuario/infrastructure/persistence/usuario.orm-entity';
-import { ProductoORMEntity } from '../src/producto/infrastructure/persistence/producto.orm-entity';
+import { ProductoEntityORM } from '../src/producto/infrastructure/persistence/producto.orm-entity';
+import { ProductoImagenEntityORM } from '../src/producto-imagen/infrastructure/persistence/producto-imagen.orm-entity';
+import { ClienteEntityORM } from '../src/cliente/infrastructure/persistence/cliente.orm-entity';
 
 export default registerAs('database', (): TypeOrmModuleOptions => {
   const databaseUrl = process.env.DATABASE_URL;
@@ -38,7 +38,7 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     PedidoDetalleEntityORM,
     PedidoEntityORM,
     ProductoImagenEntityORM,
-    ProductoORMEntity,
+    ProductoEntityORM,
     ProveedorEntityORM,
     RolEntityORM,
     UsuarioRolEntityORM,
@@ -51,7 +51,6 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
       type: 'postgres',
       url: databaseUrl,
       entities,
-      autoLoadEntities: true,
       synchronize: false,
       ssl: {
         rejectUnauthorized: false,
@@ -68,7 +67,6 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     entities,
-    autoLoadEntities: true,
     synchronize: true,
   };
 });
