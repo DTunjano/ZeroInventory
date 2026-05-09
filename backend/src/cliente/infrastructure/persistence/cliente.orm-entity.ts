@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { DireccionEntityORM } from '../../../entities/direccion.orm-entity';
-import { PedidoEntityORM } from '../../../entities/pedido.orm-entity';
+import { DireccionEntityORM } from '../../../direccion/infrastructure/persistence/direccion.orm-entity';
+import { PedidoEntityORM } from '../../../pedido/infrastructure/persistence/pedido.orm-entity';
 import { UsuarioEntityORM } from '../../../usuario/infrastructure/persistence/usuario.orm-entity';
 
 export enum TipoDocumentoEnumORM {

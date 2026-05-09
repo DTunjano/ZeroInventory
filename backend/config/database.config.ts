@@ -7,11 +7,11 @@ import { CategoriaProductoEntityORM } from '../src/categoria-producto/infrastruc
 import { CategoriaEntityORM } from '../src/categoria/infrastructure/persistence/categoria.orm-entity';
 import { CompraDetalleEntityORM } from '../src/entities/compra-detalle.orm-entity';
 import { CompraEntityORM } from '../src/entities/compra.orm-entity';
-import { DireccionEntityORM } from '../src/entities/direccion.orm-entity';
+import { DireccionEntityORM } from '../src/direccion/infrastructure/persistence/direccion.orm-entity';
 import { KardexEntityORM } from '../src/entities/kardex.orm-entity';
 import { PagoEntityORM } from '../src/entities/pago.orm-entity';
 import { PedidoDetalleEntityORM } from '../src/entities/pedido-detalle.orm-entity';
-import { PedidoEntityORM } from '../src/entities/pedido.orm-entity';
+import { PedidoEntityORM } from '../src/pedido/infrastructure/persistence/pedido.orm-entity';
 import { ProveedorEntityORM } from '../src/entities/proveedor.orm-entity';
 import { RolEntityORM } from '../src/entities/rol.orm-entity';
 import { UsuarioRolEntityORM } from '../src/entities/usuario-rol.orm-entity';

@@ -6,7 +6,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { PedidoEntityORM } from './pedido.orm-entity';
+import { PedidoEntityORM } from '../pedido/infrastructure/persistence/pedido.orm-entity';
 
 export enum MetodoPagoEnum {
   EFECTIVO = 'EFECTIVO',

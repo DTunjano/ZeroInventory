@@ -9,6 +9,8 @@ import { ClienteModule } from './cliente/cliente.module';
 import { ProductoImagenModule } from './producto-imagen/producto-imagen.module';
 import { CategoriaModule } from './categoria/categoria.module';
 import { CategoriaProductoModule } from './categoria-producto/categoria-producto.module';
+import { DireccionModule } from './direccion/direccion.module';
+import { PedidoModule } from './pedido/pedido.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { CategoriaProductoModule } from './categoria-producto/categoria-producto
     ProductoImagenModule,
     CategoriaModule,
     CategoriaProductoModule,
+    DireccionModule,
+    PedidoModule,
   ],
 })
 export class AppModule {}

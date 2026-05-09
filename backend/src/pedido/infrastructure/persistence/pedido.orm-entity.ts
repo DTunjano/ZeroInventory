@@ -8,17 +8,11 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { DireccionEntityORM } from './direccion.orm-entity';
-import { PedidoDetalleEntityORM } from './pedido-detalle.orm-entity';
-import { PagoEntityORM } from './pago.orm-entity';
-import { ClienteEntityORM } from '../cliente/infrastructure/persistence/cliente.orm-entity';
-
-export enum EstadoPedidoEnum {
-  PENDIENTE = 'PENDIENTE',
-  CONFIRMADO = 'CONFIRMADO',
-  ENVIADO = 'ENVIADO',
-  CANCELADO = 'CANCELADO',
-}
+import { EstadoPedidoEnum } from '../../domain/entity/pedido.entity';
+import { ClienteEntityORM } from '../../../cliente/infrastructure/persistence/cliente.orm-entity';
+import { DireccionEntityORM } from '../../../direccion/infrastructure/persistence/direccion.orm-entity';
+import { PedidoDetalleEntityORM } from '../../../entities/pedido-detalle.orm-entity';
+import { PagoEntityORM } from '../../../entities/pago.orm-entity';
 
 @Entity({ name: 'pedido' })
 export class PedidoEntityORM {
