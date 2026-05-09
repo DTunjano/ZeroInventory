@@ -5,8 +5,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { PedidoEntityORM } from '../pedido/infrastructure/persistence/pedido.orm-entity';
-import { ProductoEntityORM } from '../producto/infrastructure/persistence/producto.orm-entity';
+import { PedidoEntityORM } from '../../../pedido/infrastructure/persistence/pedido.orm-entity';
+import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'pedido_detalle' })
 export class PedidoDetalleEntityORM {

@@ -11,8 +11,8 @@ import {
 import { EstadoPedidoEnum } from '../../domain/entity/pedido.entity';
 import { ClienteEntityORM } from '../../../cliente/infrastructure/persistence/cliente.orm-entity';
 import { DireccionEntityORM } from '../../../direccion/infrastructure/persistence/direccion.orm-entity';
-import { PedidoDetalleEntityORM } from '../../../entities/pedido-detalle.orm-entity';
-import { PagoEntityORM } from '../../../entities/pago.orm-entity';
+import { PagoEntityORM } from '../../../pago/infrastructure/persistence/pago.orm-entity';
+import { PedidoDetalleEntityORM } from '../../../pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity';
 
 @Entity({ name: 'pedido' })
 export class PedidoEntityORM {
