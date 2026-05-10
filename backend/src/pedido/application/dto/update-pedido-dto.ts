@@ -4,15 +4,6 @@ import { EstadoPedidoEnum } from '../../domain/entity/pedido.entity';
 
 export class UpdatePedidoDTO {
   @ApiPropertyOptional({
-    description: 'ID del cliente',
-    example: 1,
-    type: Number,
-  })
-  @IsOptional()
-  @IsNumber()
-  clienteId?: number;
-
-  @ApiPropertyOptional({
     description: 'ID de la dirección',
     example: 1,
     type: Number,

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { ProductoEntityORM } from './producto.orm-entity';
 import { ProductoRepository } from '../../domain/repository/producto.repository';
 import { ProductoMapper } from '../mappers/producto.mapper';
@@ -83,5 +83,23 @@ export class ProductoRepositoryImpl implements ProductoRepository {
   async delete(productoId: number): Promise<boolean> {
     const result = await this.repo.delete({ productoId: productoId });
     return (result.affected ?? 0) > 0;
+  }
+
+  async existsByNombre(
+    nombre: string,
+    excludeProductoId?: number,
+  ): Promise<boolean> {
+    return this.repo.exists({
+      where: {
+        nombre,
+        ...(excludeProductoId ? { productoId: Not(excludeProductoId) } : {}),
+      },
+    });
+  }
+
+  async existsBySku(sku: string): Promise<boolean> {
+    return this.repo.exists({
+      where: { sku },
+    });
   }
 }

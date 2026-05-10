@@ -42,14 +42,6 @@ export class UpdateProductDTO {
   descripcion!: string | null;
 
   @ApiPropertyOptional({
-    description: 'Código SKU del producto',
-    example: 'PRO-000000001',
-    type: String,
-  })
-  @IsOptional()
-  sku!: string;
-
-  @ApiPropertyOptional({
     description: 'Marca del producto',
     example: 'Brand Name',
     type: String,

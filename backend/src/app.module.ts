@@ -15,6 +15,8 @@ import { PagoModule } from './pago/pago.module';
 import { PedidoDetalleModule } from './pedido-detalle/pedido-detalle.module';
 import { RolModule } from './rol/rol.module';
 import { UsuarioRolModule } from './usuario-rol/usuario-rol.module';
+import { CarritoModule } from './carrito/carrito.module';
+import { CarritoDetalleModule } from './carrito-detalle/carrito-detalle.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { UsuarioRolModule } from './usuario-rol/usuario-rol.module';
     PedidoDetalleModule,
     RolModule,
     UsuarioRolModule,
+    CarritoModule,
+    CarritoDetalleModule,
   ],
 })
 export class AppModule {}

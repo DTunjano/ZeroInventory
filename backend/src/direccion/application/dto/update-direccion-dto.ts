@@ -1,17 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class UpdateDireccionDTO {
-  @ApiPropertyOptional({
-    description: 'ID del cliente',
-    example: 1,
-    type: Number,
-  })
-  @IsOptional()
-  @IsNumber()
-  clienteId!: number;
-
   @ApiPropertyOptional({
     description: 'Línea de dirección',
     example: 'Calle 10 No. 20-30',

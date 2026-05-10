@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 
 import { UsuarioRolEntityORM } from '../../../usuario-rol/infrastructure/persistence/usuario-rol.orm-entity';
-import { CarritoEntityORM } from '../../../entities/carrito.orm-entity';
+import { CarritoEntityORM } from '../../../carrito/infrastructure/persistence/carrito.orm-entity';
 import { CompraEntityORM } from '../../../entities/compra.orm-entity';
 import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity';
 import { ClienteEntityORM } from '../../../cliente/infrastructure/persistence/cliente.orm-entity';
@@ -52,7 +52,7 @@ export class UsuarioEntityORM {
   @OneToMany(() => UsuarioRolEntityORM, (usuarioRol) => usuarioRol.usuario)
   usuarioRoles!: UsuarioRolEntityORM[];
 
-  @OneToOne(() => CarritoEntityORM, (carrito) => carrito.usuario)
+  @OneToMany(() => CarritoEntityORM, (carrito) => carrito.usuario)
   carritos!: CarritoEntityORM[];
 
   @OneToMany(() => CompraEntityORM, (compra) => compra.usuario)

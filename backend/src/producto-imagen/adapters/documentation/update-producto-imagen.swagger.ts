@@ -12,15 +12,11 @@ export function UpdateProductoImagenSwagger() {
       schema: {
         type: 'object',
         properties: {
-          productoId: {
-            type: 'number',
-          },
           imagen: {
             type: 'string',
             format: 'binary',
           },
         },
-        required: [],
       },
     }),
 

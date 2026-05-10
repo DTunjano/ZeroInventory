@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { ClienteRepository } from '../../domain/repository/cliente.repository';
 import { Cliente, TipoDocumentoEnum } from '../../domain/entity/cliente.entity';
 
@@ -11,12 +11,18 @@ export class CreateClienteUseCase {
     tipoDocumento: TipoDocumentoEnum;
     documento: string;
   }): Promise<Cliente> {
-    const existingClienteByDocumento = await this.clienteRepo.getByDocumento(data.documento);
+    const existingClienteByDocumento = await this.clienteRepo.getByDocumento(
+      data.documento,
+    );
     if (existingClienteByDocumento) {
-      throw new ConflictException('Ya existe un cliente con ese número de documento');
+      throw new ConflictException(
+        'Ya existe un cliente con ese número de documento',
+      );
     }
 
-    const existingClienteByUsuario = await this.clienteRepo.getByUsuarioId(data.usuarioId);
+    const existingClienteByUsuario = await this.clienteRepo.getByUsuarioId(
+      data.usuarioId,
+    );
     if (existingClienteByUsuario) {
       throw new ConflictException('El usuario ya tiene un cliente asociado');
     }

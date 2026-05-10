@@ -23,7 +23,7 @@ export class CreatePedidoDTO {
 
   @ApiPropertyOptional({
     description: 'Estado del pedido',
-    example: 'PENDIENTE',
+    example: 'CONFIRMADO',
     enum: EstadoPedidoEnum,
   })
   @IsOptional()

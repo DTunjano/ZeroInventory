@@ -1,15 +1,16 @@
 export enum EstadoPedidoEnum {
-  PENDIENTE = 'PENDIENTE',
+  COMPLETADO = 'COMPLETADO',
   CONFIRMADO = 'CONFIRMADO',
   ENVIADO = 'ENVIADO',
   CANCELADO = 'CANCELADO',
+  DEVUELTO = 'DEVUELTO',
 }
 
 export class Pedido {
   readonly pedidoId: number = 0;
   clienteId: number = 0;
   direccionId: number = 0;
-  estado: EstadoPedidoEnum = EstadoPedidoEnum.PENDIENTE;
+  estado: EstadoPedidoEnum = EstadoPedidoEnum.CONFIRMADO;
   total: number = 0;
   fecha: Date = new Date();
 

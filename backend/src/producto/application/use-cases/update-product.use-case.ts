@@ -17,7 +17,6 @@ export class UpdateProductUseCase {
       cantidad?: number;
       precio?: number;
       descripcion?: string | null;
-      sku?: string;
       marca?: string | null;
       material?: string | null;
       peso?: string | null;
@@ -30,19 +29,11 @@ export class UpdateProductUseCase {
       throw new NotFoundException('Producto no encontrado');
     }
 
-    const existingProducts = await this.productoRepo.getAll();
+    const nombre = cambios.nombre ?? actual.nombre;
 
-    existingProducts.data.forEach((product) => {
-      if (
-        product.nombre === cambios.nombre &&
-        product.productoId !== productoId
-      ) {
-        throw new ConflictException('Ya existe un producto con ese nombre');
-      }
-      if (product.sku === cambios.sku && product.productoId !== productoId) {
-        throw new ConflictException('Ya existe un producto con ese SKU');
-      }
-    });
+    if (await this.productoRepo.existsByNombre(nombre, productoId)) {
+      throw new ConflictException('Ya existe un producto con ese nombre');
+    }
 
     const producto = new Producto(
       actual.productoId,
@@ -50,14 +41,14 @@ export class UpdateProductUseCase {
       cambios.cantidad ?? actual.cantidad,
       cambios.precio ?? actual.precio,
       cambios.descripcion ?? actual.descripcion,
-      cambios.sku ?? actual.sku,
+      actual.sku,
       cambios.marca ?? actual.marca,
       cambios.material ?? actual.material,
       cambios.peso ?? actual.peso,
       cambios.medida ?? actual.medida,
       cambios.isActive ?? actual.isActive,
       actual.createdAt,
-      actual.updatedAt,
+      new Date(),
     );
 
     return this.productoRepo.update(producto);

@@ -16,7 +16,7 @@ export class CreatePedidoUseCase {
       0,
       data.clienteId,
       data.direccionId,
-      data.estado ?? EstadoPedidoEnum.PENDIENTE,
+      data.estado ?? EstadoPedidoEnum.CONFIRMADO,
       data.total ?? 0,
       new Date(),
     );

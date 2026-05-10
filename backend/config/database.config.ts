@@ -1,8 +1,8 @@
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AjusteInventarioEntityORM } from '../src/entities/ajuste-inventario.orm-entity';
-import { CarritoDetalleEntity } from '../src/entities/carrito-detalle.orm-entity';
-import { CarritoEntityORM } from '../src/entities/carrito.orm-entity';
+import { CarritoDetalleEntityORM } from '../src/carrito-detalle/infrastructure/persistence/carrito-detalle.orm-entity';
+import { CarritoEntityORM } from '../src/carrito/infrastructure/persistence/carrito.orm-entity';
 import { CategoriaProductoEntityORM } from '../src/categoria-producto/infrastructure/persistence/categoria-producto.orm-entity';
 import { CategoriaEntityORM } from '../src/categoria/infrastructure/persistence/categoria.orm-entity';
 import { CompraDetalleEntityORM } from '../src/entities/compra-detalle.orm-entity';
@@ -25,7 +25,7 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
 
   const entities = [
     AjusteInventarioEntityORM,
-    CarritoDetalleEntity,
+    CarritoDetalleEntityORM,
     CarritoEntityORM,
     CategoriaProductoEntityORM,
     CategoriaEntityORM,

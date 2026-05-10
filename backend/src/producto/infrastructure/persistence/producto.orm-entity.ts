@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { KardexEntityORM } from '../../../entities/kardex.orm-entity';
 import { CategoriaProductoEntityORM } from '../../../categoria-producto/infrastructure/persistence/categoria-producto.orm-entity';
-import { CarritoDetalleEntity } from '../../../entities/carrito-detalle.orm-entity';
+import { CarritoDetalleEntityORM } from '../../../carrito-detalle/infrastructure/persistence/carrito-detalle.orm-entity';
 
 import { CompraDetalleEntityORM } from '../../../entities/compra-detalle.orm-entity';
 import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity';
@@ -61,8 +61,8 @@ export class ProductoEntityORM {
   )
   categorias!: CategoriaProductoEntityORM[];
 
-  @OneToMany(() => CarritoDetalleEntity, (detalle) => detalle.producto)
-  carritoDetalles!: CarritoDetalleEntity[];
+  @OneToMany(() => CarritoDetalleEntityORM, (detalle) => detalle.producto)
+  carritoDetalles!: CarritoDetalleEntityORM[];
 
   @OneToMany(() => PedidoDetalleEntityORM, (detalle) => detalle.producto)
   pedidoDetalles!: PedidoDetalleEntityORM[];

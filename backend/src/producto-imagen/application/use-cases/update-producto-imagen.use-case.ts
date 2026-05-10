@@ -13,7 +13,6 @@ export class UpdateProductoImagenUseCase {
   async ejecutar(
     imagenProductoId: number,
     cambios: {
-      productoId?: number;
       url?: any;
     },
   ): Promise<ProductoImagen> {
@@ -23,13 +22,8 @@ export class UpdateProductoImagenUseCase {
       throw new NotFoundException('Imagen de producto no encontrada');
     }
 
-    if (cambios.productoId !== undefined) {
-      actual.productoId = cambios.productoId;
-    }
-
     if (cambios.url !== undefined) {
-      const result = await this.cloudinaryService.deleteImage(actual.publicId);
-
+      await this.cloudinaryService.deleteImage(actual.publicId);
 
       const uploadResult = await this.cloudinaryService.uploadImage(
         cambios.url,

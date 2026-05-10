@@ -21,16 +21,11 @@ export class UpdateCategoriaUseCase {
       throw new NotFoundException('Categoría no encontrada');
     }
 
-    const existingCategories = await this.categoriaRepo.getAll();
+    const nombre = cambios.nombre ?? actual.nombre;
 
-    existingCategories.data.forEach((category) => {
-      if (
-        category.nombre === cambios.nombre &&
-        category.categoriaId !== categoriaId
-      ) {
-        throw new ConflictException('Ya existe una categoría con ese nombre');
-      }
-    });
+    if (await this.categoriaRepo.existsByNombre(nombre, categoriaId)) {
+      throw new ConflictException('Ya existe una categoría con ese nombre');
+    }
 
     const categoria = new Categoria(
       actual.categoriaId,

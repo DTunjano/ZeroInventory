@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { CategoriaEntityORM } from './categoria.orm-entity';
 import { CategoriaRepository } from '../../domain/repository/categoria.repository';
 import { CategoriaMapper } from '../mappers/categoria.mapper';
@@ -68,5 +68,17 @@ export class CategoriaRepositoryImpl implements CategoriaRepository {
   async delete(categoriaId: number): Promise<boolean> {
     const result = await this.repo.delete({ categoriaId: categoriaId });
     return (result.affected ?? 0) > 0;
+  }
+
+  async existsByNombre(
+    nombre: string,
+    excludeCategoriaId?: number,
+  ): Promise<boolean> {
+    return this.repo.exists({
+      where: {
+        nombre,
+        ...(excludeCategoriaId ? { categoriaId: Not(excludeCategoriaId) } : {}),
+      },
+    });
   }
 }

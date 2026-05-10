@@ -7,13 +7,9 @@ export class CreateCategoriaUseCase {
   constructor(private readonly categoriaRepo: CategoriaRepository) {}
 
   async ejecutar(data: { nombre: string }): Promise<Categoria> {
-    const existingCategories = await this.categoriaRepo.getAll();
-
-    existingCategories.data.forEach((category) => {
-      if (category.nombre === data.nombre) {
-        throw new ConflictException('Ya existe una categoría con ese nombre');
-      }
-    });
+    if (await this.categoriaRepo.existsByNombre(data.nombre)) {
+      throw new ConflictException('Ya existe una categoría con ese nombre');
+    }
 
     const categoria = new Categoria(0, data.nombre, new Date(), new Date());
     return this.categoriaRepo.create(categoria);

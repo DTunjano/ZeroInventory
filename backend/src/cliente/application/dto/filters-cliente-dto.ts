@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsOptional, Max, Min } from 'class-validator';
 import { TipoDocumentoEnum } from '../../domain/entity/cliente.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -38,7 +38,7 @@ export class FiltersClienteDTO {
   })
   @IsOptional()
   @Type(() => Number)
-  page: number = 1;
+  page?: number = 1;
 
   @ApiPropertyOptional({
     description: 'Número de registros por página para paginación',
@@ -47,5 +47,7 @@ export class FiltersClienteDTO {
   })
   @IsOptional()
   @Type(() => Number)
-  limit: number = 10;
+  @Min(1)
+  @Max(100)
+  limit?: number = 10;
 }

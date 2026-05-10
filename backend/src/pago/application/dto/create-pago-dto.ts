@@ -4,6 +4,7 @@ import {
   EstadoPagoEnum,
   MetodoPagoEnum,
 } from '../../domain/entity/pago.entity';
+import { Transform } from 'class-transformer';
 
 export class CreatePagoDTO {
   @ApiProperty({
@@ -21,6 +22,7 @@ export class CreatePagoDTO {
     example: MetodoPagoEnum.TRANSFERENCIA,
   })
   @IsNotEmpty()
+  @Transform(({ value }: { value: string }) => value.trim().toUpperCase())
   @IsEnum(MetodoPagoEnum)
   metodoPago!: MetodoPagoEnum;
 
@@ -39,6 +41,7 @@ export class CreatePagoDTO {
     example: EstadoPagoEnum.PENDIENTE,
   })
   @IsNotEmpty()
+  @Transform(({ value }: { value: string }) => value.trim().toUpperCase())
   @IsEnum(EstadoPagoEnum)
   estado!: EstadoPagoEnum;
 }

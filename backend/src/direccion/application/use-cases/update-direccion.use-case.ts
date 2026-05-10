@@ -9,7 +9,6 @@ export class UpdateDireccionUseCase {
   async ejecutar(
     direccionId: number,
     cambios: {
-      clienteId?: number;
       lineaDir?: string;
       barrio?: string;
       codigoPostal?: string | null;
@@ -23,7 +22,7 @@ export class UpdateDireccionUseCase {
 
     const direccion = new Direccion(
       actual.direccionId,
-      cambios.clienteId ?? actual.clienteId,
+      actual.clienteId,
       cambios.lineaDir ?? actual.lineaDir,
       cambios.barrio ?? actual.barrio,
       cambios.codigoPostal ?? actual.codigoPostal,

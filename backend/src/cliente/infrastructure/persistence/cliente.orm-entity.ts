@@ -12,12 +12,7 @@ import {
 import { DireccionEntityORM } from '../../../direccion/infrastructure/persistence/direccion.orm-entity';
 import { PedidoEntityORM } from '../../../pedido/infrastructure/persistence/pedido.orm-entity';
 import { UsuarioEntityORM } from '../../../usuario/infrastructure/persistence/usuario.orm-entity';
-
-export enum TipoDocumentoEnumORM {
-  CC = 'CC',
-  CE = 'CE',
-  PASAPORTE = 'PASAPORTE',
-}
+import { TipoDocumentoEnum } from '../../domain/entity/cliente.entity';
 
 @Entity({ name: 'cliente' })
 export class ClienteEntityORM {
@@ -30,10 +25,10 @@ export class ClienteEntityORM {
   @Column({
     name: 'tipo_documento',
     type: 'enum',
-    enum: TipoDocumentoEnumORM,
+    enum: TipoDocumentoEnum,
     nullable: true,
   })
-  tipoDocumento!: TipoDocumentoEnumORM;
+  tipoDocumento!: TipoDocumentoEnum;
 
   @Column({ name: 'documento', type: 'varchar', unique: true })
   documento!: string;

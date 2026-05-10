@@ -13,4 +13,9 @@ export abstract class ProductoRepository {
     limit: number;
     totalPages: number;
   }>;
+  abstract existsByNombre(
+    nombre: string,
+    excludeProductoId?: number,
+  ): Promise<boolean>;
+  abstract existsBySku(sku: string): Promise<boolean>;
 }

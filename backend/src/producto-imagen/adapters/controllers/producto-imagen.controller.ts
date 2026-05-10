@@ -21,7 +21,6 @@ import { GetAllProductoImagenUseCase } from '../../application/use-cases/get-all
 import { FiltersProductoImagenDTO } from '../../application/dto/filters-producto-imagen-dto';
 import { UpdateProductoImagenUseCase } from '../../application/use-cases/update-producto-imagen.use-case';
 import { DeleteProductoImagenUseCase } from '../../application/use-cases/delete-producto-imagen.use-case';
-import { UpdateProductoImagenDTO } from '../../application/dto/update-producto-imagen-dto';
 import { CreateProductoImagenSwagger } from '../documentation/create-producto-imagen.swagger';
 import { GetProductoImagenByIdSwagger } from '../documentation/get-producto-imagen-by-id.swagger';
 import { GetAllProductoImagenSwagger } from '../documentation/get-all-producto-imagen.swagger';
@@ -89,13 +88,11 @@ export class ProductoImagenController {
   @ApiConsumes('multipart/form-data')
   async update(
     @Param('id', ParseIntPipe) imagenProductoId: number,
-    @Body() body: UpdateProductoImagenDTO,
     @UploadedFile() file: any,
   ): Promise<ProductoImagen> {
     const productoImagen = await this.updateProductoImagenUseCase.ejecutar(
       imagenProductoId,
       {
-        productoId: body.productoId,
         url: file,
       },
     );

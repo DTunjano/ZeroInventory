@@ -13,4 +13,5 @@ export abstract class CategoriaRepository {
     limit: number;
     totalPages: number;
   }>;
+  abstract existsByNombre(nombre: string, excludeId?: number): Promise<boolean>;
 }

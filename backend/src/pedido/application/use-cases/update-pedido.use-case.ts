@@ -9,7 +9,6 @@ export class UpdatePedidoUseCase {
   async ejecutar(
     pedidoId: number,
     cambios: {
-      clienteId?: number;
       direccionId?: number;
       estado?: EstadoPedidoEnum;
       total?: number;
@@ -19,10 +18,9 @@ export class UpdatePedidoUseCase {
     if (!actual) {
       throw new NotFoundException('Pedido no encontrado');
     }
-
     const pedido = new Pedido(
       actual.pedidoId,
-      cambios.clienteId ?? actual.clienteId,
+      actual.clienteId,
       cambios.direccionId ?? actual.direccionId,
       cambios.estado ?? actual.estado,
       cambios.total ?? actual.total,

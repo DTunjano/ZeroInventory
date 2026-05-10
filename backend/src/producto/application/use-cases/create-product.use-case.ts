@@ -17,16 +17,13 @@ export class CreateProductUseCase {
     peso: string | null;
     medida: string | null;
   }): Promise<Producto> {
-    const existingProduct = await this.productoRepo.getAll();
+    if (await this.productoRepo.existsByNombre(data.nombre)) {
+      throw new ConflictException('Ya existe un producto con ese nombre');
+    }
 
-    existingProduct.data.forEach((product) => {
-      if (product.nombre === data.nombre) {
-        throw new ConflictException('Ya existe un producto con ese nombre');
-      }
-      if (product.sku === data.sku) {
-        throw new ConflictException('Ya existe un producto con ese SKU');
-      }
-    });
+    if (await this.productoRepo.existsBySku(data.sku)) {
+      throw new ConflictException('Ya existe un producto con ese SKU');
+    }
 
     const producto = new Producto(
       0,
