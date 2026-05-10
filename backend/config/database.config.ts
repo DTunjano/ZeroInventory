@@ -1,11 +1,11 @@
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { AjusteInventarioEntityORM } from '../src/entities/ajuste-inventario.orm-entity';
+import { AjusteInventarioEntityORM } from '../src/ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity';
 import { CarritoDetalleEntityORM } from '../src/carrito-detalle/infrastructure/persistence/carrito-detalle.orm-entity';
 import { CarritoEntityORM } from '../src/carrito/infrastructure/persistence/carrito.orm-entity';
 import { CategoriaProductoEntityORM } from '../src/categoria-producto/infrastructure/persistence/categoria-producto.orm-entity';
 import { CategoriaEntityORM } from '../src/categoria/infrastructure/persistence/categoria.orm-entity';
-import { CompraDetalleEntityORM } from '../src/entities/compra-detalle.orm-entity';
+import { CompraDetalleEntityORM } from '../src/compra-detalle/infrastructure/persistence/compra-detalle.orm-entity';
 import { CompraEntityORM } from '../src/compra/infrastructure/persistence/compra.orm-entity';
 import { DireccionEntityORM } from '../src/direccion/infrastructure/persistence/direccion.orm-entity';
 import { KardexEntityORM } from '../src/entities/kardex.orm-entity';

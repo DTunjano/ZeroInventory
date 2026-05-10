@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { ProveedorEntityORM } from '../../../proveedor/infrastructure/persistence/proveedor.orm-entity';
 import { UsuarioEntityORM } from '../../../usuario/infrastructure/persistence/usuario.orm-entity';
-import { CompraDetalleEntityORM } from '../../../entities/compra-detalle.orm-entity';
+import { CompraDetalleEntityORM } from '../../../compra-detalle/infrastructure/persistence/compra-detalle.orm-entity';
 
 @Entity({ name: 'compra' })
 export class CompraEntityORM {

@@ -6,14 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UsuarioEntityORM } from '../usuario/infrastructure/persistence/usuario.orm-entity';
-import { ProductoEntityORM } from '../producto/infrastructure/persistence/producto.orm-entity';
-
-export enum TipoMovimientoEnum {
-  ENTRADA = 'ENTRADA',
-  SALIDA = 'SALIDA',
-  AJUSTE = 'AJUSTE',
-}
+import { UsuarioEntityORM } from '../../../usuario/infrastructure/persistence/usuario.orm-entity';
+import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'ajuste_inventario' })
 export class AjusteInventarioEntityORM {
@@ -25,9 +19,6 @@ export class AjusteInventarioEntityORM {
 
   @Column({ name: 'usuario_id', type: 'int' })
   usuarioId!: number;
-
-  @Column({ name: 'tipo_movimiento', type: 'enum', enum: TipoMovimientoEnum })
-  tipoMovimiento!: TipoMovimientoEnum;
 
   @Column({ name: 'cantidad', type: 'int' })
   cantidad!: number;

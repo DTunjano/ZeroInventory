@@ -5,9 +5,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-
-import { ProductoEntityORM } from '../producto/infrastructure/persistence/producto.orm-entity';
-import { CompraEntityORM } from '../compra/infrastructure/persistence/compra.orm-entity';
+import { CompraEntityORM } from '../../../compra/infrastructure/persistence/compra.orm-entity';
+import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'compra_detalle' })
 export class CompraDetalleEntityORM {

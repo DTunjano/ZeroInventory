@@ -19,6 +19,8 @@ import { CarritoModule } from './carrito/carrito.module';
 import { CarritoDetalleModule } from './carrito-detalle/carrito-detalle.module';
 import { ProveedorModule } from './proveedor/proveedor.module';
 import { CompraModule } from './compra/compra.module';
+import { CompraDetalleModule } from './compra-detalle/compra-detalle.module';
+import { AjusteInventarioModule } from './ajuste-inventario/ajuste-inventario.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { CompraModule } from './compra/compra.module';
     CarritoDetalleModule,
     ProveedorModule,
     CompraModule,
+    CompraDetalleModule,
+    AjusteInventarioModule,
   ],
 })
 export class AppModule {}
