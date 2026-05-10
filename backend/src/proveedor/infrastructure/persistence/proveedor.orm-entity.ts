@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { CompraEntityORM } from './compra.orm-entity';
+import { CompraEntityORM } from '../../../compra/infrastructure/persistence/compra.orm-entity';
 
 @Entity({ name: 'proveedor' })
 export class ProveedorEntityORM {

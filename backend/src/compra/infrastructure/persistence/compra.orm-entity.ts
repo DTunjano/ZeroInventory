@@ -7,9 +7,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ProveedorEntityORM } from './proveedor.orm-entity';
-import { UsuarioEntityORM } from '../usuario/infrastructure/persistence/usuario.orm-entity';
-import { CompraDetalleEntityORM } from './compra-detalle.orm-entity';
+import { ProveedorEntityORM } from '../../../proveedor/infrastructure/persistence/proveedor.orm-entity';
+import { UsuarioEntityORM } from '../../../usuario/infrastructure/persistence/usuario.orm-entity';
+import { CompraDetalleEntityORM } from '../../../entities/compra-detalle.orm-entity';
 
 @Entity({ name: 'compra' })
 export class CompraEntityORM {

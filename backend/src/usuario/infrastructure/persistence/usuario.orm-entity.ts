@@ -10,9 +10,9 @@ import {
 
 import { UsuarioRolEntityORM } from '../../../usuario-rol/infrastructure/persistence/usuario-rol.orm-entity';
 import { CarritoEntityORM } from '../../../carrito/infrastructure/persistence/carrito.orm-entity';
-import { CompraEntityORM } from '../../../entities/compra.orm-entity';
 import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity';
 import { ClienteEntityORM } from '../../../cliente/infrastructure/persistence/cliente.orm-entity';
+import { CompraEntityORM } from '../../../compra/infrastructure/persistence/compra.orm-entity';
 
 @Entity({ name: 'usuario' })
 export class UsuarioEntityORM {

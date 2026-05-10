@@ -6,13 +6,13 @@ import { CarritoEntityORM } from '../src/carrito/infrastructure/persistence/carr
 import { CategoriaProductoEntityORM } from '../src/categoria-producto/infrastructure/persistence/categoria-producto.orm-entity';
 import { CategoriaEntityORM } from '../src/categoria/infrastructure/persistence/categoria.orm-entity';
 import { CompraDetalleEntityORM } from '../src/entities/compra-detalle.orm-entity';
-import { CompraEntityORM } from '../src/entities/compra.orm-entity';
+import { CompraEntityORM } from '../src/compra/infrastructure/persistence/compra.orm-entity';
 import { DireccionEntityORM } from '../src/direccion/infrastructure/persistence/direccion.orm-entity';
 import { KardexEntityORM } from '../src/entities/kardex.orm-entity';
 import { PagoEntityORM } from '../src/pago/infrastructure/persistence/pago.orm-entity';
 import { PedidoDetalleEntityORM } from '../src/pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity';
 import { PedidoEntityORM } from '../src/pedido/infrastructure/persistence/pedido.orm-entity';
-import { ProveedorEntityORM } from '../src/entities/proveedor.orm-entity';
+import { ProveedorEntityORM } from '../src/proveedor/infrastructure/persistence/proveedor.orm-entity';
 import { RolEntityORM } from '../src/rol/infrastructure/persistence/rol.orm-entity';
 import { UsuarioRolEntityORM } from '../src/usuario-rol/infrastructure/persistence/usuario-rol.orm-entity';
 import { UsuarioEntityORM } from '../src/usuario/infrastructure/persistence/usuario.orm-entity';
