@@ -15,7 +15,7 @@ export class CreateProductoImagenUseCase {
     url: any;
   }): Promise<ProductoImagen> {
     const uploadResult = await this.cloudinaryService.uploadImage(data.url, {
-      folder: 'ZeroInventory/Productos',
+      folder: 'zeroInventoryProducts',
     });
 
     const productoImagen = new ProductoImagen(

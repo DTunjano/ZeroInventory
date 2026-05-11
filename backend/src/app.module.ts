@@ -19,6 +19,7 @@ import { CarritoModule } from './carrito/carrito.module';
 import { CarritoDetalleModule } from './carrito-detalle/carrito-detalle.module';
 import { ProveedorModule } from './proveedor/proveedor.module';
 import { CompraModule } from './compra/compra.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { CompraModule } from './compra/compra.module';
     }),
     DatabaseModule,
     CloudinaryModule,
+    AuthModule,
     ProductoModule,
     UsuarioModule,
     ClienteModule,

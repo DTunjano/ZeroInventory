@@ -28,7 +28,7 @@ export class UpdateProductoImagenUseCase {
       const uploadResult = await this.cloudinaryService.uploadImage(
         cambios.url,
         {
-          folder: 'ZeroInventory/Productos',
+          folder: 'zeroInventoryProducts',
         },
       );
 

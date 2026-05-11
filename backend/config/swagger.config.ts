@@ -15,5 +15,6 @@ export const swaggerConfig = new DocumentBuilder()
     },
     'JWT-auth',
   )
+  .addTag('Auth', 'Autenticación y sesión')
   .addTag('Productos', 'Gestión de productos')
   .build();

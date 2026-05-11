@@ -1,0 +1,68 @@
+import { create } from 'zustand'
+
+import { login, logout, refresh } from './auth.use-cases'
+import type { AuthResponseDTO, AuthUserDTO, LoginDTO } from './auth.types'
+
+export type AuthStatus =
+  | 'unknown'
+  | 'loading'
+  | 'authenticated'
+  | 'unauthenticated'
+
+export interface AuthState {
+  status: AuthStatus
+  accessToken: string | null
+  user: AuthUserDTO | null
+
+  setSession: (data: AuthResponseDTO) => void
+  clearSession: () => void
+
+  login: (dto: LoginDTO) => Promise<AuthResponseDTO>
+  refresh: () => Promise<string | null>
+  logout: () => Promise<void>
+}
+
+export const useAuthStore = create<AuthState>((set, get) => ({
+  status: 'unknown',
+  accessToken: null,
+  user: null,
+
+  setSession: (data) => {
+    set({
+      status: 'authenticated',
+      accessToken: data.accessToken,
+      user: data.user,
+    })
+  },
+
+  clearSession: () => {
+    set({ status: 'unauthenticated', accessToken: null, user: null })
+  },
+
+  login: async (dto) => {
+    set({ status: 'loading' })
+    const data = await login(dto)
+    get().setSession(data)
+    return data
+  },
+
+  refresh: async () => {
+    set({ status: 'loading' })
+    try {
+      const data = await refresh()
+      get().setSession(data)
+      return data.accessToken
+    } catch {
+      get().clearSession()
+      return null
+    }
+  },
+
+  logout: async () => {
+    try {
+      await logout()
+    } finally {
+      get().clearSession()
+    }
+  },
+}))
