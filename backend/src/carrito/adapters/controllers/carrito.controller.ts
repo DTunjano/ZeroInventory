@@ -9,6 +9,8 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateCarritoUseCase } from '../../application/use-cases/create-carrito.use-case';
@@ -25,6 +27,19 @@ import { GetAllCarritosSwagger } from '../documentation/get-all-carrito.swagger'
 import { UpdateCarritoSwagger } from '../documentation/update-carrito.swagger';
 import { DeleteCarritoSwagger } from '../documentation/delete-carrito.swagger';
 import { GetCarritoByIdSwagger } from '../documentation/get-carrito-by-id.swagger';
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
+import { JwtAccessPayload } from '../../../auth/infrastructure/strategies/jwt.strategy';
+import { AddItemToCartDTO } from '../../application/dto/add-item-to-cart.dto';
+import { CheckoutCartDTO } from '../../application/dto/checkout-cart.dto';
+import { AddItemToCartUseCase } from '../../application/use-cases/add-item-to-cart.use-case';
+import {
+  GetOpenCartByUsuarioUseCase,
+  OpenCartView,
+} from '../../application/use-cases/get-open-cart-by-usuario.use-case';
+import { CheckoutCartUseCase } from '../../application/use-cases/checkout-cart.use-case';
 
 @ApiTags('Carritos')
 @Controller('carritos')
@@ -35,7 +50,45 @@ export class CarritoController {
     private readonly getAllCarritosUseCase: GetAllCarritosUseCase,
     private readonly updateCarritoUseCase: UpdateCarritoUseCase,
     private readonly deleteCarritoUseCase: DeleteCarritoUseCase,
+    private readonly getOpenCartByUsuarioUseCase: GetOpenCartByUsuarioUseCase,
+    private readonly addItemToCartUseCase: AddItemToCartUseCase,
+    private readonly checkoutCartUseCase: CheckoutCartUseCase,
   ) {}
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.CUSTOMER)
+  async getMyOpenCart(@Req() req: { user: JwtAccessPayload }): Promise<OpenCartView> {
+    return this.getOpenCartByUsuarioUseCase.ejecutar(req.user.sub);
+  }
+
+  @Post('me/items')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.CUSTOMER)
+  async addItem(
+    @Req() req: { user: JwtAccessPayload },
+    @Body() body: AddItemToCartDTO,
+  ): Promise<OpenCartView> {
+    return this.addItemToCartUseCase.ejecutar({
+      usuarioId: req.user.sub,
+      productoId: body.productoId,
+      cantidad: body.cantidad,
+    });
+  }
+
+  @Post('me/checkout')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.CUSTOMER)
+  async checkout(
+    @Req() req: { user: JwtAccessPayload },
+    @Body() body: CheckoutCartDTO,
+  ): Promise<{ pedidoId: number; total: number }> {
+    return this.checkoutCartUseCase.ejecutar({
+      usuarioId: req.user.sub,
+      direccionId: body.direccionId,
+      metodoPago: body.metodoPago,
+    });
+  }
 
   @Post()
   @CreateCarritoSwagger()

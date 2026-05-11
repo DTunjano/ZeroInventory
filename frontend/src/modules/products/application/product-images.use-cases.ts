@@ -8,3 +8,7 @@ export function listImagesByProduct(productoId: number): Promise<PaginatedResult
 export function uploadProductImage(productoId: number, file: File): Promise<ProductImage> {
   return productImageRepository.upload(productoId, file)
 }
+
+export function updateProductImage(imagenProductoId: number, file: File): Promise<ProductImage> {
+  return productImageRepository.update(imagenProductoId, file)
+}

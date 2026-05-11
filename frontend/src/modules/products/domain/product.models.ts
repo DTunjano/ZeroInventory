@@ -1,5 +1,6 @@
 export interface Product {
   productoId: number
+  proveedorId: number | null
   nombre: string
   cantidad: number
   precio: number
@@ -43,14 +44,27 @@ export interface ProductFilters {
 
 export interface CreateProductInput {
   nombre: string
+  proveedorId?: number | null
   cantidad: number
   precio: number
   descripcion?: string | null
-  sku?: string
+  sku: string
   marca?: string | null
   material?: string | null
   peso?: string | null
   medida?: string | null
 }
 
-export type UpdateProductInput = Partial<CreateProductInput>
+export interface UpdateProductInput {
+  nombre?: string
+  proveedorId?: number | null
+  cantidad?: number
+  precio?: number
+  descripcion?: string | null
+  sku?: string
+  marca?: string | null
+  material?: string | null
+  peso?: string | null
+  medida?: string | null
+  isActive?: boolean
+}

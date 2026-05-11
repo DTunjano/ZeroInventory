@@ -1,4 +1,11 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { KardexEntityORM } from '../../../entities/kardex.orm-entity';
 import { CategoriaProductoEntityORM } from '../../../categoria-producto/infrastructure/persistence/categoria-producto.orm-entity';
 import { CarritoDetalleEntityORM } from '../../../carrito-detalle/infrastructure/persistence/carrito-detalle.orm-entity';
@@ -7,11 +14,15 @@ import { CompraDetalleEntityORM } from '../../../entities/compra-detalle.orm-ent
 import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity';
 import { ProductoImagenEntityORM } from '../../../producto-imagen/infrastructure/persistence/producto-imagen.orm-entity';
 import { PedidoDetalleEntityORM } from '../../../pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity';
+import { ProveedorEntityORM } from '../../../proveedor/infrastructure/persistence/proveedor.orm-entity';
 
 @Entity({ name: 'producto' })
 export class ProductoEntityORM {
   @PrimaryGeneratedColumn({ name: 'producto_id' })
   productoId!: number;
+
+  @Column({ name: 'proveedor_id', type: 'int', nullable: true })
+  proveedorId!: number | null;
 
   @Column({ name: 'nombre', type: 'varchar' })
   nombre!: string;
@@ -48,6 +59,12 @@ export class ProductoEntityORM {
 
   @Column({ name: 'updated_at', type: 'timestamp' })
   updatedAt!: Date;
+
+  @ManyToOne(() => ProveedorEntityORM, (proveedor) => proveedor.productos, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'proveedor_id' })
+  proveedor!: ProveedorEntityORM;
 
   @OneToMany(() => KardexEntityORM, (kardex) => kardex.producto)
   kardexMovimientos!: KardexEntityORM[];

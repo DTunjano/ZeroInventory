@@ -1,8 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsOptional, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
 
 export class CreateProductDTO {
+  @ApiProperty({
+    description: 'ID del proveedor del producto',
+    example: 1,
+    type: Number,
+  })
+  @IsOptional()
+  @IsInt({ message: 'El proveedor debe ser un entero' })
+  @Min(1, { message: 'El proveedor debe ser válido' })
+  proveedorId?: number | null;
+
   @ApiProperty({
     description: 'Nombre del producto',
     example: 'Shaker',
@@ -36,14 +46,15 @@ export class CreateProductDTO {
     type: String,
   })
   @IsOptional()
-  descripcion!: string | null;
+  descripcion?: string | null;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: 'Código SKU del producto',
     example: 'PRO-000000001',
     type: String,
   })
-  @IsOptional()
+  @IsNotEmpty({ message: 'El SKU del producto es obligatorio' })
+  @Transform(({ value }: { value: string }) => value.trim())
   sku!: string;
 
   @ApiPropertyOptional({
@@ -52,7 +63,7 @@ export class CreateProductDTO {
     type: String,
   })
   @IsOptional()
-  marca!: string | null;
+  marca?: string | null;
 
   @ApiPropertyOptional({
     description: 'Material del producto',
@@ -60,7 +71,7 @@ export class CreateProductDTO {
     type: String,
   })
   @IsOptional()
-  material!: string | null;
+  material?: string | null;
 
   @ApiPropertyOptional({
     description: 'Peso del producto',
@@ -68,7 +79,7 @@ export class CreateProductDTO {
     type: String,
   })
   @IsOptional()
-  peso!: string | null;
+  peso?: string | null;
 
   @ApiPropertyOptional({
     description: 'Medida del producto',
@@ -76,5 +87,5 @@ export class CreateProductDTO {
     type: String,
   })
   @IsOptional()
-  medida!: string | null;
+  medida?: string | null;
 }

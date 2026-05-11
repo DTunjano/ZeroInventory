@@ -24,5 +24,6 @@ import { DeleteProveedorUseCase } from './application/use-cases/delete-proveedor
       useClass: ProveedorRepositoryImpl,
     },
   ],
+  exports: [ProveedorRepository],
 })
 export class ProveedorModule {}

@@ -45,7 +45,7 @@ export class ProductoImagenController {
   @CreateProductoImagenSwagger()
   async create(
     @Body() body: CreateProductoImagenDTO,
-    @UploadedFile() file: any,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<ProductoImagen> {
     const productoImagen = await this.createProductoImagenUseCase.ejecutar({
       productoId: body.productoId,
@@ -88,7 +88,7 @@ export class ProductoImagenController {
   @ApiConsumes('multipart/form-data')
   async update(
     @Param('id', ParseIntPipe) imagenProductoId: number,
-    @UploadedFile() file: any,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<ProductoImagen> {
     const productoImagen = await this.updateProductoImagenUseCase.ejecutar(
       imagenProductoId,

@@ -24,5 +24,6 @@ import { PedidoDetalleController } from './adapters/controllers/pedido-detalle.c
       useClass: PedidoDetalleRepositoryImpl,
     },
   ],
+  exports: [PedidoDetalleRepository],
 })
 export class PedidoDetalleModule {}

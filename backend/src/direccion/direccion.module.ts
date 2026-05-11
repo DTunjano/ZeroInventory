@@ -24,5 +24,6 @@ import { DeleteDireccionUseCase } from './application/use-cases/delete-direccion
       useClass: DireccionRepositoryImpl,
     },
   ],
+  exports: [DireccionRepository],
 })
 export class DireccionModule {}

@@ -97,9 +97,12 @@ export class ProductoRepositoryImpl implements ProductoRepository {
     });
   }
 
-  async existsBySku(sku: string): Promise<boolean> {
+  async existsBySku(sku: string, excludeProductoId?: number): Promise<boolean> {
     return this.repo.exists({
-      where: { sku },
+      where: {
+        sku,
+        ...(excludeProductoId ? { productoId: Not(excludeProductoId) } : {}),
+      },
     });
   }
 }

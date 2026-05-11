@@ -1,5 +1,6 @@
 export class Producto {
   readonly productoId: number = 0;
+  proveedorId: number | null = null;
   nombre: string = '';
   cantidad: number = 0;
   precio: number = 0;
@@ -15,6 +16,7 @@ export class Producto {
 
   constructor(
     productoId: number,
+    proveedorId: number | null,
     nombre: string,
     cantidad: number,
     precio: number,
@@ -29,6 +31,7 @@ export class Producto {
     updatedAt: Date,
   ) {
     this.productoId = productoId;
+    this.proveedorId = proveedorId;
     this.nombre = nombre;
     this.cantidad = cantidad;
     this.precio = precio;

@@ -24,5 +24,6 @@ import { DeletePedidoUseCase } from './application/use-cases/delete-pedido.use-c
       useClass: PedidoRepositoryImpl,
     },
   ],
+  exports: [PedidoRepository],
 })
 export class PedidoModule {}

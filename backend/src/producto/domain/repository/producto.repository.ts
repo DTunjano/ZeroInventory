@@ -17,5 +17,5 @@ export abstract class ProductoRepository {
     nombre: string,
     excludeProductoId?: number,
   ): Promise<boolean>;
-  abstract existsBySku(sku: string): Promise<boolean>;
+  abstract existsBySku(sku: string, excludeProductoId?: number): Promise<boolean>;
 }

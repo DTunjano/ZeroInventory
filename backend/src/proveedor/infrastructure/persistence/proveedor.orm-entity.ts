@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CompraEntityORM } from '../../../compra/infrastructure/persistence/compra.orm-entity';
+import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'proveedor' })
 export class ProveedorEntityORM {
@@ -17,4 +18,7 @@ export class ProveedorEntityORM {
 
   @OneToMany(() => CompraEntityORM, (compra) => compra.proveedor)
   compras!: CompraEntityORM[];
+
+  @OneToMany(() => ProductoEntityORM, (producto) => producto.proveedor)
+  productos!: ProductoEntityORM[];
 }

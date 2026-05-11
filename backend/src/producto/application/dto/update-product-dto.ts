@@ -1,8 +1,18 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsOptional, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
 
 export class UpdateProductDTO {
+  @ApiPropertyOptional({
+    description: 'ID del proveedor del producto',
+    example: 1,
+    type: Number,
+  })
+  @IsOptional()
+  @IsInt({ message: 'El proveedor debe ser un entero' })
+  @Min(1, { message: 'El proveedor debe ser válido' })
+  proveedorId?: number | null;
+
   @ApiPropertyOptional({
     description: 'Nombre del producto',
     example: 'Shaker',
@@ -11,7 +21,7 @@ export class UpdateProductDTO {
   @IsOptional()
   @IsNotEmpty({ message: 'El nombre del producto es obligatorio' })
   @Transform(({ value }: { value: string }) => value.trim())
-  nombre!: string;
+  nombre?: string;
 
   @ApiPropertyOptional({
     description: 'Cantidad disponible',
@@ -21,7 +31,7 @@ export class UpdateProductDTO {
   @IsOptional()
   @IsNotEmpty({ message: 'La cantidad disponible es obligatoria' })
   @Min(0, { message: 'La cantidad disponible no puede ser negativa' })
-  cantidad!: number;
+  cantidad?: number;
 
   @ApiPropertyOptional({
     description: 'Precio del producto',
@@ -31,7 +41,7 @@ export class UpdateProductDTO {
   @IsOptional()
   @IsNotEmpty({ message: 'El precio del producto es obligatorio' })
   @Min(0, { message: 'El precio del producto no puede ser negativo' })
-  precio!: number;
+  precio?: number;
 
   @ApiPropertyOptional({
     description: 'Descripción del producto',
@@ -39,7 +49,17 @@ export class UpdateProductDTO {
     type: String,
   })
   @IsOptional()
-  descripcion!: string | null;
+  descripcion?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Código SKU del producto',
+    example: 'PRO-000000001',
+    type: String,
+  })
+  @IsOptional()
+  @IsNotEmpty({ message: 'El SKU del producto no puede estar vacío' })
+  @Transform(({ value }: { value: string }) => value.trim())
+  sku?: string;
 
   @ApiPropertyOptional({
     description: 'Marca del producto',
@@ -47,7 +67,7 @@ export class UpdateProductDTO {
     type: String,
   })
   @IsOptional()
-  marca!: string | null;
+  marca?: string | null;
 
   @ApiPropertyOptional({
     description: 'Material del producto',
@@ -55,7 +75,7 @@ export class UpdateProductDTO {
     type: String,
   })
   @IsOptional()
-  material!: string | null;
+  material?: string | null;
 
   @ApiPropertyOptional({
     description: 'Peso del producto',
@@ -63,7 +83,7 @@ export class UpdateProductDTO {
     type: String,
   })
   @IsOptional()
-  peso!: string | null;
+  peso?: string | null;
 
   @ApiPropertyOptional({
     description: 'Medida del producto',
@@ -71,7 +91,7 @@ export class UpdateProductDTO {
     type: String,
   })
   @IsOptional()
-  medida!: string | null;
+  medida?: string | null;
 
   @ApiPropertyOptional({
     description: 'Indica si el producto está activo',
@@ -79,5 +99,5 @@ export class UpdateProductDTO {
     type: Boolean,
   })
   @IsOptional()
-  isActive!: boolean;
+  isActive?: boolean;
 }

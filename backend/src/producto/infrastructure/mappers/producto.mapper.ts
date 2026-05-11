@@ -5,6 +5,7 @@ export class ProductoMapper {
   static toDomain(entity: ProductoEntityORM): Producto {
     return new Producto(
       entity.productoId,
+      entity.proveedorId ?? null,
       entity.nombre,
       entity.cantidad,
       entity.precio,
@@ -23,6 +24,7 @@ export class ProductoMapper {
   static toPersistence(domain: Producto): ProductoEntityORM {
     const entity = new ProductoEntityORM();
     entity.productoId = domain.productoId;
+    entity.proveedorId = domain.proveedorId;
     entity.nombre = domain.nombre;
     entity.cantidad = domain.cantidad;
     entity.precio = domain.precio;

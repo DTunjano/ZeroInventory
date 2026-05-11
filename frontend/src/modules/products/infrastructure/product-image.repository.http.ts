@@ -21,6 +21,17 @@ export class ProductImageHttpRepository implements ProductImageRepository {
     return data
   }
 
+  async update(imagenProductoId: number, file: File): Promise<ProductImage> {
+    const form = new FormData()
+    form.append('imagen', file)
+
+    const { data } = await http.put<ProductImage>(
+      `/producto-imagenes/${imagenProductoId}`,
+      form,
+    )
+    return data
+  }
+
   async delete(imagenProductoId: number): Promise<void> {
     await http.delete(`/producto-imagenes/${imagenProductoId}`)
   }

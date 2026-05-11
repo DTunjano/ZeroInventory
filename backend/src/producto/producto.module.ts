@@ -9,9 +9,10 @@ import { GetAllProductosUseCase } from './application/use-cases/get-all-product.
 import { GetProductByIdUseCase } from './application/use-cases/get-product-by-id.use-case';
 import { UpdateProductUseCase } from './application/use-cases/update-product.use-case';
 import { DeleteProductUseCase } from './application/use-cases/delete-product.use-case';
+import { ProveedorModule } from '../proveedor/proveedor.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProductoEntityORM])],
+  imports: [TypeOrmModule.forFeature([ProductoEntityORM]), ProveedorModule],
   controllers: [ProductoController],
   providers: [
     CreateProductUseCase,
@@ -24,5 +25,6 @@ import { DeleteProductUseCase } from './application/use-cases/delete-product.use
       useClass: ProductoRepositoryImpl,
     },
   ],
+  exports: [ProductoRepository],
 })
 export class ProductoModule {}

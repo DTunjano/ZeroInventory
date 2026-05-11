@@ -6,12 +6,18 @@ import { AuthBootstrap } from '@/modules/auth/presentation/auth-bootstrap'
 import { RequireAuth } from '@/modules/auth/presentation/require-auth'
 import { useAuthStore } from '@/modules/auth/application/auth.store'
 import { AdminProductsPage } from '@/modules/products/presentation/admin-products-page'
-import { AdminHomePage } from '@/pages/admin/admin-home-page'
-import { DashboardPage } from '@/pages/dashboard-page'
+import { AdminDashboardPage } from '@/pages/admin/admin-dashboard-page'
+import { AdminUsersPage } from '@/pages/admin/admin-users-page'
+import { EmployeeDashboardPage } from '@/pages/employee/employee-dashboard-page'
+import { EmployeeProductsPage } from '@/pages/employee/employee-products-page'
+import { HomeRoute } from '@/pages/home-route'
 import { LoginPage } from '@/pages/login-page'
+import { MyCartPage } from '@/pages/me/my-cart-page'
+import { MyOrdersPage } from '@/pages/me/my-orders-page'
 import { NotFoundPage } from '@/pages/not-found-page'
 import { Button } from '@/shared/ui/button'
 import { Sonner } from '@/shared/ui/sonner'
+import { AppLayout } from '@/shared/layouts/app-layout'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,8 +70,6 @@ function AppShell() {
       <main className="mx-auto max-w-6xl px-4 py-8">
         <Outlet />
       </main>
-
-      <Sonner />
     </div>
   )
 }
@@ -76,16 +80,33 @@ export function App() {
       <BrowserRouter>
         <AuthBootstrap />
         <Routes>
-          <Route element={<AppShell />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route element={<RequireAuth roles={['admin']} />}>
-              <Route path="admin" element={<AdminHomePage />} />
+          <Route path="login" element={<LoginPage />} />
+
+          <Route element={<AppLayout />}>
+            <Route index element={<HomeRoute />} />
+
+            <Route element={<RequireAuth roles={['ADMIN']} />}>
+              <Route path="admin" element={<AdminDashboardPage />} />
               <Route path="admin/products" element={<AdminProductsPage />} />
+              <Route path="admin/users" element={<AdminUsersPage />} />
             </Route>
+
+            <Route element={<RequireAuth roles={['EMPLOYEE']} />}>
+              <Route path="employee" element={<EmployeeDashboardPage />} />
+              <Route path="employee/products" element={<EmployeeProductsPage />} />
+            </Route>
+
+            <Route element={<RequireAuth roles={['CUSTOMER']} />}>
+              <Route path="me/cart" element={<MyCartPage />} />
+              <Route path="me/orders" element={<MyOrdersPage />} />
+            </Route>
+
+            <Route path="shell" element={<AppShell />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
+
+        <Sonner />
       </BrowserRouter>
     </QueryClientProvider>
   )

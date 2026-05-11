@@ -24,5 +24,6 @@ import { PagoController } from './adapters/controllers/pago.controller';
       useClass: PagoRepositoryImpl,
     },
   ],
+  exports: [PagoRepository],
 })
 export class PagoModule {}
