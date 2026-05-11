@@ -1,14 +1,29 @@
-import { useCartStore } from './cart.store'
-import type { CartProductSnapshot } from '../domain/cart.models'
+import type {
+  CartProductSnapshot,
+  CheckoutCartInput,
+} from '../domain/cart.models'
+import { cartApi } from '../infrastructure/cart.api'
 
-export function addToCart(producto: CartProductSnapshot, quantity = 1): void {
-  useCartStore.getState().add(producto, quantity)
+export function getMyCart() {
+  return cartApi.getMyCart()
 }
 
-export function removeFromCart(productoId: number): void {
-  useCartStore.getState().remove(productoId)
+export function addToCart(producto: CartProductSnapshot, quantity = 1) {
+  return cartApi.addItem({ productoId: producto.productoId, cantidad: quantity })
 }
 
-export function clearCart(): void {
-  useCartStore.getState().clear()
+export function updateCartItemQuantity(carritoDetalleId: number, cantidad: number) {
+  return cartApi.updateItemQuantity(carritoDetalleId, { cantidad })
+}
+
+export function removeFromCart(carritoDetalleId: number) {
+  return cartApi.removeItem(carritoDetalleId)
+}
+
+export function clearCart() {
+  return cartApi.clearCart()
+}
+
+export function checkoutCart(input: CheckoutCartInput) {
+  return cartApi.checkout(input)
 }

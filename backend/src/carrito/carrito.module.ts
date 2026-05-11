@@ -19,6 +19,9 @@ import { PagoModule } from '../pago/pago.module';
 import { GetOpenCartByUsuarioUseCase } from './application/use-cases/get-open-cart-by-usuario.use-case';
 import { AddItemToCartUseCase } from './application/use-cases/add-item-to-cart.use-case';
 import { CheckoutCartUseCase } from './application/use-cases/checkout-cart.use-case';
+import { UpdateCartItemQuantityUseCase } from './application/use-cases/update-cart-item-quantity.use-case';
+import { RemoveProductFromCartUseCase } from './application/use-cases/remove-product-from-cart.use-case';
+import { ClearCartUseCase } from './application/use-cases/clear-cart.use-case';
 
 @Module({
   imports: [
@@ -41,6 +44,9 @@ import { CheckoutCartUseCase } from './application/use-cases/checkout-cart.use-c
     GetOpenCartByUsuarioUseCase,
     AddItemToCartUseCase,
     CheckoutCartUseCase,
+    UpdateCartItemQuantityUseCase,
+    RemoveProductFromCartUseCase,
+    ClearCartUseCase,
     {
       provide: CarritoRepository,
       useClass: CarritoRepositoryImpl,

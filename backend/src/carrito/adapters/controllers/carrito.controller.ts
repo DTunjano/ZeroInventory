@@ -34,12 +34,16 @@ import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 import { JwtAccessPayload } from '../../../auth/infrastructure/strategies/jwt.strategy';
 import { AddItemToCartDTO } from '../../application/dto/add-item-to-cart.dto';
 import { CheckoutCartDTO } from '../../application/dto/checkout-cart.dto';
+import { UpdateCartItemQuantityDTO } from '../../application/dto/update-cart-item-quantity.dto';
 import { AddItemToCartUseCase } from '../../application/use-cases/add-item-to-cart.use-case';
 import {
   GetOpenCartByUsuarioUseCase,
   OpenCartView,
 } from '../../application/use-cases/get-open-cart-by-usuario.use-case';
 import { CheckoutCartUseCase } from '../../application/use-cases/checkout-cart.use-case';
+import { UpdateCartItemQuantityUseCase } from '../../application/use-cases/update-cart-item-quantity.use-case';
+import { RemoveProductFromCartUseCase } from '../../application/use-cases/remove-product-from-cart.use-case';
+import { ClearCartUseCase } from '../../application/use-cases/clear-cart.use-case';
 
 @ApiTags('Carritos')
 @Controller('carritos')
@@ -53,6 +57,9 @@ export class CarritoController {
     private readonly getOpenCartByUsuarioUseCase: GetOpenCartByUsuarioUseCase,
     private readonly addItemToCartUseCase: AddItemToCartUseCase,
     private readonly checkoutCartUseCase: CheckoutCartUseCase,
+    private readonly updateCartItemQuantityUseCase: UpdateCartItemQuantityUseCase,
+    private readonly removeProductFromCartUseCase: RemoveProductFromCartUseCase,
+    private readonly clearCartUseCase: ClearCartUseCase,
   ) {}
 
   @Get('me')
@@ -88,6 +95,41 @@ export class CarritoController {
       direccionId: body.direccionId,
       metodoPago: body.metodoPago,
     });
+  }
+
+  @Put('me/items/:carritoDetalleId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.CUSTOMER)
+  async updateItemQuantity(
+    @Req() req: { user: JwtAccessPayload },
+    @Param('carritoDetalleId', ParseIntPipe) carritoDetalleId: number,
+    @Body() body: UpdateCartItemQuantityDTO,
+  ): Promise<OpenCartView> {
+    return this.updateCartItemQuantityUseCase.ejecutar({
+      usuarioId: req.user.sub,
+      carritoDetalleId,
+      cantidad: body.cantidad,
+    });
+  }
+
+  @Delete('me/items/:carritoDetalleId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.CUSTOMER)
+  async removeItem(
+    @Req() req: { user: JwtAccessPayload },
+    @Param('carritoDetalleId', ParseIntPipe) carritoDetalleId: number,
+  ): Promise<OpenCartView> {
+    return this.removeProductFromCartUseCase.ejecutar({
+      usuarioId: req.user.sub,
+      carritoDetalleId,
+    });
+  }
+
+  @Delete('me')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.CUSTOMER)
+  async clearCart(@Req() req: { user: JwtAccessPayload }): Promise<OpenCartView> {
+    return this.clearCartUseCase.ejecutar(req.user.sub);
   }
 
   @Post()

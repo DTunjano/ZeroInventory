@@ -3,6 +3,10 @@ import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
+import { ClienteModule } from '../cliente/cliente.module'
+import { RolModule } from '../rol/rol.module'
+import { UsuarioModule } from '../usuario/usuario.module'
+import { UsuarioRolModule } from '../usuario-rol/usuario-rol.module'
 import { UsuarioEntityORM } from '../usuario/infrastructure/persistence/usuario.orm-entity'
 import { UsuarioRolEntityORM } from '../usuario-rol/infrastructure/persistence/usuario-rol.orm-entity'
 
@@ -12,10 +16,15 @@ import { AuthUserRepository } from './domain/repository/auth-user.repository'
 import { AuthUserRepositoryImpl } from './infrastructure/persistence/auth-user.repository-impl'
 import { LoginUseCase } from './application/use-cases/login.use-case'
 import { RefreshUseCase } from './application/use-cases/refresh.use-case'
+import { RegisterUseCase } from './application/use-cases/register.use-case'
 
 @Module({
   imports: [
     PassportModule,
+    UsuarioModule,
+    ClienteModule,
+    UsuarioRolModule,
+    RolModule,
     JwtModule.registerAsync({
       useFactory: (configService: any) => ({
         secret: configService.get('JWT_ACCESS_SECRET'),
@@ -32,6 +41,7 @@ import { RefreshUseCase } from './application/use-cases/refresh.use-case'
     JwtStrategy,
     LoginUseCase,
     RefreshUseCase,
+    RegisterUseCase,
     {
       provide: AuthUserRepository,
       useClass: AuthUserRepositoryImpl,

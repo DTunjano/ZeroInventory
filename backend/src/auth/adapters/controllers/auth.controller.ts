@@ -13,6 +13,8 @@ import { LoginDTO } from '../../application/dto/login.dto'
 import { AuthResponseDTO } from '../../application/dto/auth-response.dto'
 import { LoginUseCase } from '../../application/use-cases/login.use-case'
 import { RefreshUseCase } from '../../application/use-cases/refresh.use-case'
+import { RegisterDTO } from '../../application/dto/register.dto'
+import { RegisterUseCase } from '../../application/use-cases/register.use-case'
 
 const REFRESH_COOKIE_NAME = 'refresh_token'
 
@@ -22,6 +24,7 @@ export class AuthController {
   constructor(
     private readonly loginUseCase: LoginUseCase,
     private readonly refreshUseCase: RefreshUseCase,
+    private readonly registerUseCase: RegisterUseCase,
   ) {}
 
   @Post('login')
@@ -31,6 +34,17 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponseDTO> {
     const { result, refreshToken } = await this.loginUseCase.ejecutar(body)
+    this.setRefreshCookie(res, refreshToken)
+    return result
+  }
+
+  @Post('register')
+  @ApiOkResponse({ type: AuthResponseDTO })
+  async register(
+    @Body() body: RegisterDTO,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthResponseDTO> {
+    const { result, refreshToken } = await this.registerUseCase.ejecutar(body)
     this.setRefreshCookie(res, refreshToken)
     return result
   }

@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { Bell, LayoutGrid, Package, ShoppingCart, Users } from 'lucide-react'
+import { Bell, Briefcase, LayoutGrid, Package, ShoppingCart, Users } from 'lucide-react'
 import type { ComponentType } from 'react'
 
 import { useAuthStore } from '@/modules/auth/application/auth.store'
@@ -28,6 +28,7 @@ const navByRole: Record<RoleKey, AppLayoutNavItem[]> = {
     { to: '/admin', label: 'Dashboard', icon: LayoutGrid },
     { to: '/admin/products', label: 'Productos', icon: Package },
     { to: '/admin/users', label: 'Usuarios', icon: Users },
+    { to: '/admin/employees', label: 'Empleados', icon: Briefcase },
   ],
   EMPLOYEE: [
     { to: '/employee', label: 'Dashboard', icon: LayoutGrid },

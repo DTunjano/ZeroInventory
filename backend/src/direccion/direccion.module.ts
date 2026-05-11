@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ClienteModule } from '../cliente/cliente.module';
 import { DireccionEntityORM } from './infrastructure/persistence/direccion.orm-entity';
 import { DireccionController } from './adapters/controllers/direccion.controller';
 import { DireccionRepositoryImpl } from './infrastructure/persistence/direccion.repository-impl';
@@ -9,16 +10,20 @@ import { GetAllDireccionesUseCase } from './application/use-cases/get-all-direcc
 import { GetDireccionByIdUseCase } from './application/use-cases/get-direccion-by-id.use-case';
 import { UpdateDireccionUseCase } from './application/use-cases/update-direccion.use-case';
 import { DeleteDireccionUseCase } from './application/use-cases/delete-direccion.use-case';
+import { CreateMyDireccionUseCase } from './application/use-cases/create-my-direccion.use-case';
+import { GetMyDireccionesUseCase } from './application/use-cases/get-my-direcciones.use-case';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DireccionEntityORM])],
+  imports: [TypeOrmModule.forFeature([DireccionEntityORM]), ClienteModule],
   controllers: [DireccionController],
   providers: [
     CreateDireccionUseCase,
+    CreateMyDireccionUseCase,
     UpdateDireccionUseCase,
     DeleteDireccionUseCase,
     GetAllDireccionesUseCase,
     GetDireccionByIdUseCase,
+    GetMyDireccionesUseCase,
     {
       provide: DireccionRepository,
       useClass: DireccionRepositoryImpl,

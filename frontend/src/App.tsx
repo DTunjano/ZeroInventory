@@ -8,12 +8,14 @@ import { useAuthStore } from '@/modules/auth/application/auth.store'
 import { AdminProductsPage } from '@/modules/products/presentation/admin-products-page'
 import { AdminDashboardPage } from '@/pages/admin/admin-dashboard-page'
 import { AdminUsersPage } from '@/pages/admin/admin-users-page'
+import { AdminEmployeesPage } from '@/modules/employee/presentation/admin-employees-page'
 import { EmployeeDashboardPage } from '@/pages/employee/employee-dashboard-page'
 import { EmployeeProductsPage } from '@/pages/employee/employee-products-page'
 import { HomeRoute } from '@/pages/home-route'
 import { LoginPage } from '@/pages/login-page'
 import { MyCartPage } from '@/pages/me/my-cart-page'
 import { MyOrdersPage } from '@/pages/me/my-orders-page'
+import { RegisterPage } from '@/pages/register-page'
 import { NotFoundPage } from '@/pages/not-found-page'
 import { Button } from '@/shared/ui/button'
 import { Sonner } from '@/shared/ui/sonner'
@@ -81,6 +83,7 @@ export function App() {
         <AuthBootstrap />
         <Routes>
           <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
 
           <Route element={<AppLayout />}>
             <Route index element={<HomeRoute />} />
@@ -89,6 +92,7 @@ export function App() {
               <Route path="admin" element={<AdminDashboardPage />} />
               <Route path="admin/products" element={<AdminProductsPage />} />
               <Route path="admin/users" element={<AdminUsersPage />} />
+              <Route path="admin/employees" element={<AdminEmployeesPage />} />
             </Route>
 
             <Route element={<RequireAuth roles={['EMPLOYEE']} />}>

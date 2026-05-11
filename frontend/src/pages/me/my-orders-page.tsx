@@ -6,17 +6,17 @@ export function MyOrdersPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Mis pedidos</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Próximo: listado de pedidos del cliente.
+          Aquí verás el historial y el estado de tus compras cuando el flujo de pedidos esté completo.
         </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Pedidos</CardTitle>
-          <CardDescription>Historial</CardDescription>
+          <CardDescription>Seguimiento de compras</CardDescription>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Vista placeholder para comenzar integración.
+          La vista está reservada para el historial de pedidos del cliente.
         </CardContent>
       </Card>
     </div>

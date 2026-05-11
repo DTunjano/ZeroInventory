@@ -58,13 +58,18 @@ function ProductCard({ product }: { product: Product }) {
         <Button
           className="w-full"
           disabled={isOutOfStock}
-          onClick={() => {
-            addToCart({
-              productoId: product.productoId,
-              nombre: product.nombre,
-              precio: product.precio,
-            })
-            toast.success('Producto agregado al carrito')
+          onClick={async () => {
+            try {
+              await addToCart({
+                productoId: product.productoId,
+                nombre: product.nombre,
+                precio: product.precio,
+                stockDisponible: product.cantidad,
+              })
+              toast.success('Producto agregado al carrito')
+            } catch (error) {
+              toast.error(getApiErrorMessage(error, 'No se pudo agregar el producto al carrito'))
+            }
           }}
         >
           {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}
@@ -88,7 +93,7 @@ export function StoreHomePage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold tracking-tight">Tienda</h1>
         <p className="text-sm text-muted-foreground">
-          Catálogo empresarial (cliente) — navegación y checkout.
+          Explora el catálogo, agrega productos al carrito y finaliza tu compra en la misma sesión.
         </p>
       </div>
 

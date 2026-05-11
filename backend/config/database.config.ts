@@ -19,6 +19,7 @@ import { UsuarioEntityORM } from '../src/usuario/infrastructure/persistence/usua
 import { ProductoEntityORM } from '../src/producto/infrastructure/persistence/producto.orm-entity';
 import { ProductoImagenEntityORM } from '../src/producto-imagen/infrastructure/persistence/producto-imagen.orm-entity';
 import { ClienteEntityORM } from '../src/cliente/infrastructure/persistence/cliente.orm-entity';
+import { EmpleadoEntityORM } from '../src/empleado/infrastructure/adapters/persistence/empleado.orm-entity';
 
 export default registerAs('database', (): TypeOrmModuleOptions => {
   const databaseUrl = process.env.DATABASE_URL;
@@ -43,6 +44,7 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     RolEntityORM,
     UsuarioRolEntityORM,
     UsuarioEntityORM,
+    EmpleadoEntityORM,
   ];
 
   // PRODUCCIÓN

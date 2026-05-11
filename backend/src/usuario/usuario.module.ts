@@ -24,5 +24,6 @@ import { DeleteUsuarioUseCase } from './application/use-cases/delete-usuario.use
       useClass: UsuarioRepositoryImpl,
     },
   ],
+  exports: [UsuarioRepository],
 })
 export class UsuarioModule {}

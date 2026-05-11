@@ -36,6 +36,10 @@ export class AddItemToCartUseCase {
       throw new NotFoundException('Producto no encontrado');
     }
 
+    if (params.cantidad > producto.cantidad) {
+      throw new BadRequestException('Stock insuficiente');
+    }
+
     let carrito = await this.carritoRepo.getOpenCartByUsuarioId(params.usuarioId);
     if (!carrito) {
       carrito = await this.carritoRepo.create(

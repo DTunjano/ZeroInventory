@@ -19,6 +19,7 @@ import { CarritoModule } from './carrito/carrito.module';
 import { CarritoDetalleModule } from './carrito-detalle/carrito-detalle.module';
 import { ProveedorModule } from './proveedor/proveedor.module';
 import { CompraModule } from './compra/compra.module';
+import { EmpleadoModule } from './empleado/empleado.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
@@ -45,6 +46,7 @@ import { AuthModule } from './auth/auth.module';
     UsuarioRolModule,
     CarritoModule,
     CarritoDetalleModule,
+    EmpleadoModule,
     ProveedorModule,
     CompraModule,
   ],
