@@ -6,19 +6,11 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ProductoEntityORM } from '../producto/infrastructure/persistence/producto.orm-entity';
-
-export enum TipoMovimientoEnum {
-  ENTRADA = 'ENTRADA',
-  SALIDA = 'SALIDA',
-  AJUSTE = 'AJUSTE',
-}
-
-export enum TipoReferenciaEnum {
-  COMPRA = 'COMPRA',
-  VENTA = 'VENTA',
-  AJUSTE = 'AJUSTE',
-}
+import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
+import {
+  TipoMovimientoEnum,
+  TipoReferenciaEnum,
+} from '../../domain/entity/kardex.entity';
 
 @Entity({ name: 'kardex' })
 export class KardexEntityORM {
@@ -27,6 +19,10 @@ export class KardexEntityORM {
 
   @Column({ name: 'producto_id', type: 'int' })
   productoId!: number;
+
+  @ManyToOne(() => ProductoEntityORM, (producto) => producto.kardexMovimientos)
+  @JoinColumn({ name: 'producto_id' })
+  producto?: ProductoEntityORM;
 
   @Column({ name: 'tipo_movimiento', type: 'enum', enum: TipoMovimientoEnum })
   tipoMovimiento!: TipoMovimientoEnum;
@@ -48,8 +44,4 @@ export class KardexEntityORM {
 
   @CreateDateColumn({ name: 'fecha_movimiento', type: 'timestamp' })
   fechaMovimiento!: Date;
-
-  @ManyToOne(() => ProductoEntityORM, (producto) => producto.kardexMovimientos)
-  @JoinColumn({ name: 'producto_id' })
-  producto!: ProductoEntityORM;
 }

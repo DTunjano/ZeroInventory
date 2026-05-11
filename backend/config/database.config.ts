@@ -8,7 +8,7 @@ import { CategoriaEntityORM } from '../src/categoria/infrastructure/persistence/
 import { CompraDetalleEntityORM } from '../src/compra-detalle/infrastructure/persistence/compra-detalle.orm-entity';
 import { CompraEntityORM } from '../src/compra/infrastructure/persistence/compra.orm-entity';
 import { DireccionEntityORM } from '../src/direccion/infrastructure/persistence/direccion.orm-entity';
-import { KardexEntityORM } from '../src/entities/kardex.orm-entity';
+import { KardexEntityORM } from '../src/kardex/infrastructure/persistence/kardex.orm-entity';
 import { PagoEntityORM } from '../src/pago/infrastructure/persistence/pago.orm-entity';
 import { PedidoDetalleEntityORM } from '../src/pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity';
 import { PedidoEntityORM } from '../src/pedido/infrastructure/persistence/pedido.orm-entity';

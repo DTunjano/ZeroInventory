@@ -21,6 +21,7 @@ import { ProveedorModule } from './proveedor/proveedor.module';
 import { CompraModule } from './compra/compra.module';
 import { CompraDetalleModule } from './compra-detalle/compra-detalle.module';
 import { AjusteInventarioModule } from './ajuste-inventario/ajuste-inventario.module';
+import { KardexModule } from './kardex/kardex.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { AjusteInventarioModule } from './ajuste-inventario/ajuste-inventario.mo
     CompraModule,
     CompraDetalleModule,
     AjusteInventarioModule,
+    KardexModule,
   ],
 })
 export class AppModule {}
