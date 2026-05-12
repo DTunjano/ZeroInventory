@@ -75,4 +75,9 @@ export const employeeService = {
     const { data } = await http.delete<Empleado>(`/empleados/${empleadoId}`)
     return data
   },
+
+  async toggleEmployeeStatus(empleadoId: number): Promise<Empleado> {
+    const { data } = await http.patch<Empleado>(`/empleados/${empleadoId}/estado`)
+    return data
+  },
 }

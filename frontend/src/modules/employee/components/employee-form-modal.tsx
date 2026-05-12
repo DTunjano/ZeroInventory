@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useEffect, useId } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -59,6 +59,10 @@ export interface EmployeeFormModalProps {
   employee: Empleado | null
 }
 
+type CreateFormValues = z.infer<typeof createSchema>
+type UpdateFormValues = z.infer<typeof updateSchema>
+type FormValues = CreateFormValues | UpdateFormValues
+
 export function EmployeeFormModal({
   open,
   onOpenChange,
@@ -67,10 +71,6 @@ export function EmployeeFormModal({
   const isEdit = !!employee
   const formId = useId()
   const qc = useQueryClient()
-
-  type CreateFormValues = z.infer<typeof createSchema>
-  type UpdateFormValues = z.infer<typeof updateSchema>
-  type FormValues = CreateFormValues | UpdateFormValues
 
   const schema = isEdit ? updateSchema : createSchema
 
@@ -83,14 +83,11 @@ export function EmployeeFormModal({
       confirmPassword: '',
       documento: '',
       telefono: '',
-    } as FormValues,
+    },
   })
 
-  const handleOpenChange = (v: boolean) => {
-    onOpenChange(v)
-    if (!v) {
-      form.reset()
-    } else if (isEdit && employee) {
+  useEffect(() => {
+    if (open && isEdit && employee) {
       form.reset({
         nombre: employee.nombre,
         email: employee.email,
@@ -98,8 +95,8 @@ export function EmployeeFormModal({
         confirmPassword: '',
         documento: employee.documento ?? '',
         telefono: employee.telefono ?? '',
-      } as FormValues)
-    } else {
+      })
+    } else if (open && !isEdit) {
       form.reset({
         nombre: '',
         email: '',
@@ -107,7 +104,14 @@ export function EmployeeFormModal({
         confirmPassword: '',
         documento: '',
         telefono: '',
-      } as FormValues)
+      })
+    }
+  }, [open, employee, isEdit, form])
+
+  const handleOpenChange = (v: boolean) => {
+    onOpenChange(v)
+    if (!v) {
+      form.reset()
     }
   }
 

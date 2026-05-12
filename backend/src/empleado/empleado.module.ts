@@ -8,10 +8,18 @@ import { CrearEmpleadoUseCase } from './application/use-case/crear-empleado.use-
 import { ListarEmpleadosUseCase } from './application/use-case/listar-empleados.use-case';
 import { ObtenerEmpleadoUseCase } from './application/use-case/obtener-empleado.use-case';
 import { ActualizarEmpleadoUseCase } from './application/use-case/actualizar-empleado.use-case';
-import { DesactivarEmpleadoUseCase } from './application/use-case/desactivar-empleado.use-case';
+import { ToggleEmpleadoUseCase } from './application/use-case/toggle-empleado.use-case';
+import { UsuarioModule } from '../usuario/usuario.module';
+import { RolModule } from '../rol/rol.module';
+import { UsuarioRolModule } from '../usuario-rol/usuario-rol.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([EmpleadoEntityORM])],
+  imports: [
+    TypeOrmModule.forFeature([EmpleadoEntityORM]),
+    UsuarioModule,
+    RolModule,
+    UsuarioRolModule,
+  ],
   controllers: [EmpleadoController],
   providers: [
     {
@@ -22,7 +30,7 @@ import { DesactivarEmpleadoUseCase } from './application/use-case/desactivar-emp
     ListarEmpleadosUseCase,
     ObtenerEmpleadoUseCase,
     ActualizarEmpleadoUseCase,
-    DesactivarEmpleadoUseCase,
+    ToggleEmpleadoUseCase,
   ],
   exports: [EmpleadoRepositoryPort],
 })

@@ -70,3 +70,19 @@ export function useDeactivateEmployee() {
       ),
   })
 }
+
+export function useToggleEmployeeStatus() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (empleadoId: number) =>
+      employeeService.toggleEmployeeStatus(empleadoId),
+    onSuccess: () => {
+      toast.success('Estado del empleado actualizado')
+      void qc.invalidateQueries({ queryKey: [EMPLOYEES_QUERY_KEY] })
+    },
+    onError: (err) =>
+      toast.error(
+        getApiErrorMessage(err, 'No se pudo cambiar el estado del empleado'),
+      ),
+  })
+}

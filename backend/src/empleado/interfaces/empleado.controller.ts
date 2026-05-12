@@ -1,11 +1,11 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   NotFoundException,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -19,7 +19,7 @@ import { CrearEmpleadoUseCase } from '../application/use-case/crear-empleado.use
 import { ListarEmpleadosUseCase } from '../application/use-case/listar-empleados.use-case';
 import { ObtenerEmpleadoUseCase } from '../application/use-case/obtener-empleado.use-case';
 import { ActualizarEmpleadoUseCase } from '../application/use-case/actualizar-empleado.use-case';
-import { DesactivarEmpleadoUseCase } from '../application/use-case/desactivar-empleado.use-case';
+import { ToggleEmpleadoUseCase } from '../application/use-case/toggle-empleado.use-case';
 import { JwtAuthGuard } from '../../auth/adapters/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/adapters/guards/roles.guard';
 import { Roles } from '../../auth/adapters/decorators/roles.decorator';
@@ -34,7 +34,7 @@ export class EmpleadoController {
     private readonly listarEmpleadosUseCase: ListarEmpleadosUseCase,
     private readonly obtenerEmpleadoUseCase: ObtenerEmpleadoUseCase,
     private readonly actualizarEmpleadoUseCase: ActualizarEmpleadoUseCase,
-    private readonly desactivarEmpleadoUseCase: DesactivarEmpleadoUseCase,
+    private readonly toggleEmpleadoUseCase: ToggleEmpleadoUseCase,
   ) {}
 
   @Post()
@@ -88,11 +88,11 @@ export class EmpleadoController {
     return this.actualizarEmpleadoUseCase.ejecutar(empleadoId, body);
   }
 
-  @Delete(':id')
+  @Patch(':id/estado')
   @Roles('ADMIN')
-  async desactivar(
+  async toggleEstado(
     @Param('id', ParseIntPipe) empleadoId: number,
   ): Promise<EmpleadoConRoles> {
-    return this.desactivarEmpleadoUseCase.ejecutar(empleadoId);
+    return this.toggleEmpleadoUseCase.ejecutar(empleadoId);
   }
 }

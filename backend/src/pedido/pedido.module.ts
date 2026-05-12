@@ -9,9 +9,11 @@ import { GetAllPedidosUseCase } from './application/use-cases/get-all-pedido.use
 import { GetPedidoByIdUseCase } from './application/use-cases/get-pedido-by-id.use-case';
 import { UpdatePedidoUseCase } from './application/use-cases/update-pedido.use-case';
 import { DeletePedidoUseCase } from './application/use-cases/delete-pedido.use-case';
+import { GetOrdersByClienteUseCase } from './application/use-cases/get-orders-by-cliente.use-case';
+import { ClienteModule } from '../cliente/cliente.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PedidoEntityORM])],
+  imports: [TypeOrmModule.forFeature([PedidoEntityORM]), ClienteModule],
   controllers: [PedidoController],
   providers: [
     CreatePedidoUseCase,
@@ -19,6 +21,7 @@ import { DeletePedidoUseCase } from './application/use-cases/delete-pedido.use-c
     DeletePedidoUseCase,
     GetAllPedidosUseCase,
     GetPedidoByIdUseCase,
+    GetOrdersByClienteUseCase,
     {
       provide: PedidoRepository,
       useClass: PedidoRepositoryImpl,

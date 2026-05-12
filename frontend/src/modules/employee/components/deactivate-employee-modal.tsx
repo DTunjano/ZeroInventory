@@ -16,20 +16,26 @@ export function DeactivateEmployeeModal({
   onConfirm,
   isConfirming,
 }: DeactivateEmployeeModalProps) {
+  const isDeactivate = employee?.estado === 'ACTIVO'
+  const title = isDeactivate ? 'Desactivar empleado' : 'Activar empleado'
+  const description = employee
+    ? isDeactivate
+      ? `¿Estás seguro de que deseas desactivar a "${employee.nombre}"? Esta acción no elimina al empleado de la base de datos, solo cambia su estado a INACTIVO.`
+      : `¿Estás seguro de que deseas activar a "${employee.nombre}"? Esto cambiará su estado a ACTIVO.`
+    : '¿Estás seguro?'
+  const confirmText = isDeactivate ? 'Desactivar' : 'Activar'
+  const confirmVariant = isDeactivate ? 'destructive' : 'default'
+
   return (
     <ConfirmModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Desactivar empleado"
-      description={
-        employee
-          ? `¿Estás seguro de que deseas desactivar a "${employee.nombre}"? Esta acción no elimina al empleado de la base de datos, solo cambia su estado a INACTIVO.`
-          : '¿Estás seguro de que deseas desactivar este empleado?'
-      }
-      confirmText="Desactivar"
+      title={title}
+      description={description}
+      confirmText={confirmText}
       onConfirm={onConfirm}
       isConfirming={isConfirming}
-      confirmVariant="destructive"
+      confirmVariant={confirmVariant}
     />
   )
 }

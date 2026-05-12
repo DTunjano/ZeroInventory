@@ -21,6 +21,7 @@ import { UpdatePagoUseCase } from '../../application/use-cases/update-pago.use-c
 import { DeletePagoUseCase } from '../../application/use-cases/delete-pago.use-case';
 import { UpdatePagoDTO } from '../../application/dto/update-pago-dto';
 import { CreatePagoSwagger } from '../documentation/create-pago.swagger';
+import { ConfirmPagoUseCase } from '../../application/use-cases/confirm-pago.use-case';
 import { GetAllPagoSwagger } from '../documentation/get-all-pago.swagger';
 import { UpdatePagoSwagger } from '../documentation/update-pago.swagger';
 import { DeletePagoSwagger } from '../documentation/delete-pago.swagger';
@@ -35,6 +36,7 @@ export class PagoController {
     private readonly getAllPagoUseCase: GetAllPagoUseCase,
     private readonly updatePagoUseCase: UpdatePagoUseCase,
     private readonly deletePagoUseCase: DeletePagoUseCase,
+    private readonly confirmPagoUseCase: ConfirmPagoUseCase,
   ) {}
 
   @Post()
@@ -87,6 +89,12 @@ export class PagoController {
     if (!deleted) {
       throw new NotFoundException('Pago no encontrado');
     }
+    return { success: true };
+  }
+
+  @Post(':id/confirm')
+  async confirm(@Param('id', ParseIntPipe) pagoId: number): Promise<{ success: boolean }> {
+    await this.confirmPagoUseCase.ejecutar(pagoId);
     return { success: true };
   }
 }

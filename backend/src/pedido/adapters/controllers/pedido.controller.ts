@@ -9,6 +9,8 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreatePedidoUseCase } from '../../application/use-cases/create-pedido.use-case';
@@ -24,8 +26,13 @@ import { CreatePedidoSwagger } from '../documentation/create-pedido.swagger';
 import { GetAllPedidoSwagger } from '../documentation/get-all-pedido.swagger';
 import { UpdatePedidoSwagger } from '../documentation/update-pedido.swagger';
 import { DeletePedidoSwagger } from '../documentation/delete-pedido.swagger';
-import { GetPedidoByIdSwagger } from '../documentation/get-pedido-by-id.swagger';
-
+import { GetPedidoByIdSwagger } from '../documentation/get-pedido-by-id.swagger';import { GetOrdersByClienteUseCase } from '../../application/use-cases/get-orders-by-cliente.use-case';
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
+import { JwtAccessPayload } from '../../../auth/infrastructure/strategies/jwt.strategy';
+import { ClienteRepository } from '../../../cliente/domain/repository/cliente.repository';
 @ApiTags('Pedidos')
 @Controller('pedidos')
 export class PedidoController {
@@ -35,7 +42,20 @@ export class PedidoController {
     private readonly getAllPedidosUseCase: GetAllPedidosUseCase,
     private readonly updatePedidoUseCase: UpdatePedidoUseCase,
     private readonly deletePedidoUseCase: DeletePedidoUseCase,
+    private readonly getOrdersByClienteUseCase: GetOrdersByClienteUseCase,
+    private readonly clienteRepo: ClienteRepository,
   ) {}
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.CUSTOMER)
+  async getMyOrders(@Req() req: { user: JwtAccessPayload }): Promise<Pedido[]> {
+    const cliente = await this.clienteRepo.getByUsuarioId(req.user.sub);
+    if (!cliente) {
+      return [];
+    }
+    return this.getOrdersByClienteUseCase.ejecutar(cliente.clienteId);
+  }
 
   @Post()
   @CreatePedidoSwagger()

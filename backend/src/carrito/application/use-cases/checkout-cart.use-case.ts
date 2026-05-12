@@ -20,6 +20,13 @@ import {
   MetodoPagoEnum,
   Pago,
 } from '../../../pago/domain/entity/pago.entity';
+import { DataSource } from 'typeorm';
+import { PedidoEntityORM } from '../../../pedido/infrastructure/persistence/pedido.orm-entity';
+import { PedidoDetalleEntityORM } from '../../../pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity';
+import { PagoEntityORM } from '../../../pago/infrastructure/persistence/pago.orm-entity';
+import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
+import { CarritoDetalleEntityORM } from '../../../carrito-detalle/infrastructure/persistence/carrito-detalle.orm-entity';
+import { CarritoEntityORM } from '../../../carrito/infrastructure/persistence/carrito.orm-entity';
 
 function toNumber(value: unknown): number {
   if (typeof value === 'number') return value;
@@ -38,6 +45,7 @@ export class CheckoutCartUseCase {
     private readonly pedidoRepo: PedidoRepository,
     private readonly pedidoDetalleRepo: PedidoDetalleRepository,
     private readonly pagoRepo: PagoRepository,
+    private readonly dataSource: DataSource,
   ) {}
 
   async ejecutar(params: {
@@ -102,55 +110,70 @@ export class CheckoutCartUseCase {
       });
     }
 
-    const pedido = await this.pedidoRepo.create(
-      new Pedido(
-        0,
-        cliente.clienteId,
-        params.direccionId,
-        EstadoPedidoEnum.CONFIRMADO,
+    // Execute DB writes in a single transaction to ensure atomicity
+    const result = await this.dataSource.transaction(async (manager) => {
+      // create pedido
+      const pedidoRepo = manager.getRepository(PedidoEntityORM);
+      const pedidoEntity = pedidoRepo.create({
+        clienteId: cliente.clienteId,
+        direccionId: params.direccionId,
+        estado: EstadoPedidoEnum.CONFIRMADO,
         total,
-        new Date(),
-      ),
-    );
+      } as Partial<PedidoEntityORM>);
+      const savedPedido = await pedidoRepo.save(pedidoEntity);
 
-    for (const l of lineas) {
-      await this.pedidoDetalleRepo.create(
-        new PedidoDetalle(
-          0,
-          pedido.pedidoId,
-          l.productoId,
-          l.cantidad,
-          l.precioUnitario,
-          l.subtotal,
-        ),
-      );
+      // create pedido_detalle lines and decrement stock
+      const pedidoDetalleRepo = manager.getRepository(PedidoDetalleEntityORM);
+      const productoRepo = manager.getRepository(ProductoEntityORM);
 
-      const producto = await this.productoRepo.getById(l.productoId);
-      if (!producto) {
-        throw new NotFoundException('Producto no encontrado al descontar stock');
+      for (const l of lineas) {
+        const detalleEntity = pedidoDetalleRepo.create({
+          pedidoId: savedPedido.pedidoId,
+          productoId: l.productoId,
+          cantidad: l.cantidad,
+          precioUnitario: l.precioUnitario,
+          subtotal: l.subtotal,
+        } as Partial<PedidoDetalleEntityORM>);
+        await pedidoDetalleRepo.save(detalleEntity);
+
+        const prod = await productoRepo.findOne({ where: { productoId: l.productoId } });
+        if (!prod) {
+          throw new NotFoundException('Producto no encontrado al descontar stock');
+        }
+        prod.cantidad = prod.cantidad - l.cantidad;
+        if (prod.cantidad < 0) {
+          throw new BadRequestException('Stock quedó negativo');
+        }
+        await productoRepo.save(prod);
       }
-      producto.cantidad = producto.cantidad - l.cantidad;
-      if (producto.cantidad < 0) {
-        throw new BadRequestException('Stock quedó negativo');
+
+      // create pago (PENDIENTE)
+      const pagoRepo = manager.getRepository(PagoEntityORM);
+      const pagoEntity = pagoRepo.create({
+        pedidoId: savedPedido.pedidoId,
+        metodoPago: params.metodoPago,
+        monto: total,
+        estado: EstadoPagoEnum.PENDIENTE,
+      } as Partial<PagoEntityORM>);
+      await pagoRepo.save(pagoEntity);
+
+      // delete carrito_detalle items
+      const carritoDetalleRepo = manager.getRepository(CarritoDetalleEntityORM);
+      for (const d of detalles) {
+        await carritoDetalleRepo.delete({ carritoDetalleId: d.carritoDetalleId });
       }
-      await this.productoRepo.update(producto);
-    }
 
-    await this.pagoRepo.create(
-      new Pago(
-        0,
-        pedido.pedidoId,
-        params.metodoPago,
-        total,
-        EstadoPagoEnum.PENDIENTE,
-        new Date(),
-      ),
-    );
+      // update carrito timestamp (keep it open)
+      const carritoRepo = manager.getRepository(CarritoEntityORM);
+      const carritoEntity = await carritoRepo.findOne({ where: { carritoId: carrito.carritoId } });
+      if (carritoEntity) {
+        carritoEntity.updatedAt = new Date();
+        await carritoRepo.save(carritoEntity);
+      }
 
-    carrito.estado = EstadoCarritoEnum.CERRADO;
-    carrito.updatedAt = new Date();
-    await this.carritoRepo.update(carrito);
+      return { pedidoId: savedPedido.pedidoId, total };
+    });
 
-    return { pedidoId: pedido.pedidoId, total };
+    return result;
   }
 }
