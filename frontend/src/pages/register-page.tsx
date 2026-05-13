@@ -70,9 +70,9 @@ export function RegisterPage() {
   })
 
   return (
-    <div className="min-h-dvh bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.18),_transparent_25%),linear-gradient(135deg,_#09090b_0%,_#1b140f_100%)] px-4 py-8 text-white sm:px-6 lg:px-8">
+    <div className="min-h-dvh bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_25%),linear-gradient(135deg,_#09090b_0%,_#1b140f_100%)] px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto grid min-h-[calc(100dvh-4rem)] max-w-6xl items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-        <Card className="order-2 border-white/10 bg-black/60 text-white shadow-2xl shadow-orange-950/20 backdrop-blur-xl lg:order-1">
+        <Card className="order-2 border-white/10 bg-black/60 text-white shadow-2xl shadow-blue-950/20 backdrop-blur-xl lg:order-1">
           <CardHeader className="space-y-2 border-b border-white/10 bg-white/5">
             <CardTitle className="text-2xl">Crear cuenta</CardTitle>
             <CardDescription className="text-white/65">
@@ -91,12 +91,12 @@ export function RegisterPage() {
                     id="username"
                     autoComplete="email"
                     placeholder="tu@correo.com"
-                    className="border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 focus-visible:ring-orange-500"
+                    className="border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 focus-visible:ring-blue-500"
                     {...register('username')}
                   />
                 </div>
                 {errors.username?.message ? (
-                  <p className="text-xs text-orange-300">{errors.username.message}</p>
+                  <p className="text-xs text-blue-300">{errors.username.message}</p>
                 ) : null}
               </div>
 
@@ -111,7 +111,7 @@ export function RegisterPage() {
                       id="primerNombre"
                       autoComplete="given-name"
                       placeholder="Juan"
-                      className="border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 focus-visible:ring-orange-500"
+                      className="border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 focus-visible:ring-blue-500"
                       {...register('primerNombre')}
                     />
                   </div>
@@ -126,7 +126,7 @@ export function RegisterPage() {
                       id="primerApellido"
                       autoComplete="family-name"
                       placeholder="Pérez"
-                      className="border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 focus-visible:ring-orange-500"
+                      className="border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 focus-visible:ring-blue-500"
                       {...register('primerApellido')}
                     />
                   </div>
@@ -142,12 +142,12 @@ export function RegisterPage() {
                   <Input
                     id="documento"
                     placeholder="1234567890"
-                    className="border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 focus-visible:ring-orange-500"
+                    className="border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 focus-visible:ring-blue-500"
                     {...register('documento')}
                   />
                 </div>
                 {errors.documento?.message ? (
-                  <p className="text-xs text-orange-300">{errors.documento.message}</p>
+                  <p className="text-xs text-blue-300">{errors.documento.message}</p>
                 ) : null}
               </div>
 
@@ -161,7 +161,7 @@ export function RegisterPage() {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
-                    className="border-white/10 bg-white/5 pl-10 pr-24 text-white placeholder:text-white/30 focus-visible:ring-orange-500"
+                    className="border-white/10 bg-white/5 pl-10 pr-24 text-white placeholder:text-white/30 focus-visible:ring-blue-500"
                     {...register('password')}
                   />
                   <button
@@ -173,7 +173,7 @@ export function RegisterPage() {
                   </button>
                 </div>
                 {errors.password?.message ? (
-                  <p className="text-xs text-orange-300">{errors.password.message}</p>
+                  <p className="text-xs text-blue-300">{errors.password.message}</p>
                 ) : null}
               </div>
 
@@ -185,18 +185,18 @@ export function RegisterPage() {
                   id="confirmPassword"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
-                  className="border-white/10 bg-white/5 text-white placeholder:text-white/30 focus-visible:ring-orange-500"
+                  className="border-white/10 bg-white/5 text-white placeholder:text-white/30 focus-visible:ring-blue-500"
                   {...register('confirmPassword')}
                 />
                 {errors.confirmPassword?.message ? (
-                  <p className="text-xs text-orange-300">{errors.confirmPassword.message}</p>
+                  <p className="text-xs text-blue-300">{errors.confirmPassword.message}</p>
                 ) : null}
               </div>
 
               <Button
                 type="submit"
                 disabled={status === 'loading'}
-                className="bg-orange-500 text-black hover:bg-orange-400"
+                className="bg-blue-500 text-black hover:bg-blue-400"
               >
                 {status === 'loading' ? 'Creando cuenta…' : 'Crear cuenta'}
               </Button>
@@ -204,7 +204,7 @@ export function RegisterPage() {
 
             <p className="text-sm text-white/65">
               ¿Ya tienes cuenta?{' '}
-              <Link to="/login" className="font-medium text-orange-300 hover:text-orange-200">
+              <Link to="/login" className="font-medium text-blue-300 hover:text-blue-200">
                 Inicia sesión
               </Link>
             </p>
@@ -212,7 +212,7 @@ export function RegisterPage() {
         </Card>
 
         <section className="order-1 space-y-6 lg:order-2 lg:pl-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-orange-200">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-blue-200">
             <Sparkles className="h-4 w-4" />
             Cliente nuevo
           </div>
@@ -226,11 +226,11 @@ export function RegisterPage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-              <div className="text-sm text-orange-200">Rol CUSTOMER</div>
+              <div className="text-sm text-blue-200">Rol CUSTOMER</div>
               <p className="mt-2 text-sm text-white/70">El registro queda preparado como cliente desde el inicio.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-              <div className="text-sm text-orange-200">Direcciones asociadas</div>
+              <div className="text-sm text-blue-200">Direcciones asociadas</div>
               <p className="mt-2 text-sm text-white/70">Tus direcciones se guardan sobre el cliente y aparecen en checkout.</p>
             </div>
           </div>

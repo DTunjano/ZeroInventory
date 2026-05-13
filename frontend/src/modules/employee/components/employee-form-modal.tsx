@@ -192,7 +192,7 @@ export function EmployeeFormModal({
             type="submit"
             form={formId}
             disabled={isSubmitting}
-            className="bg-orange-500 hover:bg-orange-600"
+            className="bg-blue-500 hover:bg-blue-600"
           >
             {isSubmitting ? 'Guardando…' : 'Guardar'}
           </Button>

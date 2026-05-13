@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Check, ChevronDown, Image as ImageIcon, Package2, Search, Tags } from 'lucide-react'
 import { toast } from 'sonner'
 
 import {
@@ -466,18 +467,21 @@ export function AdminProductsPage() {
             </div>
 
             <div className="relative grid gap-2" ref={categoryPickerRef}>
-              <Label>Categorías</Label>
+              <Label className="flex items-center gap-2">
+                <Tags className="h-4 w-4 text-blue-400" />
+                Categorías
+              </Label>
               <button
                 type="button"
-                className="flex min-h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-left text-sm hover:bg-accent"
+                className="flex min-h-10 w-full items-center justify-between rounded-md border border-white/10 bg-white/5 px-3 py-2 text-left text-sm text-white transition-colors hover:border-blue-400 hover:bg-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onClick={() => setCategoryPickerOpen((v) => !v)}
               >
-                <span className={selectedCategoryNames.length ? 'text-foreground' : 'text-muted-foreground'}>
+                <span className={selectedCategoryNames.length ? 'text-white' : 'text-white/45'}>
                   {selectedCategoryNames.length
                     ? `${selectedCategoryNames.length} seleccionada(s)`
                     : 'Selecciona categorías…'}
                 </span>
-                <span className="text-muted-foreground">▾</span>
+                <ChevronDown className="h-4 w-4 text-blue-300" />
               </button>
 
               <div className="flex flex-wrap gap-2">
@@ -501,13 +505,16 @@ export function AdminProductsPage() {
               </div>
 
               {categoryPickerOpen ? (
-                <div className="absolute left-0 top-[calc(100%+0.5rem)] z-[60] w-full rounded-md border bg-white p-2 shadow-lg">
-                  <Input
-                    placeholder="Buscar categoría…"
-                    value={categorySearch}
-                    onChange={(e) => setCategorySearch(e.target.value)}
-                    className="h-9"
-                  />
+                <div className="absolute left-0 top-[calc(100%+0.5rem)] z-[60] w-full rounded-md border border-white/10 bg-gray-950/95 p-2 text-white shadow-2xl shadow-black/50 backdrop-blur-xl">
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                    <Input
+                      placeholder="Buscar categoría…"
+                      value={categorySearch}
+                      onChange={(e) => setCategorySearch(e.target.value)}
+                      className="h-9 border-white/10 bg-white/5 pl-9 text-white placeholder:text-white/30"
+                    />
+                  </div>
                   <div className="mt-2 max-h-56 overflow-auto">
                     {filteredCategories.length ? (
                       filteredCategories.map((c) => {
@@ -518,8 +525,8 @@ export function AdminProductsPage() {
                             key={c.categoriaId}
                             type="button"
                             className={cn(
-                              'flex w-full items-center justify-between rounded-md px-2 py-2 text-left text-sm hover:bg-accent',
-                              selected ? 'bg-primary/10' : '',
+                              'flex w-full items-center justify-between rounded-md px-2 py-2 text-left text-sm text-white transition-colors hover:bg-blue-500/15',
+                              selected ? 'bg-blue-500/20' : '',
                             )}
                             onClick={() => {
                               if (selected) removeCategoria(id)
@@ -527,14 +534,16 @@ export function AdminProductsPage() {
                             }}
                           >
                             <span>{c.nombre}</span>
-                            <span className={selected ? 'text-primary' : 'text-muted-foreground'}>
-                              {selected ? '✓' : ''}
-                            </span>
+                            {selected ? (
+                              <Check className="h-4 w-4 text-blue-300" />
+                            ) : (
+                              <span className="h-4 w-4" />
+                            )}
                           </button>
                         )
                       })
                     ) : (
-                      <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                      <div className="px-2 py-6 text-center text-sm text-white/60">
                         Sin resultados
                       </div>
                     )}
@@ -555,7 +564,10 @@ export function AdminProductsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="sku">SKU</Label>
+              <Label htmlFor="sku" className="flex items-center gap-2">
+                <Package2 className="h-4 w-4 text-blue-400" />
+                SKU
+              </Label>
               <Input id="sku" {...form.register('sku')} />
               {form.formState.errors.sku?.message ? (
                 <p className="text-xs text-destructive">{form.formState.errors.sku.message}</p>
@@ -563,7 +575,10 @@ export function AdminProductsPage() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="imagen">Imagen</Label>
+              <Label htmlFor="imagen" className="flex items-center gap-2">
+                <ImageIcon className="h-4 w-4 text-blue-400" />
+                Imagen
+              </Label>
               <Input
                 id="imagen"
                 type="file"

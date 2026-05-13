@@ -59,9 +59,9 @@ export function AppLayout(props: { title?: string }) {
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <div className="grid min-h-dvh grid-cols-[16rem_1fr]">
-        <aside className="hidden border-r bg-card md:block">
-          <div className="flex h-14 items-center justify-between border-b px-4">
-            <Link to="/" className="font-semibold tracking-tight">
+        <aside className="hidden border-r border-white/10 bg-white/5 md:block">
+          <div className="flex h-14 items-center justify-between border-b border-white/10 px-4">
+            <Link to="/" className="font-semibold tracking-tight text-white">
               Zero Inventory
             </Link>
           </div>
@@ -76,8 +76,8 @@ export function AppLayout(props: { title?: string }) {
                   cn(
                     'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
                     isActive
-                      ? 'bg-primary/10 text-foreground'
-                      : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground',
+                      ? 'bg-blue-500/20 text-blue-300'
+                      : 'text-white/60 hover:bg-blue-500/10 hover:text-white',
                   )
                 }
               >
@@ -87,16 +87,16 @@ export function AppLayout(props: { title?: string }) {
             ))}
           </nav>
 
-          <div className="mt-auto border-t p-3">
-            <div className="text-xs text-muted-foreground">Sesión</div>
-            <div className="mt-1 truncate text-sm font-medium">
+          <div className="mt-auto border-t border-white/10 p-3">
+            <div className="text-xs text-white/50">Sesión</div>
+            <div className="mt-1 truncate text-sm font-medium text-white">
               {status === 'authenticated' ? user?.username : '—'}
             </div>
           </div>
         </aside>
 
         <div className="flex min-w-0 flex-col">
-          <header className="flex h-14 items-center gap-3 border-b bg-background px-4">
+          <header className="flex h-14 items-center gap-3 border-b border-white/10 bg-white/5 px-4 backdrop-blur-sm">
             <div className="min-w-0 flex-1">
               <Input
                 placeholder="Buscar…"
@@ -105,7 +105,7 @@ export function AppLayout(props: { title?: string }) {
               />
             </div>
 
-            <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Notificaciones">
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-white/70 hover:text-white" aria-label="Notificaciones">
               <Bell className="h-4 w-4" />
             </Button>
 
@@ -139,7 +139,7 @@ export function AppLayout(props: { title?: string }) {
           <main className="min-w-0 flex-1 px-4 py-6">
             {title ? (
               <div className="mb-6 flex items-center justify-between gap-4">
-                <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
+                <h1 className="text-xl font-semibold tracking-tight text-white">{title}</h1>
               </div>
             ) : null}
             <Outlet />

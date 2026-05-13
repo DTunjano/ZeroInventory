@@ -49,7 +49,7 @@ export function LoginPage() {
     <div className="min-h-dvh bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.22),_transparent_30%),linear-gradient(135deg,_#09090b_0%,_#16111a_100%)] px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto grid min-h-[calc(100dvh-4rem)] max-w-6xl items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-orange-200">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-blue-200">
             <Sparkles className="h-4 w-4" />
             Zero Inventory
           </div>
@@ -63,17 +63,17 @@ export function LoginPage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-              <div className="text-sm text-orange-200">Carrito conectado</div>
+              <div className="text-sm text-blue-200">Carrito conectado</div>
               <p className="mt-2 text-sm text-white/70">Tus productos, cantidades y checkout siempre sincronizados.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-              <div className="text-sm text-orange-200">Direcciones reales</div>
+              <div className="text-sm text-blue-200">Direcciones reales</div>
               <p className="mt-2 text-sm text-white/70">Usa tus direcciones asociadas al cliente para pagar sin fricción.</p>
             </div>
           </div>
         </section>
 
-        <Card className="border-white/10 bg-black/60 text-white shadow-2xl shadow-orange-950/20 backdrop-blur-xl">
+        <Card className="border-white/10 bg-black/60 text-white shadow-2xl shadow-blue-950/20 backdrop-blur-xl">
           <CardHeader className="space-y-2 border-b border-white/10 bg-white/5">
             <CardTitle className="text-2xl">Iniciar sesión</CardTitle>
             <CardDescription className="text-white/65">
@@ -92,12 +92,12 @@ export function LoginPage() {
                     id="username"
                     autoComplete="username"
                     placeholder="tu@correo.com o tu usuario"
-                    className="border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 focus-visible:ring-orange-500"
+                    className="border-white/10 bg-white/5 pl-10 text-white placeholder:text-white/30 focus-visible:ring-blue-500"
                     {...register('username')}
                   />
                 </div>
                 {errors.username?.message ? (
-                  <p className="text-xs text-orange-300">{errors.username.message}</p>
+                  <p className="text-xs text-blue-300">{errors.username.message}</p>
                 ) : null}
               </div>
 
@@ -111,7 +111,7 @@ export function LoginPage() {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
-                    className="border-white/10 bg-white/5 pl-10 pr-24 text-white placeholder:text-white/30 focus-visible:ring-orange-500"
+                    className="border-white/10 bg-white/5 pl-10 pr-24 text-white placeholder:text-white/30 focus-visible:ring-blue-500"
                     {...register('password')}
                   />
                   <button
@@ -123,13 +123,12 @@ export function LoginPage() {
                   </button>
                 </div>
                 {errors.password?.message ? (
-                  <p className="text-xs text-orange-300">{errors.password.message}</p>
+                  <p className="text-xs text-blue-300">{errors.password.message}</p>
                 ) : null}
               </div>
 
               <Button
                 type="submit"
-                className="bg-orange-500 text-white hover:bg-orange-600 focus-visible:ring-orange-500"
                 disabled={status === 'loading'}
               >
                 {status === 'loading' ? 'Ingresando…' : 'Ingresar'}
@@ -138,7 +137,7 @@ export function LoginPage() {
 
             <p className="text-sm text-white/65">
               ¿No tienes cuenta?{' '}
-              <Link to="/register" className="font-medium text-orange-300 hover:text-orange-200">
+              <Link to="/register" className="font-medium text-blue-300 hover:text-blue-200">
                 Regístrate
               </Link>
             </p>

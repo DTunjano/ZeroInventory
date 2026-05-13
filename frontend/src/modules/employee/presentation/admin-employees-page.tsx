@@ -84,7 +84,7 @@ export function AdminEmployeesPage() {
             setEditingEmployee(null)
             setCreateModalOpen(true)
           }}
-          className="gap-1 bg-orange-500 hover:bg-orange-600"
+          className="gap-1 bg-blue-500 hover:bg-blue-600"
         >
           <UserPlus className="h-4 w-4" />
           Nuevo empleado
@@ -111,7 +111,7 @@ export function AdminEmployeesPage() {
               onClick={() => setStatusFilter(value)}
               className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
                 statusFilter === value
-                  ? 'bg-orange-500 text-white'
+                  ? 'bg-blue-500 text-white'
                   : 'text-muted-foreground hover:bg-muted-foreground/10'
               }`}
             >

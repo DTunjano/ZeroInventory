@@ -2,39 +2,8 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 8%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 8%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 8%;
-
-    --primary: 24 95% 50%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-
-    --accent: 24 100% 96%;
-    --accent-foreground: 0 0% 10%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 0 0% 90%;
-    --input: 0 0% 88%;
-    --ring: 24 95% 50%;
-
-    --radius: 0.75rem;
-  }
-
-  .dark {
-    --background: 0 0% 4%;
+    /* Paleta oscura global (diseño login) */
+    --background: 0 0% 3%;
     --foreground: 0 0% 98%;
 
     --card: 0 0% 6%;
@@ -43,30 +12,43 @@
     --popover: 0 0% 6%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 24 95% 55%;
-    --primary-foreground: 0 0% 5%;
+    /* Azul primario */
+    --primary: 217 99% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 10%;
+    /* Secundario oscuro (casi negro) */
+    --secondary: 0 0% 8%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 70%;
+    /* Muted más oscuro */
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 0 0% 12%;
-    --accent-foreground: 0 0% 98%;
+    /* Accent azul suave */
+    --accent: 217 99% 95%;
+    --accent-foreground: 217 99% 50%;
 
-    --destructive: 0 62.8% 45%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 0 0% 14%;
-    --input: 0 0% 14%;
-    --ring: 24 95% 55%;
+    /* Bordes con tono blanco/10 */
+    --border: 0 0% 20%;
+    --input: 0 0% 15%;
+    --ring: 217 99% 50%;
+
+    --radius: 0.75rem;
   }
 
   body {
     margin: 0;
-    background-color: hsl(var(--background));
+    background: linear-gradient(135deg, #09090b 0%, #16111a 100%);
+    background-attachment: fixed;
     color: hsl(var(--foreground));
+  }
+
+  html {
+    background: linear-gradient(135deg, #09090b 0%, #16111a 100%);
+    background-attachment: fixed;
   }
 }
 
