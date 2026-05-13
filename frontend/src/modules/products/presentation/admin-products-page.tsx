@@ -32,17 +32,13 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Select } from '@/shared/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/shared/ui/table'
 import { ConfirmModal } from '@/shared/ui/modals/confirm-modal'
 import { FormModal } from '@/shared/ui/modals/form-modal'
 import { Badge } from '@/shared/ui/badge'
+
+import { ViewToggle, type ViewMode } from './components/ViewToggle'
+import { ProductCard } from './components/ProductCard'
+import { ProductTable } from './components/ProductTable'
 
 function sanitizeIntString(raw: string): string {
   return raw.replace(/[^\d]/g, '').replace(/^0+(?=\d)/, '')
@@ -126,29 +122,66 @@ function toDefaults(p?: Product | null): FormInput {
 
 export function AdminProductsPage() {
   const qc = useQueryClient()
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [currentPage, setCurrentPage] = useState(1)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<Product | null>(null)
+  const [confirmToggleActive, setConfirmToggleActive] = useState<Product | null>(null)
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false)
   const [categorySearch, setCategorySearch] = useState('')
   const categoryPickerRef = useRef<HTMLDivElement | null>(null)
 
-  const page = 1
-  const limit = 10
-
-  const queryKey = useMemo(() => ['products', page, limit], [page, limit])
+  const pageSize = 15 // Máximo 15 productos por página
+  const queryKey = useMemo(() => ['products', currentPage, pageSize], [currentPage, pageSize])
 
   const productsQuery = useQuery({
     queryKey,
-    queryFn: () => listProducts({ page, limit }),
+    queryFn: async () => {
+      const result = await listProducts({ page: currentPage, limit: pageSize })
+      console.log('📦 Productos recibidos:', {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        data: result.data.map((p) => ({
+          id: p.productoId,
+          nombre: p.nombre,
+          precio: p.precio,
+          cantidad: p.cantidad,
+          tipo_precio: typeof p.precio,
+        })),
+      })
+      return result
+    },
   })
 
   const imagesQuery = useQuery({
     queryKey: ['product-images', editing?.productoId],
     enabled: open && !!editing?.productoId,
     queryFn: () => listImagesByProduct(editing!.productoId),
+  })
+
+  // Query para obtener imágenes de todos los productos en la grid
+  const allProductImagesQueries = useQuery({
+    queryKey: ['all-product-images', productsQuery.data?.data?.map(p => p.productoId).join(',')],
+    enabled: !!productsQuery.data?.data?.length,
+    queryFn: async () => {
+      const images: Record<number, string> = {}
+      for (const product of productsQuery.data?.data ?? []) {
+        try {
+          const result = await listImagesByProduct(product.productoId)
+          if (result.data?.[0]?.url) {
+            images[product.productoId] = result.data[0].url
+          }
+        } catch {
+          // Ignorar errores al obtener imágenes individuales
+        }
+      }
+      return images
+    },
+    staleTime: 60_000,
   })
 
   const providersQuery = useQuery({
@@ -185,15 +218,15 @@ export function AdminProductsPage() {
   const existingImage = imagesQuery.data?.data?.[0] ?? null
 
   const providersById = useMemo(() => {
-    const map = new Map<number, string>()
-    for (const p of providersQuery.data ?? []) map.set(p.proveedorId, p.nombre)
-    return map
+    const record: Record<number, string> = {}
+    for (const p of providersQuery.data ?? []) record[p.proveedorId] = p.nombre
+    return record
   }, [providersQuery.data])
 
   const categoriesById = useMemo(() => {
-    const map = new Map<number, string>()
-    for (const c of categoriesQuery.data ?? []) map.set(c.categoriaId, c.nombre)
-    return map
+    const record: Record<number, string> = {}
+    for (const c of categoriesQuery.data ?? []) record[c.categoriaId] = c.nombre
+    return record
   }, [categoriesQuery.data])
 
   useEffect(() => {
@@ -245,11 +278,10 @@ export function AdminProductsPage() {
     )
   }, [editing, form, open, productCategoryIdsQuery.data])
 
-  // Sincronizar todos los campos del producto cuando se abre para editar
   useEffect(() => {
     if (!open) return
     if (!editing) return
-    
+
     const defaults = toDefaults(editing)
     form.reset(defaults)
   }, [editing, open, form])
@@ -315,7 +347,16 @@ export function AdminProductsPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (productoId: number) => deleteProduct(productoId),
+    mutationFn: (product: Product) =>
+      updateProduct(product.productoId, {
+        sku: product.sku,
+        nombre: product.nombre,
+        cantidad: product.cantidad,
+        precio: product.precio,
+        descripcion: product.descripcion,
+        proveedorId: product.proveedorId,
+        isActive: false, // Soft delete
+      }),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey })
       toast.success('Producto eliminado')
@@ -323,14 +364,30 @@ export function AdminProductsPage() {
     onError: (err) => toast.error(getApiErrorMessage(err, 'No se pudo eliminar el producto')),
   })
 
-  const modalTitle = editing ? 'Editar producto' : 'Nuevo producto'
-  const modalDescription = 'Todos los campos marcados como obligatorios deben completarse.'
+  const toggleActiveMutation = useMutation({
+    mutationFn: (product: Product) =>
+      updateProduct(product.productoId, {
+        sku: product.sku,
+        nombre: product.nombre,
+        cantidad: product.cantidad,
+        precio: product.precio,
+        descripcion: product.descripcion,
+        proveedorId: product.proveedorId,
+        isActive: !product.isActive,
+      }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey })
+      toast.success('Producto actualizado')
+    },
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, 'No se pudo actualizar el producto')),
+  })
 
   const selectedCategoriaIds = new Set(form.watch('categoriaIds'))
   const categoriaIdsReg = form.register('categoriaIds')
 
   const selectedCategoryNames = Array.from(selectedCategoriaIds)
-    .map((id) => categoriesById.get(Number(id)))
+    .map((id) => categoriesById[Number(id)])
     .filter(Boolean) as string[]
 
   const filteredCategories = useMemo(() => {
@@ -357,11 +414,12 @@ export function AdminProductsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Productos</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Crea, edita y gestiona el inventario.
+            {productsQuery.data?.total || 0} producto{productsQuery.data?.total !== 1 ? 's' : ''} en total
           </p>
         </div>
 
@@ -372,11 +430,26 @@ export function AdminProductsPage() {
             form.reset(toDefaults(null))
             setOpen(true)
           }}
+          className="gap-2"
         >
-          Nuevo producto
+          + Agregar Producto
         </Button>
       </div>
 
+      {/* Search & View Controls */}
+      <div className="flex items-center justify-between gap-4 p-4 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <Input
+            placeholder="Buscar productos..."
+            className="pl-9 border-white/10 bg-white/5"
+          />
+        </div>
+
+        <ViewToggle value={viewMode} onChange={setViewMode} />
+      </div>
+
+      {/* Form Modal */}
       <FormModal
         open={open}
         onOpenChange={(v) => {
@@ -390,8 +463,8 @@ export function AdminProductsPage() {
             form.reset(toDefaults(null))
           }
         }}
-        title={modalTitle}
-        description={modalDescription}
+        title={editing ? 'Editar producto' : 'Nuevo producto'}
+        description="Todos los campos marcados como obligatorios deben completarse."
         isSubmitting={upsertMutation.isPending}
         onSubmit={form.handleSubmit((v) => upsertMutation.mutate(v))}
       >
@@ -482,7 +555,7 @@ export function AdminProductsPage() {
 
               <div className="flex flex-wrap gap-2">
                 {Array.from(selectedCategoriaIds).map((id) => {
-                  const name = categoriesById.get(Number(id))
+                  const name = categoriesById[Number(id)]
                   if (!name) return null
                   return (
                     <Badge key={id} variant="secondary" className="gap-2">
@@ -547,7 +620,6 @@ export function AdminProductsPage() {
                 </div>
               ) : null}
 
-              {/* RHF: marca el campo como registrado */}
               <input type="hidden" name={categoriaIdsReg.name} ref={categoriaIdsReg.ref} />
 
               {form.formState.errors.categoriaIds?.message ? (
@@ -558,7 +630,7 @@ export function AdminProductsPage() {
             </div>
           </div>
 
-           <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label className="flex items-center gap-2">
                 <Package2 className="h-4 w-4 text-blue-400" />
@@ -635,6 +707,7 @@ export function AdminProductsPage() {
         </div>
       </FormModal>
 
+      {/* Confirm Delete Modal */}
       <ConfirmModal
         open={!!confirmDelete}
         onOpenChange={(v) => {
@@ -643,104 +716,117 @@ export function AdminProductsPage() {
         title="Eliminar producto"
         description={
           confirmDelete
-            ? `Vas a eliminar “${confirmDelete.nombre}”. Esta acción no se puede deshacer.`
-            : 'Esta acción no se puede deshacer.'
+            ? `Vas a eliminar "${confirmDelete.nombre}". Esta acción marcará el producto como inactivo.`
+            : 'Esta acción marcará el producto como inactivo.'
         }
         confirmText="Eliminar"
         isConfirming={deleteMutation.isPending}
         onConfirm={() => {
           if (!confirmDelete) return
-          deleteMutation.mutate(confirmDelete.productoId, {
+          deleteMutation.mutate(confirmDelete, {
             onSettled: () => setConfirmDelete(null),
           })
         }}
       />
 
-      <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>SKU</TableHead>
-              <TableHead className="text-right">Cantidad</TableHead>
-              <TableHead className="text-right">Precio</TableHead>
-              <TableHead>Proveedor</TableHead>
-              <TableHead>Categorías</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {productsQuery.data?.data?.length ? (
-              productsQuery.data.data.map((p) => {
-                const providerName = p.proveedorId
-                  ? (providersById.get(p.proveedorId) ?? '—')
-                  : '—'
-                const categoriaIds = productsCategoryIdsMapQuery.data?.[p.productoId] ?? []
-                const categoriaNames = categoriaIds
-                  .map((id) => categoriesById.get(id))
-                  .filter(Boolean) as string[]
+      {/* Confirm Toggle Active Modal */}
+      <ConfirmModal
+        open={!!confirmToggleActive}
+        onOpenChange={(v) => {
+          if (!v) setConfirmToggleActive(null)
+        }}
+        title={confirmToggleActive?.isActive ? 'Desactivar producto' : 'Activar producto'}
+        description={
+          confirmToggleActive
+            ? confirmToggleActive.isActive
+              ? `Vas a desactivar "${confirmToggleActive.nombre}".`
+              : `Vas a activar "${confirmToggleActive.nombre}".`
+            : ''
+        }
+        confirmText={confirmToggleActive?.isActive ? 'Desactivar' : 'Activar'}
+        isConfirming={toggleActiveMutation.isPending}
+        onConfirm={() => {
+          if (!confirmToggleActive) return
+          toggleActiveMutation.mutate(confirmToggleActive, {
+            onSettled: () => setConfirmToggleActive(null),
+          })
+        }}
+      />
 
-                return (
-                  <TableRow key={p.productoId}>
-                    <TableCell className="font-medium">{p.nombre}</TableCell>
-                    <TableCell className="text-muted-foreground">{p.sku || '—'}</TableCell>
-                    <TableCell className="text-right">{p.cantidad}</TableCell>
-                    <TableCell className="text-right">{p.precio}</TableCell>
-                    <TableCell className="text-muted-foreground">{providerName}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        {categoriaNames.length ? (
-                          categoriaNames.map((name) => (
-                            <Badge key={`${p.productoId}-${name}`} variant="secondary">
-                              {name}
-                            </Badge>
-                          ))
-                        ) : (
-                          <span className="text-sm text-muted-foreground">—</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setEditing(p)
-                            setImageFile(null)
-                            setCategoryPickerOpen(false)
-                            setCategorySearch('')
-                            form.reset(toDefaults(p))
-                            setOpen(true)
-                          }}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => setConfirmDelete(p)}
-                          disabled={deleteMutation.isPending}
-                        >
-                          Eliminar
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
-                  {productsQuery.isLoading
-                    ? 'Cargando productos…'
-                    : 'Sin productos aún.'}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {/* Products Grid or Table */}
+      {viewMode === 'grid' ? (
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {productsQuery.data?.data?.length ? (
+            productsQuery.data.data.map((p) => {
+              const imageUrl = allProductImagesQueries.data?.[p.productoId]
+              const categoriaIds = productsCategoryIdsMapQuery.data?.[p.productoId] ?? []
+              const categoryId = categoriaIds[0]
+              const categoryName = categoryId ? categoriesById[categoryId] : undefined
+
+              return (
+                <ProductCard
+                  key={p.productoId}
+                  product={p}
+                  {...(imageUrl && { imageUrl })}
+                  {...(categoryName && { categoryName })}
+                  onEdit={() => {
+                    setEditing(p)
+                    setImageFile(null)
+                    setCategoryPickerOpen(false)
+                    setCategorySearch('')
+                    form.reset(toDefaults(p))
+                    setOpen(true)
+                  }}
+                  onToggleActive={() => setConfirmToggleActive(p)}
+                  onSoftDelete={() => setConfirmDelete(p)}
+                  isLoading={deleteMutation.isPending || toggleActiveMutation.isPending}
+                />
+              )
+            })
+          ) : (
+            <div className="col-span-full flex h-40 items-center justify-center rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm">
+              <p className="text-sm text-white/60">
+                {productsQuery.isLoading ? 'Cargando productos…' : 'Sin productos aún.'}
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <ProductTable
+          products={productsQuery.data?.data ?? []}
+          imagesByProductId={allProductImagesQueries.data ?? {}}
+          categoriesByProductId={
+            productsQuery.data?.data
+              ?.reduce(
+                (acc, p) => {
+                  const categoriaIds = productsCategoryIdsMapQuery.data?.[p.productoId] ?? []
+                  const categoryId = categoriaIds[0]
+                  if (categoryId) {
+                    acc[p.productoId] = categoriesById[categoryId] ?? ''
+                  }
+                  return acc
+                },
+                {} as Record<number, string>,
+              ) ?? {}
+          }
+          providersByProductId={providersById}
+          onEdit={(product) => {
+            setEditing(product)
+            setImageFile(null)
+            setCategoryPickerOpen(false)
+            setCategorySearch('')
+            form.reset(toDefaults(product))
+            setOpen(true)
+          }}
+          onToggleActive={(product) => setConfirmToggleActive(product)}
+          onSoftDelete={(product) => setConfirmDelete(product)}
+          isLoading={deleteMutation.isPending || toggleActiveMutation.isPending}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          totalItems={productsQuery.data?.total ?? 0}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   )
 }

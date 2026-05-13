@@ -44,6 +44,7 @@ export class RegisterUseCase {
       null,
       input.primerApellido ?? null,
       null,
+      'dark',
       true,
       now,
       now,

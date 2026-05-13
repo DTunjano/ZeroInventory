@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link, Route, Routes, useNavigate } from 'react-router-dom'
 import { BrowserRouter, Outlet } from 'react-router-dom'
 
 import { AuthBootstrap } from '@/modules/auth/presentation/auth-bootstrap'
@@ -18,6 +18,7 @@ import { MyCartPage } from '@/pages/me/my-cart-page'
 import { MyOrdersPage } from '@/pages/me/my-orders-page'
 import { RegisterPage } from '@/pages/register-page'
 import { NotFoundPage } from '@/pages/not-found-page'
+import { SettingsPage } from '@/pages/settings-page'
 import { Button } from '@/shared/ui/button'
 import { Sonner } from '@/shared/ui/sonner'
 import { AppLayout } from '@/shared/layouts/app-layout'
@@ -35,6 +36,7 @@ function AppShell() {
   const status = useAuthStore((s) => s.status)
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -57,7 +59,14 @@ function AppShell() {
                 <span className="hidden text-sm text-muted-foreground sm:inline">
                   {user?.username}
                 </span>
-                <Button variant="outline" size="sm" onClick={() => void logout()}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    await logout()
+                    navigate('/login', { replace: true })
+                  }}
+                >
                   Salir
                 </Button>
               </>
@@ -105,6 +114,10 @@ export function App() {
             <Route element={<RequireAuth roles={['CUSTOMER']} />}>
               <Route path="me/cart" element={<MyCartPage />} />
               <Route path="me/orders" element={<MyOrdersPage />} />
+            </Route>
+
+            <Route element={<RequireAuth roles={['ADMIN', 'EMPLOYEE', 'CUSTOMER']} />}>
+              <Route path="settings" element={<SettingsPage />} />
             </Route>
 
             <Route path="shell" element={<AppShell />} />

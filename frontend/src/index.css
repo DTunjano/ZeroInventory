@@ -2,7 +2,40 @@
 
 @layer base {
   :root {
-    /* Paleta oscura global (diseño login) */
+    /* Light mode: azul + blanco */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 217 99% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 99% 50%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Dark mode: azul + negro */
     --background: 0 0% 3%;
     --foreground: 0 0% 98%;
 
@@ -12,46 +45,33 @@
     --popover: 0 0% 6%;
     --popover-foreground: 0 0% 98%;
 
-    /* Azul primario */
     --primary: 217 99% 50%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secundario oscuro (casi negro) */
     --secondary: 0 0% 8%;
     --secondary-foreground: 0 0% 98%;
 
-    /* Muted más oscuro */
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 65%;
 
-    /* Accent azul suave */
     --accent: 217 99% 95%;
     --accent-foreground: 217 99% 50%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    /* Bordes con tono blanco/10 */
     --border: 0 0% 20%;
     --input: 0 0% 15%;
     --ring: 217 99% 50%;
-
-    --radius: 0.75rem;
   }
 
   body {
-    margin: 0;
-    background: linear-gradient(135deg, #09090b 0%, #16111a 100%);
-    background-attachment: fixed;
+    background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    margin: 0;
   }
 
   html {
-    background: linear-gradient(135deg, #09090b 0%, #16111a 100%);
-    background-attachment: fixed;
+    background-color: hsl(var(--background));
   }
-}
-
-* {
-  border-color: hsl(var(--border));
 }

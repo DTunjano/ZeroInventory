@@ -21,6 +21,8 @@ import { ProveedorModule } from './proveedor/proveedor.module';
 import { CompraModule } from './compra/compra.module';
 import { EmpleadoModule } from './empleado/empleado.module';
 import { AuthModule } from './auth/auth.module';
+import { SettingsModule } from './settings/settings.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { AuthModule } from './auth/auth.module';
     EmpleadoModule,
     ProveedorModule,
     CompraModule,
+    DashboardModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}

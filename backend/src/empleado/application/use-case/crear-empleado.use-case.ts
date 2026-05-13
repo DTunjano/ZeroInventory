@@ -63,6 +63,7 @@ export class CrearEmpleadoUseCase {
         null,
         null,
         null,
+        'dark',
         true,
         new Date(),
         new Date(),

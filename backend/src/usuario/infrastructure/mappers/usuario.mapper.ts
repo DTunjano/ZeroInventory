@@ -11,6 +11,7 @@ export class UsuarioMapper {
       entity.segundoNombre,
       entity.primerApellido,
       entity.segundoApellido,
+      entity.theme,
       entity.isActive,
       entity.createdAt,
       entity.updatedAt,
@@ -26,6 +27,7 @@ export class UsuarioMapper {
     entity.segundoNombre = domain.segundoNombre;
     entity.primerApellido = domain.primerApellido;
     entity.segundoApellido = domain.segundoApellido;
+    entity.theme = domain.theme;
     entity.isActive = domain.isActive;
     entity.createdAt = domain.createdAt;
     entity.updatedAt = domain.updatedAt;

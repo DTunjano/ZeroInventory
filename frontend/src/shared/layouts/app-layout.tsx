@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Bell,
   Briefcase,
@@ -42,16 +42,18 @@ const navByRole: Record<RoleKey, AppLayoutNavItem[]> = {
     { to: '/admin/products', label: 'Productos', icon: Package },
     { to: '/admin/employees', label: 'Empleados', icon: Briefcase },
     { to: '/admin/reports', label: 'Reportes', icon: BarChart3 },
-    { to: '/admin/settings', label: 'Configuración', icon: Settings },
+    { to: '/settings', label: 'Configuración', icon: Settings },
   ],
   EMPLOYEE: [
     { to: '/employee', label: 'Dashboard', icon: LayoutGrid },
     { to: '/employee/products', label: 'Productos', icon: Package },
+    { to: '/settings', label: 'Configuración', icon: Settings },
   ],
   CUSTOMER: [
     { to: '/', label: 'Tienda', icon: LayoutGrid },
     { to: '/me/cart', label: 'Carrito', icon: ShoppingCart },
     { to: '/me/orders', label: 'Mis pedidos', icon: Package },
+    { to: '/settings', label: 'Configuración', icon: Settings },
   ],
 }
 
@@ -63,6 +65,7 @@ function pickNav(roles: string[]): AppLayoutNavItem[] {
 
 export function AppLayout(props: { title?: string }) {
   const { title } = props
+  const navigate = useNavigate()
   const status = useAuthStore((s) => s.status)
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
@@ -199,9 +202,10 @@ export function AppLayout(props: { title?: string }) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onSelect={(e) => {
+                  onSelect={async (e) => {
                     e.preventDefault()
-                    void logout()
+                    await logout()
+                    navigate('/login', { replace: true })
                   }}
                 >
                   Cerrar sesión

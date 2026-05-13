@@ -27,6 +27,7 @@ import { PagoEntityORM } from '../../../pago/infrastructure/persistence/pago.orm
 import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
 import { CarritoDetalleEntityORM } from '../../../carrito-detalle/infrastructure/persistence/carrito-detalle.orm-entity';
 import { CarritoEntityORM } from '../../../carrito/infrastructure/persistence/carrito.orm-entity';
+import { KardexEntityORM, TipoMovimientoEnum, TipoReferenciaEnum } from '../../../entities/kardex.orm-entity';
 
 function toNumber(value: unknown): number {
   if (typeof value === 'number') return value;
@@ -125,6 +126,7 @@ export class CheckoutCartUseCase {
       // create pedido_detalle lines and decrement stock
       const pedidoDetalleRepo = manager.getRepository(PedidoDetalleEntityORM);
       const productoRepo = manager.getRepository(ProductoEntityORM);
+      const kardexRepo = manager.getRepository(KardexEntityORM);
 
       for (const l of lineas) {
         const detalleEntity = pedidoDetalleRepo.create({
@@ -145,6 +147,17 @@ export class CheckoutCartUseCase {
           throw new BadRequestException('Stock quedó negativo');
         }
         await productoRepo.save(prod);
+
+        const kardexEntity = kardexRepo.create({
+          productoId: l.productoId,
+          tipoMovimiento: TipoMovimientoEnum.SALIDA,
+          cantidad: l.cantidad,
+          costoUnitario: l.precioUnitario,
+          valorTotal: l.subtotal,
+          referenciaId: savedPedido.pedidoId,
+          tipoReferencia: TipoReferenciaEnum.VENTA,
+        } as Partial<KardexEntityORM>);
+        await kardexRepo.save(kardexEntity);
       }
 
       // create pago (PENDIENTE)

@@ -14,12 +14,25 @@ export class ProductHttpRepository implements ProductRepository {
     const { data } = await http.get<PaginatedResult<Product>>('/productos', {
       params: filters,
     })
-    return data
+    // Convertir precios de string a número si es necesario
+    return {
+      ...data,
+      data: data.data.map((p) => ({
+        ...p,
+        precio: typeof p.precio === 'string' ? Number(p.precio) : p.precio,
+        cantidad: typeof p.cantidad === 'string' ? Number(p.cantidad) : p.cantidad,
+      })),
+    }
   }
 
   async getById(productoId: number): Promise<Product> {
     const { data } = await http.get<Product>(`/productos/${productoId}`)
-    return data
+    // Convertir precios de string a número si es necesario
+    return {
+      ...data,
+      precio: typeof data.precio === 'string' ? Number(data.precio) : data.precio,
+      cantidad: typeof data.cantidad === 'string' ? Number(data.cantidad) : data.cantidad,
+    }
   }
 
   async create(input: CreateProductInput): Promise<Product> {

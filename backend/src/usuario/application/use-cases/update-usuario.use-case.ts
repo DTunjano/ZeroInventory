@@ -46,6 +46,7 @@ export class UpdateUsuarioUseCase {
       cambios.segundoNombre ?? actual.segundoNombre,
       cambios.primerApellido ?? actual.primerApellido,
       cambios.segundoApellido ?? actual.segundoApellido,
+      actual.theme,
       cambios.isActive ?? actual.isActive,
       actual.createdAt,
       new Date(),

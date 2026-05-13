@@ -6,6 +6,7 @@ export class Usuario {
   segundoNombre: string | null = null;
   primerApellido: string | null = null;
   segundoApellido: string | null = null;
+  theme: string = 'dark';
   isActive: boolean = true;
   createdAt: Date = new Date();
   updatedAt: Date = new Date();
@@ -18,6 +19,7 @@ export class Usuario {
     segundoNombre: string | null,
     primerApellido: string | null,
     segundoApellido: string | null,
+    theme: string,
     isActive: boolean,
     createdAt: Date,
     updatedAt: Date,
@@ -29,6 +31,7 @@ export class Usuario {
     this.segundoNombre = segundoNombre;
     this.primerApellido = primerApellido;
     this.segundoApellido = segundoApellido;
+    this.theme = theme;
     this.isActive = isActive;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;

@@ -37,6 +37,9 @@ export class UsuarioEntityORM {
   @Column({ name: 'segundo_apellido', type: 'varchar', nullable: true })
   segundoApellido!: string | null;
 
+  @Column({ name: 'theme', type: 'varchar', length: 20, default: 'dark' })
+  theme!: string;
+
   @Column({ name: 'is_active', type: 'boolean' })
   isActive!: boolean;
 

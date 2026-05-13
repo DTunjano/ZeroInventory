@@ -32,6 +32,7 @@ export class CreateUsuarioUseCase {
       data.segundoNombre ?? null,
       data.primerApellido ?? null,
       data.segundoApellido ?? null,
+      'dark',
       true,
       new Date(),
       new Date(),
