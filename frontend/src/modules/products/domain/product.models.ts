@@ -1,3 +1,10 @@
+export interface Category {
+  categoriaId: number
+  nombre: string
+  descripcion?: string
+  isActive?: boolean
+}
+
 export interface Product {
   productoId: number
   proveedorId: number | null
@@ -11,6 +18,7 @@ export interface Product {
   peso: string | null
   medida: string | null
   isActive: boolean
+  categoria?: Category
   createdAt: string
   updatedAt: string
 }
@@ -48,7 +56,6 @@ export interface CreateProductInput {
   cantidad: number
   precio: number
   descripcion?: string | null
-  sku: string
   marca?: string | null
   material?: string | null
   peso?: string | null

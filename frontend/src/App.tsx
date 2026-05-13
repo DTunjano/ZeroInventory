@@ -6,6 +6,7 @@ import { AuthBootstrap } from '@/modules/auth/presentation/auth-bootstrap'
 import { RequireAuth } from '@/modules/auth/presentation/require-auth'
 import { useAuthStore } from '@/modules/auth/application/auth.store'
 import { AdminProductsPage } from '@/modules/products/presentation/admin-products-page'
+import { AdminInventoryPage } from '@/modules/inventory/presentation/admin-inventory-page'
 import { AdminDashboardPage } from '@/pages/admin/admin-dashboard-page'
 import { AdminUsersPage } from '@/pages/admin/admin-users-page'
 import { AdminEmployeesPage } from '@/modules/employee/presentation/admin-employees-page'
@@ -90,6 +91,7 @@ export function App() {
 
             <Route element={<RequireAuth roles={['ADMIN']} />}>
               <Route path="admin" element={<AdminDashboardPage />} />
+              <Route path="admin/inventory" element={<AdminInventoryPage />} />
               <Route path="admin/products" element={<AdminProductsPage />} />
               <Route path="admin/users" element={<AdminUsersPage />} />
               <Route path="admin/employees" element={<AdminEmployeesPage />} />

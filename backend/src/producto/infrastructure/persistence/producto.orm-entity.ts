@@ -36,7 +36,7 @@ export class ProductoEntityORM {
   @Column({ name: 'descripcion', type: 'text', nullable: true })
   descripcion!: string | null;
 
-  @Column({ name: 'sku', type: 'varchar', unique: true })
+  @Column({ name: 'sku', type: 'varchar', nullable: false, unique: true })
   sku!: string;
 
   @Column({ name: 'marca', type: 'varchar', nullable: true })

@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { ProductoRepository } from '../../domain/repository/producto.repository';
 import { Producto } from '../../domain/entity/producto.entity';
 import { ProveedorRepository } from '../../../proveedor/domain/repository/proveedor.repository';
+import { SkuGeneratorService } from '../../domain/services/sku-generator.service';
 
 @Injectable()
 export class CreateProductUseCase {
@@ -16,7 +17,6 @@ export class CreateProductUseCase {
     cantidad: number;
     precio: number;
     descripcion?: string | null;
-    sku: string;
     marca?: string | null;
     material?: string | null;
     peso?: string | null;
@@ -33,18 +33,17 @@ export class CreateProductUseCase {
       throw new ConflictException('Ya existe un producto con ese nombre');
     }
 
-    if (await this.productoRepo.existsBySku(data.sku)) {
-      throw new ConflictException('Ya existe un producto con ese SKU');
-    }
+    // 1. Crear producto sin SKU definitivo (usamos placeholder para respetar UNIQUE/NOT NULL)
+    const placeholderSku = `TMP-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
 
-    const producto = new Producto(
+    let producto = new Producto(
       0,
       data.proveedorId ?? null,
       data.nombre,
       data.cantidad,
       data.precio,
       data.descripcion ?? null,
-      data.sku,
+      placeholderSku,
       data.marca ?? null,
       data.material ?? null,
       data.peso ?? null,
@@ -53,6 +52,16 @@ export class CreateProductUseCase {
       new Date(),
       new Date(),
     );
-    return this.productoRepo.create(producto);
+
+    const created = await this.productoRepo.create(producto);
+
+    // 2. Generar SKU oficial usando el ID auto-generado
+    const officialSku = SkuGeneratorService.generate(data.nombre, created.productoId);
+
+    // 3. Actualizar producto con el SKU oficial
+    created.sku = officialSku;
+    const updated = await this.productoRepo.update(created);
+
+    return updated;
   }
 }

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Check, ChevronDown, Image as ImageIcon, Package2, Search, Tags } from 'lucide-react'
+import { Check, ChevronDown, Image as ImageIcon, Package2, Search, Sparkles, Tags } from 'lucide-react'
 import { toast } from 'sonner'
 
 import {
@@ -23,6 +23,7 @@ import { listProviders } from '../application/list-providers.use-case'
 import { listCategoryIdsByProductIds } from '../application/list-category-products-by-product.use-case'
 import { setProductCategories } from '../application/set-product-categories.use-case'
 import type { Product } from '../domain/product.models'
+import { generateSkuPreview } from '../domain/sku-preview'
 
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/utils'
@@ -66,7 +67,6 @@ function sanitizeMoneyString(raw: string): string {
   return intPart
 }
 
-
 function normalizeMoney(value: unknown): string {
   if (value === null || value === undefined) return ''
 
@@ -83,7 +83,6 @@ function normalizeMoney(value: unknown): string {
 
 const formSchema = z.object({
   nombre: z.string().trim().min(1, 'Nombre requerido'),
-  sku: z.string().trim().min(1, 'SKU requerido'),
   proveedorId: z
     .string()
     .min(1, 'Proveedor requerido')
@@ -117,11 +116,10 @@ type FormValues = z.output<typeof formSchema>
 function toDefaults(p?: Product | null): FormInput {
   return {
     nombre: p?.nombre ?? '',
-    sku: p?.sku ?? '',
     proveedorId: p?.proveedorId ? String(p.proveedorId) : '',
     categoriaIds: [],
     cantidad: typeof p?.cantidad === 'number' ? String(p.cantidad) : '',
-    precio: normalizeMoney(p?.precio), // Asegura que el precio se muestre con el formato correcto
+    precio: normalizeMoney(p?.precio),
     descripcion: p?.descripcion ?? '',
   }
 }
@@ -229,6 +227,12 @@ export function AdminProductsPage() {
     defaultValues: toDefaults(null),
   })
 
+  const nombreValue = form.watch('nombre')
+  const skuPreview = useMemo(() => {
+    if (!nombreValue) return null
+    return generateSkuPreview(nombreValue)
+  }, [nombreValue])
+
   useEffect(() => {
     if (!open) return
     if (!editing) return
@@ -263,25 +267,17 @@ export function AdminProductsPage() {
         throw new Error('La imagen del producto es obligatoria')
       }
 
-      const base: {
-        nombre: string
-        cantidad: number
-        precio: number
-        descripcion: string | null
-        sku: string
-        proveedorId: number
-      } = {
+      const basePayload = {
         nombre: values.nombre,
         cantidad: values.cantidad,
         precio: values.precio,
         descripcion: values.descripcion,
-        sku: values.sku,
         proveedorId: values.proveedorId,
       }
 
       const saved = editing
-        ? await updateProduct(editing.productoId, base)
-        : await createProduct(base)
+        ? await updateProduct(editing.productoId, { sku: editing.sku, ...basePayload })
+        : await createProduct(basePayload)
 
       if (imageFile) {
         if (editing) {
@@ -562,16 +558,39 @@ export function AdminProductsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="sku" className="flex items-center gap-2">
+              <Label className="flex items-center gap-2">
                 <Package2 className="h-4 w-4 text-blue-400" />
                 SKU
               </Label>
-              <Input id="sku" {...form.register('sku')} />
-              {form.formState.errors.sku?.message ? (
-                <p className="text-xs text-destructive">{form.formState.errors.sku.message}</p>
-              ) : null}
+              <div
+                className={cn(
+                  'flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-mono transition-colors',
+                  'bg-muted/40 border-muted-foreground/10',
+                  'select-none',
+                )}
+              >
+                <Sparkles className="h-4 w-4 text-blue-400" />
+                <span className="text-muted-foreground">
+                  {editing?.sku ?? (skuPreview ?? '—')}
+                </span>
+                {!editing && skuPreview && (
+                  <span className="ml-auto text-xs text-blue-400/80">
+                    Preview
+                  </span>
+                )}
+                {editing && (
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    Autogenerado
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {!editing
+                  ? 'El SKU se generará automáticamente al guardar el producto.'
+                  : 'El SKU es autogenerado y no editable.'}
+              </p>
             </div>
 
             <div className="grid gap-2">

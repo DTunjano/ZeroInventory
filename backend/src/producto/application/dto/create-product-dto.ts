@@ -48,15 +48,6 @@ export class CreateProductDTO {
   @IsOptional()
   descripcion?: string | null;
 
-  @ApiProperty({
-    description: 'Código SKU del producto',
-    example: 'PRO-000000001',
-    type: String,
-  })
-  @IsNotEmpty({ message: 'El SKU del producto es obligatorio' })
-  @Transform(({ value }: { value: string }) => value.trim())
-  sku!: string;
-
   @ApiPropertyOptional({
     description: 'Marca del producto',
     example: 'Brand Name',

@@ -1,5 +1,17 @@
+import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { Bell, Briefcase, LayoutGrid, Package, ShoppingCart, Users } from 'lucide-react'
+import {
+  Bell,
+  Briefcase,
+  BarChart3,
+  LayoutGrid,
+  Package,
+  ShoppingCart,
+  Archive,
+  Settings,
+  Menu,
+  X,
+} from 'lucide-react'
 import type { ComponentType } from 'react'
 
 import { useAuthStore } from '@/modules/auth/application/auth.store'
@@ -26,9 +38,11 @@ type RoleKey = 'ADMIN' | 'EMPLOYEE' | 'CUSTOMER'
 const navByRole: Record<RoleKey, AppLayoutNavItem[]> = {
   ADMIN: [
     { to: '/admin', label: 'Dashboard', icon: LayoutGrid },
+    { to: '/admin/inventory', label: 'Inventario', icon: Archive },
     { to: '/admin/products', label: 'Productos', icon: Package },
-    { to: '/admin/users', label: 'Usuarios', icon: Users },
     { to: '/admin/employees', label: 'Empleados', icon: Briefcase },
+    { to: '/admin/reports', label: 'Reportes', icon: BarChart3 },
+    { to: '/admin/settings', label: 'Configuración', icon: Settings },
   ],
   EMPLOYEE: [
     { to: '/employee', label: 'Dashboard', icon: LayoutGrid },
@@ -52,21 +66,52 @@ export function AppLayout(props: { title?: string }) {
   const status = useAuthStore((s) => s.status)
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   const roles = (user?.roles ?? []).map((r) => r.toUpperCase())
   const nav = pickNav(roles)
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <div className="grid min-h-dvh grid-cols-[16rem_1fr]">
-        <aside className="hidden border-r border-white/10 bg-white/5 md:block">
-          <div className="flex h-14 items-center justify-between border-b border-white/10 px-4">
-            <Link to="/" className="font-semibold tracking-tight text-white">
-              Zero Inventory
-            </Link>
+      <div
+        className={cn(
+          'grid min-h-dvh transition-[grid-template-columns] duration-300 ease-in-out',
+          isSidebarCollapsed ? 'grid-cols-[5rem_1fr]' : 'grid-cols-[17rem_1fr]',
+        )}
+      >
+        <aside className="hidden border-r border-white/10 bg-zinc-950/90 md:flex md:flex-col">
+          <div
+            className={cn(
+              'flex h-16 items-center border-b border-white/10 px-4 overflow-hidden',
+              isSidebarCollapsed ? 'justify-end' : 'justify-between',
+            )}
+          >
+            {!isSidebarCollapsed ? (
+              <div className="flex min-w-0 items-center gap-3 overflow-hidden">
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-500 text-white shadow-lg shadow-blue-500/25">
+                  <Archive className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-base font-semibold leading-none text-white">
+                    Zero Inventory
+                  </div>
+                  <div className="mt-1 truncate text-xs text-white/60">Admin Panel</div>
+                </div>
+              </div>
+            ) : null}
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarCollapsed((current) => !current)}
+              className="h-9 w-9 shrink-0 text-white/70 hover:bg-white/10 hover:text-white"
+              aria-label={isSidebarCollapsed ? 'Abrir sidebar' : 'Cerrar sidebar'}
+            >
+              {isSidebarCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
+            </Button>
           </div>
 
-          <nav className="p-2">
+          <nav className="flex-1 p-2">
             {nav.map((item) => (
               <NavLink
                 key={item.to}
@@ -74,44 +119,73 @@ export function AppLayout(props: { title?: string }) {
                 end
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+                    'flex items-center rounded-xl text-sm transition-all duration-200',
+                    isSidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-2',
                     isActive
-                      ? 'bg-blue-500/20 text-blue-300'
-                      : 'text-white/60 hover:bg-blue-500/10 hover:text-white',
+                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                      : 'text-white/65 hover:bg-white/5 hover:text-white',
                   )
                 }
+                title={isSidebarCollapsed ? item.label : undefined}
               >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
+                <item.icon className="h-4 w-4 shrink-0" />
+                <span
+                  className={cn(
+                    'overflow-hidden whitespace-nowrap transition-all duration-200',
+                    isSidebarCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100',
+                  )}
+                >
+                  {item.label}
+                </span>
               </NavLink>
             ))}
           </nav>
 
           <div className="mt-auto border-t border-white/10 p-3">
-            <div className="text-xs text-white/50">Sesión</div>
-            <div className="mt-1 truncate text-sm font-medium text-white">
-              {status === 'authenticated' ? user?.username : '—'}
+            <div className={cn('text-xs text-white/50', isSidebarCollapsed && 'text-center')}>
+              {isSidebarCollapsed ? 'AD' : 'Sesión'}
+            </div>
+            <div
+              className={cn(
+                'mt-1 truncate text-sm font-medium text-white transition-all duration-200',
+                isSidebarCollapsed ? 'text-center text-xs' : '',
+              )}
+              title={status === 'authenticated' ? user?.username : '—'}
+            >
+              {isSidebarCollapsed
+                ? (status === 'authenticated' ? (user?.username?.slice(0, 2) ?? '—') : '—')
+                : (status === 'authenticated' ? user?.username : '—')}
             </div>
           </div>
         </aside>
 
         <div className="flex min-w-0 flex-col">
-          <header className="flex h-14 items-center gap-3 border-b border-white/10 bg-white/5 px-4 backdrop-blur-sm">
+          <header className="flex h-16 items-center gap-3 border-b border-white/10 bg-white/5 px-4 backdrop-blur-sm">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarCollapsed((current) => !current)}
+              className="h-10 w-10 text-white/70 hover:bg-white/10 hover:text-white md:hidden"
+              aria-label={isSidebarCollapsed ? 'Abrir sidebar' : 'Cerrar sidebar'}
+            >
+              {isSidebarCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
+            </Button>
+
             <div className="min-w-0 flex-1">
               <Input
                 placeholder="Buscar…"
-                className="h-9 max-w-xl"
+                className="h-10 max-w-xl border-white/10 bg-zinc-950/70 text-white placeholder:text-white/40"
                 aria-label="Buscar"
               />
             </div>
 
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-white/70 hover:text-white" aria-label="Notificaciones">
+            <Button variant="ghost" size="icon" className="h-10 w-10 text-white/70 hover:bg-white/10 hover:text-white" aria-label="Notificaciones">
               <Bell className="h-4 w-4" />
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-9">
+                <Button variant="outline" className="h-10 border-white/10 bg-zinc-950/70 text-white hover:bg-white/5">
                   {user?.username ?? 'Cuenta'}
                 </Button>
               </DropdownMenuTrigger>
@@ -136,7 +210,7 @@ export function AppLayout(props: { title?: string }) {
             </DropdownMenu>
           </header>
 
-          <main className="min-w-0 flex-1 px-4 py-6">
+          <main className="min-w-0 flex-1 px-4 py-6 transition-all duration-300">
             {title ? (
               <div className="mb-6 flex items-center justify-between gap-4">
                 <h1 className="text-xl font-semibold tracking-tight text-white">{title}</h1>
