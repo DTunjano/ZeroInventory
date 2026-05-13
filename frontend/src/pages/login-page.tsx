@@ -129,6 +129,7 @@ export function LoginPage() {
 
               <Button
                 type="submit"
+                className="bg-orange-500 text-white hover:bg-orange-600 focus-visible:ring-orange-500"
                 disabled={status === 'loading'}
               >
                 {status === 'loading' ? 'Ingresando…' : 'Ingresar'}
