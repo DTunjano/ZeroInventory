@@ -82,12 +82,14 @@ export const inventoryService = {
     sku?: string
     isActive?: boolean
   } = {}): Promise<PaginatedResult<InventoryProduct>> {
-    const result = await listProducts({
+    const productFilters = {
       page: params.page ?? 1,
       limit: params.limit ?? 50,
-      nombre: params.nombre,
-      sku: params.sku,
-    })
+      ...(params.nombre ? { nombre: params.nombre } : {}),
+      ...(params.sku ? { sku: params.sku } : {}),
+    }
+
+    const result = await listProducts(productFilters)
 
     const categoryNamesByProductId = await getCategoryNameByProductId(
       result.data.map((product) => product.productoId),

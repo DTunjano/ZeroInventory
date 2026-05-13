@@ -8,6 +8,8 @@ import { useAuthStore } from '@/modules/auth/application/auth.store'
 import { AdminProductsPage } from '@/modules/products/presentation/admin-products-page'
 import { AdminInventoryPage } from '@/modules/inventory/presentation/admin-inventory-page'
 import { AdminDashboardPage } from '@/pages/admin/admin-dashboard-page'
+import { AdminInventoryAdjustmentsPage } from '@/pages/admin/admin-inventory-adjustments-page'
+import { AdminReportsPage } from '@/pages/admin/admin-reports-page'
 import { AdminUsersPage } from '@/pages/admin/admin-users-page'
 import { AdminEmployeesPage } from '@/modules/employee/presentation/admin-employees-page'
 import { EmployeeDashboardPage } from '@/pages/employee/employee-dashboard-page'
@@ -101,9 +103,11 @@ export function App() {
             <Route element={<RequireAuth roles={['ADMIN']} />}>
               <Route path="admin" element={<AdminDashboardPage />} />
               <Route path="admin/inventory" element={<AdminInventoryPage />} />
+              <Route path="admin/inventory-adjustments" element={<AdminInventoryAdjustmentsPage />} />
               <Route path="admin/products" element={<AdminProductsPage />} />
               <Route path="admin/users" element={<AdminUsersPage />} />
               <Route path="admin/employees" element={<AdminEmployeesPage />} />
+              <Route path="admin/reports" element={<AdminReportsPage />} />
             </Route>
 
             <Route element={<RequireAuth roles={['EMPLOYEE']} />}>

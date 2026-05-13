@@ -208,7 +208,13 @@ export function RecentOrdersList({ orders }: { orders: RecentOrderPoint[] }) {
             <div>
               <div className="font-semibold text-white">Pedido #{order.orderId}</div>
               <div className="text-sm text-white/55">{order.customerName}</div>
-              <div className="mt-1 text-xs text-white/40">{formatDateTime(order.date)}</div>
+              <div className="mt-1 flex flex-wrap gap-2 text-xs text-white/40">
+                <span>{formatDateTime(order.date)}</span>
+                <span>•</span>
+                <span>{formatCompact(order.itemsCount)} productos</span>
+                <span>•</span>
+                <span>{order.paymentMethod}</span>
+              </div>
             </div>
             <div className="text-right">
               <div className="text-lg font-semibold text-white">{formatCurrency(order.total)}</div>
@@ -244,6 +250,24 @@ export function ActivityFeedList({ activity }: { activity: RecentActivityPoint[]
           <div className="text-xs text-white/45">{formatDateTime(item.date)}</div>
         </div>
       ))}
+    </div>
+  )
+}
+
+export function DashboardTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ name?: string; value?: number }>; label?: string }) {
+  if (!active || !payload?.length) return null
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-zinc-950/95 px-3 py-2 text-sm shadow-2xl backdrop-blur-xl">
+      <div className="mb-2 font-medium text-white/90">{label}</div>
+      <div className="space-y-1">
+        {payload.map((entry) => (
+          <div key={entry.name ?? String(entry.value)} className="flex items-center justify-between gap-4 text-white/70">
+            <span>{entry.name ?? 'Serie'}</span>
+            <span className="font-medium text-white">{formatCompact(entry.value ?? 0)}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

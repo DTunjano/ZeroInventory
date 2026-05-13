@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateProductUseCase } from '../../application/use-cases/create-product.use-case';
@@ -25,6 +26,8 @@ import { GetAllProductSwagger } from '../documentation/get-all-product.swagger';
 import { UpdateProductSwagger } from '../documentation/update-product.swagger';
 import { DeleteProductSwagger } from '../documentation/delete-product.swagger';
 import { GetProductByIdSwagger } from '../documentation/get-product-by-id.swagger';
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { CurrentUser } from '../../../auth/adapters/decorators/current-user.decorator';
 
 @ApiTags('Productos')
 @Controller('productos')
@@ -72,12 +75,14 @@ export class ProductoController {
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
   @UpdateProductSwagger()
   async update(
     @Param('id', ParseIntPipe) productoId: number,
     @Body() body: UpdateProductDTO,
+    @CurrentUser() usuarioId: number,
   ): Promise<Producto> {
-    const producto = await this.updateProductUseCase.ejecutar(productoId, body);
+    const producto = await this.updateProductUseCase.ejecutar(productoId, usuarioId, body);
     if (!producto) {
       throw new NotFoundException('Producto no encontrado');
     }

@@ -15,6 +15,11 @@ export enum TipoMovimientoEnum {
   AJUSTE = 'AJUSTE',
 }
 
+export enum TipoCambioEnum {
+  AUMENTO = 'AUMENTO',
+  REDUCCION = 'REDUCCION',
+}
+
 @Entity({ name: 'ajuste_inventario' })
 export class AjusteInventarioEntityORM {
   @PrimaryGeneratedColumn({ name: 'ajuste_inventario_id' })
@@ -31,6 +36,15 @@ export class AjusteInventarioEntityORM {
 
   @Column({ name: 'cantidad', type: 'int' })
   cantidad!: number;
+
+  @Column({ name: 'stock_anterior', type: 'int' })
+  stockAnterior!: number;
+
+  @Column({ name: 'stock_nuevo', type: 'int' })
+  stockNuevo!: number;
+
+  @Column({ name: 'tipo_cambio', type: 'enum', enum: TipoCambioEnum })
+  tipoCambio!: TipoCambioEnum;
 
   @Column({ name: 'motivo', type: 'text' })
   motivo!: string;

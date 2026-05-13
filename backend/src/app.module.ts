@@ -23,6 +23,7 @@ import { EmpleadoModule } from './empleado/empleado.module';
 import { AuthModule } from './auth/auth.module';
 import { SettingsModule } from './settings/settings.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     DatabaseModule,
     CloudinaryModule,
     AuthModule,
+    InventoryModule,
     ProductoModule,
     UsuarioModule,
     ClienteModule,

@@ -2,7 +2,7 @@ import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/shared/ui/
 import { Button } from '@/shared/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
-import type { Product } from '../domain/product.models'
+import type { Product } from '../../domain/product.models'
 import { ProductTableRow } from './ProductTableRow'
 
 export interface ProductTableProps {
@@ -90,19 +90,25 @@ export function ProductTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
-              <ProductTableRow
-                key={product.productoId}
-                product={product}
-                imageUrl={imagesByProductId[product.productoId]}
-                categoryName={categoriesByProductId[product.productoId]}
-                providerName={providersByProductId[product.productoId]}
-                onEdit={() => onEdit(product)}
-                onToggleActive={() => onToggleActive(product)}
-                onSoftDelete={() => onSoftDelete(product)}
-                isLoading={isLoading}
-              />
-            ))}
+            {products.map((product) => {
+              const imageUrl = imagesByProductId[product.productoId]
+              const categoryName = categoriesByProductId[product.productoId]
+              const providerName = providersByProductId[product.productoId]
+
+              return (
+                <ProductTableRow
+                  key={product.productoId}
+                  product={product}
+                  {...(imageUrl ? { imageUrl } : {})}
+                  {...(categoryName ? { categoryName } : {})}
+                  {...(providerName ? { providerName } : {})}
+                  onEdit={() => onEdit(product)}
+                  onToggleActive={() => onToggleActive(product)}
+                  onSoftDelete={() => onSoftDelete(product)}
+                  isLoading={isLoading}
+                />
+              )
+            })}
           </TableBody>
         </Table>
       </div>

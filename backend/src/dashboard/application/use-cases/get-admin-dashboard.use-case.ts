@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm'
 
 import { ClienteEntityORM } from '../../../cliente/infrastructure/persistence/cliente.orm-entity'
 import { KardexEntityORM, TipoMovimientoEnum, TipoReferenciaEnum } from '../../../entities/kardex.orm-entity'
+import { PedidoDetalleEntityORM } from '../../../pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity'
 import { PagoEntityORM } from '../../../pago/infrastructure/persistence/pago.orm-entity'
 import { EstadoPedidoEnum } from '../../../pedido/domain/entity/pedido.entity'
 import { PedidoEntityORM } from '../../../pedido/infrastructure/persistence/pedido.orm-entity'
@@ -33,8 +34,10 @@ type RawOrderRow = {
   firstName: string | null
   lastName: string | null
   total: string | number
+  itemsCount: string | number
   state: string
   paymentStatus: string
+  paymentMethod: string
   date: Date | string
 }
 type RawActivityRow = {
@@ -84,25 +87,33 @@ function formatCustomerName(firstName: string | null, lastName: string | null, u
   return fullName || username
 }
 
+function getCompletedOrderConditions() {
+  return {
+    paymentState: 'APROBADO' as const,
+    orderStates: [EstadoPedidoEnum.CONFIRMADO, EstadoPedidoEnum.COMPLETADO, EstadoPedidoEnum.ENVIADO],
+  }
+}
+
 @Injectable()
 export class GetAdminDashboardUseCase {
   constructor(private readonly dataSource: DataSource) {}
 
   async ejecutar(): Promise<AdminDashboardResponse> {
-    const periods = getLastPeriods(6)
+    const periods = getLastPeriods(12)
+    const completedOrderConditions = getCompletedOrderConditions()
 
     const [
       totalPedidos,
       totalProductos,
       totalUsuarios,
       totalMovimientosInventario,
-      totalProductosVendidos,
       totalIngresos,
       pedidosCompletados,
       productosBajoStock,
       revenueRows,
       orderRows,
       inventoryRows,
+      totalProductosVendidos,
       topProductsRows,
       recentOrdersRows,
       recentActivityRows,
@@ -112,26 +123,17 @@ export class GetAdminDashboardUseCase {
       this.dataSource.getRepository(UsuarioEntityORM).count(),
       this.dataSource.getRepository(KardexEntityORM).count(),
       this.dataSource
-        .getRepository(KardexEntityORM)
-        .createQueryBuilder('kardex')
-        .select('COALESCE(SUM(kardex.cantidad), 0)', 'value')
-        .where('kardex.tipoMovimiento = :tipoMovimiento', {
-          tipoMovimiento: TipoMovimientoEnum.SALIDA,
-        })
-        .andWhere('kardex.tipoReferencia = :tipoReferencia', {
-          tipoReferencia: TipoReferenciaEnum.VENTA,
-        })
-        .getRawOne<{ value: string | number }>(),
-      this.dataSource
-        .getRepository(PagoEntityORM)
-        .createQueryBuilder('pago')
-        .select('COALESCE(SUM(pago.monto), 0)', 'value')
-        .where('pago.estado = :estado', { estado: EstadoPagoEnum.APROBADO })
+        .getRepository(PedidoEntityORM)
+        .createQueryBuilder('pedido')
+        .innerJoin(PagoEntityORM, 'pago', 'pago.pedidoId = pedido.pedidoId')
+        .select('COALESCE(SUM(pedido.total), 0)', 'value')
+        .andWhere('pago.estado = :paymentState', { paymentState: completedOrderConditions.paymentState })
         .getRawOne<{ value: string | number }>(),
       this.dataSource
         .getRepository(PedidoEntityORM)
         .createQueryBuilder('pedido')
-        .where('pedido.estado = :estado', { estado: EstadoPedidoEnum.COMPLETADO })
+        .innerJoin(PagoEntityORM, 'pago', 'pago.pedidoId = pedido.pedidoId')
+        .andWhere('pago.estado = :paymentState', { paymentState: completedOrderConditions.paymentState })
         .getCount(),
       this.dataSource
         .getRepository(ProductoEntityORM)
@@ -139,11 +141,12 @@ export class GetAdminDashboardUseCase {
         .where('producto.cantidad <= :threshold', { threshold: 20 })
         .getCount(),
       this.dataSource
-        .getRepository(PagoEntityORM)
-        .createQueryBuilder('pago')
+        .getRepository(PedidoEntityORM)
+        .createQueryBuilder('pedido')
+        .innerJoin(PagoEntityORM, 'pago', 'pago.pedidoId = pedido.pedidoId')
         .select("TO_CHAR(DATE_TRUNC('month', pago.fechaPago), 'YYYY-MM')", 'period')
         .addSelect('SUM(pago.monto)', 'value')
-        .where('pago.estado = :estado', { estado: EstadoPagoEnum.APROBADO })
+        .andWhere('pago.estado = :paymentState', { paymentState: completedOrderConditions.paymentState })
         .andWhere(`pago.fechaPago >= (CURRENT_DATE - INTERVAL '5 months')`)
         .groupBy("DATE_TRUNC('month', pago.fechaPago)")
         .orderBy("DATE_TRUNC('month', pago.fechaPago)", 'ASC')
@@ -151,45 +154,46 @@ export class GetAdminDashboardUseCase {
       this.dataSource
         .getRepository(PedidoEntityORM)
         .createQueryBuilder('pedido')
-        .where(`pedido.fecha >= (CURRENT_DATE - INTERVAL '5 months')`)
-        .select("TO_CHAR(DATE_TRUNC('month', pedido.fecha), 'YYYY-MM')", 'period')
+        .innerJoin(PagoEntityORM, 'pago', 'pago.pedidoId = pedido.pedidoId')
+        .andWhere('pago.estado = :paymentState', { paymentState: completedOrderConditions.paymentState })
+        .andWhere(`pago.fechaPago >= (CURRENT_DATE - INTERVAL '5 months')`)
+        .select("TO_CHAR(DATE_TRUNC('month', pago.fechaPago), 'YYYY-MM')", 'period')
         .addSelect('COUNT(*)', 'value')
-        .groupBy("DATE_TRUNC('month', pedido.fecha)")
-        .orderBy("DATE_TRUNC('month', pedido.fecha)", 'ASC')
+        .groupBy("DATE_TRUNC('month', pago.fechaPago)")
+        .orderBy("DATE_TRUNC('month', pago.fechaPago)", 'ASC')
         .getRawMany<RawValueRow>(),
       this.dataSource
         .getRepository(KardexEntityORM)
         .createQueryBuilder('kardex')
         .select("TO_CHAR(DATE_TRUNC('month', kardex.fechaMovimiento), 'YYYY-MM')", 'period')
-        .addSelect(
-          "COALESCE(SUM(CASE WHEN kardex.tipoMovimiento = 'ENTRADA' THEN kardex.cantidad ELSE 0 END), 0)",
-          'entradas',
-        )
-        .addSelect(
-          "COALESCE(SUM(CASE WHEN kardex.tipoMovimiento = 'SALIDA' THEN kardex.cantidad ELSE 0 END), 0)",
-          'salidas',
-        )
+        .addSelect("COALESCE(SUM(CASE WHEN kardex.tipoMovimiento = 'ENTRADA' THEN kardex.cantidad ELSE 0 END), 0)", 'entradas')
+        .addSelect("COALESCE(SUM(CASE WHEN kardex.tipoMovimiento = 'SALIDA' THEN kardex.cantidad ELSE 0 END), 0)", 'salidas')
         .where(`kardex.fechaMovimiento >= (CURRENT_DATE - INTERVAL '5 months')`)
         .groupBy("DATE_TRUNC('month', kardex.fechaMovimiento)")
         .orderBy("DATE_TRUNC('month', kardex.fechaMovimiento)", 'ASC')
         .getRawMany<RawInventoryRow>(),
       this.dataSource
-        .getRepository(KardexEntityORM)
-        .createQueryBuilder('kardex')
-        .innerJoin(ProductoEntityORM, 'producto', 'producto.productoId = kardex.productoId')
+        .getRepository(PedidoDetalleEntityORM)
+        .createQueryBuilder('detalle')
+        .innerJoin(PedidoEntityORM, 'pedido', 'pedido.pedidoId = detalle.pedidoId')
+        .innerJoin(PagoEntityORM, 'pago', 'pago.pedidoId = pedido.pedidoId')
+        .select('COALESCE(SUM(detalle.cantidad), 0)', 'value')
+        .andWhere('pago.estado = :paymentState', { paymentState: completedOrderConditions.paymentState })
+        .getRawOne<{ value: string | number }>(),
+      this.dataSource
+        .getRepository(PedidoDetalleEntityORM)
+        .createQueryBuilder('detalle')
+        .innerJoin(PedidoEntityORM, 'pedido', 'pedido.pedidoId = detalle.pedidoId')
+        .innerJoin(PagoEntityORM, 'pago', 'pago.pedidoId = pedido.pedidoId')
+        .innerJoin(ProductoEntityORM, 'producto', 'producto.productoId = detalle.productoId')
         .select('producto.productoId', 'productId')
         .addSelect('producto.nombre', 'name')
-        .addSelect('COALESCE(SUM(kardex.cantidad), 0)', 'soldQuantity')
-        .addSelect('COALESCE(SUM(kardex.valorTotal), 0)', 'revenue')
-        .where('kardex.tipoMovimiento = :tipoMovimiento', {
-          tipoMovimiento: TipoMovimientoEnum.SALIDA,
-        })
-        .andWhere('kardex.tipoReferencia = :tipoReferencia', {
-          tipoReferencia: TipoReferenciaEnum.VENTA,
-        })
+        .addSelect('COALESCE(SUM(detalle.cantidad), 0)', 'soldQuantity')
+        .addSelect('COALESCE(SUM(detalle.subtotal), 0)', 'revenue')
+        .andWhere('pago.estado = :paymentState', { paymentState: completedOrderConditions.paymentState })
         .groupBy('producto.productoId')
         .addGroupBy('producto.nombre')
-        .orderBy('COALESCE(SUM(kardex.cantidad), 0)', 'DESC')
+        .orderBy('COALESCE(SUM(detalle.cantidad), 0)', 'DESC')
         .limit(5)
         .getRawMany<RawTopProductRow>(),
       this.dataSource
@@ -198,16 +202,28 @@ export class GetAdminDashboardUseCase {
         .innerJoin(PagoEntityORM, 'pago', 'pago.pedidoId = pedido.pedidoId')
         .innerJoin(ClienteEntityORM, 'cliente', 'cliente.clienteId = pedido.clienteId')
         .innerJoin(UsuarioEntityORM, 'usuario', 'usuario.usuarioId = cliente.usuarioId')
-        .select('pedido.pedido_id', 'orderId')
+        .leftJoin(PedidoDetalleEntityORM, 'detalle', 'detalle.pedidoId = pedido.pedidoId')
+        .select('pedido.pedidoId', 'orderId')
         .addSelect('pedido.total', 'total')
         .addSelect('pedido.estado', 'state')
-        .addSelect('pedido.fecha', 'date')
+        .addSelect('pago.fechaPago', 'date')
         .addSelect('pago.estado', 'paymentStatus')
+        .addSelect('pago.metodoPago', 'paymentMethod')
+        .addSelect('COALESCE(SUM(detalle.cantidad), 0)', 'itemsCount')
         .addSelect('usuario.username', 'username')
         .addSelect('usuario.primer_nombre', 'firstName')
         .addSelect('usuario.primer_apellido', 'lastName')
-        .where('pago.estado = :estado', { estado: EstadoPagoEnum.APROBADO })
-        .orderBy('pedido.fecha', 'DESC')
+        .andWhere('pago.estado = :paymentState', { paymentState: completedOrderConditions.paymentState })
+        .groupBy('pedido.pedidoId')
+        .addGroupBy('pedido.total')
+        .addGroupBy('pedido.estado')
+        .addGroupBy('pago.fechaPago')
+        .addGroupBy('pago.estado')
+        .addGroupBy('pago.metodoPago')
+        .addGroupBy('usuario.username')
+        .addGroupBy('usuario.primer_nombre')
+        .addGroupBy('usuario.primer_apellido')
+        .orderBy('pago.fechaPago', 'DESC')
         .limit(5)
         .getRawMany<RawOrderRow>(),
       this.dataSource
@@ -254,8 +270,10 @@ export class GetAdminDashboardUseCase {
       ),
       username: row.username,
       total: toNumber(row.total),
+      itemsCount: toNumber(row.itemsCount),
       state: row.state,
       paymentStatus: row.paymentStatus,
+      paymentMethod: row.paymentMethod,
       date: new Date(row.date).toISOString(),
     }))
     const recentActivity: RecentActivityPoint[] = recentActivityRows.map((row) => ({

@@ -144,10 +144,10 @@ export function SettingsPage() {
   /* ── Submit handlers ── */
   const onGeneralSave = generalForm.handleSubmit((values) => {
     updateMutation.mutate({
-      primerNombre: values.primerNombre || undefined,
-      segundoNombre: values.segundoNombre || undefined,
-      primerApellido: values.primerApellido || undefined,
-      segundoApellido: values.segundoApellido || undefined,
+      ...(values.primerNombre ? { primerNombre: values.primerNombre } : {}),
+      ...(values.segundoNombre ? { segundoNombre: values.segundoNombre } : {}),
+      ...(values.primerApellido ? { primerApellido: values.primerApellido } : {}),
+      ...(values.segundoApellido ? { segundoApellido: values.segundoApellido } : {}),
       address: {
         lineaDir: values.lineaDir || '',
         barrio: values.barrio || '',

@@ -9,8 +9,10 @@ import {
   ShoppingCart,
   Archive,
   Settings,
+  SlidersHorizontal,
   Menu,
   X,
+  LogOut,
 } from 'lucide-react'
 import type { ComponentType } from 'react'
 
@@ -39,6 +41,7 @@ const navByRole: Record<RoleKey, AppLayoutNavItem[]> = {
   ADMIN: [
     { to: '/admin', label: 'Dashboard', icon: LayoutGrid },
     { to: '/admin/inventory', label: 'Inventario', icon: Archive },
+    { to: '/admin/inventory-adjustments', label: 'Ajustes de inventario', icon: SlidersHorizontal },
     { to: '/admin/products', label: 'Productos', icon: Package },
     { to: '/admin/employees', label: 'Empleados', icon: Briefcase },
     { to: '/admin/reports', label: 'Reportes', icon: BarChart3 },
@@ -76,13 +79,11 @@ export function AppLayout(props: { title?: string }) {
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <div
-        className={cn(
-          'grid min-h-dvh transition-[grid-template-columns] duration-300 ease-in-out',
-          isSidebarCollapsed ? 'grid-cols-[5rem_1fr]' : 'grid-cols-[17rem_1fr]',
-        )}
+      <aside className="fixed left-0 top-0 hidden border-r border-white/10 bg-zinc-950/90 md:flex md:flex-col h-dvh transition-all duration-300 ease-in-out z-50"
+        style={{
+          width: isSidebarCollapsed ? '5rem' : '17rem',
+        }}
       >
-        <aside className="hidden border-r border-white/10 bg-zinc-950/90 md:flex md:flex-col">
           <div
             className={cn(
               'flex h-16 items-center border-b border-white/10 px-4 overflow-hidden',
@@ -114,7 +115,7 @@ export function AppLayout(props: { title?: string }) {
             </Button>
           </div>
 
-          <nav className="flex-1 p-2">
+          <nav className="flex-1 overflow-y-auto p-2 min-h-0">
             {nav.map((item) => (
               <NavLink
                 key={item.to}
@@ -145,24 +146,61 @@ export function AppLayout(props: { title?: string }) {
           </nav>
 
           <div className="mt-auto border-t border-white/10 p-3">
-            <div className={cn('text-xs text-white/50', isSidebarCollapsed && 'text-center')}>
-              {isSidebarCollapsed ? 'AD' : 'Sesión'}
-            </div>
-            <div
-              className={cn(
-                'mt-1 truncate text-sm font-medium text-white transition-all duration-200',
-                isSidebarCollapsed ? 'text-center text-xs' : '',
-              )}
-              title={status === 'authenticated' ? user?.username : '—'}
-            >
-              {isSidebarCollapsed
-                ? (status === 'authenticated' ? (user?.username?.slice(0, 2) ?? '—') : '—')
-                : (status === 'authenticated' ? user?.username : '—')}
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-lg transition-all hover:bg-white/5 p-2',
+                    isSidebarCollapsed ? 'justify-center' : '',
+                  )}
+                  aria-label="Menú de sesión"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-xs font-bold text-white">
+                    {status === 'authenticated' && user?.username
+                      ? user.username.slice(0, 2).toUpperCase()
+                      : '—'}
+                  </div>
+                  {!isSidebarCollapsed && (
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium text-white">
+                        {status === 'authenticated' ? user?.username : '—'}
+                      </div>
+                      <div className="text-xs text-white/40">Sesión</div>
+                    </div>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align={isSidebarCollapsed ? 'end' : 'start'} className="w-56">
+                <DropdownMenuLabel>
+                  {status === 'authenticated' ? user?.username : 'Invitado'}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/">Ir a inicio</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={async (e) => {
+                    e.preventDefault()
+                    await logout()
+                    navigate('/login', { replace: true })
+                  }}
+                  className="text-red-400 focus:bg-red-500/10 focus:text-red-300"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Cerrar sesión
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-col">
+        <div 
+          className="flex min-w-0 flex-col h-dvh overflow-hidden"
+          style={{
+            marginLeft: isSidebarCollapsed ? '5rem' : '17rem',
+          }}
+        >
           <header className="flex h-16 items-center gap-3 border-b border-white/10 bg-white/5 px-4 backdrop-blur-sm">
             <Button
               variant="ghost"
@@ -214,7 +252,7 @@ export function AppLayout(props: { title?: string }) {
             </DropdownMenu>
           </header>
 
-          <main className="min-w-0 flex-1 px-4 py-6 transition-all duration-300">
+          <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 transition-all duration-300">
             {title ? (
               <div className="mb-6 flex items-center justify-between gap-4">
                 <h1 className="text-xl font-semibold tracking-tight text-white">{title}</h1>
@@ -223,7 +261,6 @@ export function AppLayout(props: { title?: string }) {
             <Outlet />
           </main>
         </div>
-      </div>
     </div>
   )
 }

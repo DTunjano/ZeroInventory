@@ -32,8 +32,10 @@ export interface RecentOrderPoint {
   customerName: string
   username: string
   total: number
+  itemsCount: number
   state: string
   paymentStatus: string
+  paymentMethod: string
   date: string
 }
 

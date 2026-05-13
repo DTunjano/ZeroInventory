@@ -32,8 +32,10 @@ export interface RecentOrderPoint {
   customerName: string
   username: string
   total: number
+  itemsCount: number
   state: string
   paymentStatus: string
+  paymentMethod: string
   date: string
 }
 
@@ -44,6 +46,29 @@ export interface RecentActivityPoint {
   quantity: number
   referenceId: number
   date: string
+}
+
+export interface InventoryAdjustmentPoint {
+  ajusteInventarioId: number
+  productoId: number
+  productoNombre: string
+  productoSku: string
+  usuarioId: number
+  usuarioNombre: string
+  stockAnterior: number
+  stockNuevo: number
+  cantidad: number
+  tipoCambio: 'AUMENTO' | 'REDUCCION'
+  motivo: string
+  fecha: string
+}
+
+export interface PaginatedInventoryAdjustments {
+  data: InventoryAdjustmentPoint[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
 }
 
 export interface AdminDashboardResponse {

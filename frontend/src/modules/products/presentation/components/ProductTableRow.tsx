@@ -1,6 +1,6 @@
 import { TableRow, TableCell } from '@/shared/ui/table'
 import { cn } from '@/shared/lib/utils'
-import type { Product } from '../domain/product.models'
+import type { Product } from '../../domain/product.models'
 import { ProductBadge } from './ProductBadge'
 import { ProductActionsDropdown } from './ProductActionsDropdown'
 

@@ -374,8 +374,9 @@ export function MyCartPage() {
   const total = subtotal + impuestos
 
   useEffect(() => {
-    if (!direccionId && direccionesQuery.data?.length) {
-      setDireccionId(String(direccionesQuery.data[0].direccionId))
+    const firstAddress = direccionesQuery.data?.[0]
+    if (!direccionId && firstAddress) {
+      setDireccionId(String(firstAddress.direccionId))
     }
   }, [direccionId, direccionesQuery.data])
 

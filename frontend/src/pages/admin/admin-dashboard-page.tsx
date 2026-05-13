@@ -16,6 +16,7 @@ import { BarChart3, Package, ShoppingCart, Users, Warehouse, TrendingUp, Banknot
 import { useAdminDashboard } from '@/modules/admin-dashboard/application/use-admin-dashboard'
 import {
   ActivityFeedList,
+  DashboardTooltip,
   DashboardLegendChip,
   DashboardPanelCard,
   DashboardSkeleton,
@@ -26,17 +27,6 @@ import {
   formatPeriod,
   getGrowth,
 } from '@/modules/admin-dashboard/presentation/components/dashboard-widgets'
-
-function AdminTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value?: number }>; label?: string }) {
-  if (!active || !payload?.length) return null
-
-  return (
-    <div className="rounded-xl border border-white/10 bg-zinc-950/95 px-3 py-2 text-sm shadow-2xl">
-      <div className="font-medium text-white/90">{label}</div>
-      <div className="text-white/70">{payload[0]?.value ?? 0}</div>
-    </div>
-  )
-}
 
 export function AdminDashboardPage() {
   const dashboardQuery = useAdminDashboard()
@@ -152,7 +142,7 @@ export function AdminDashboardPage() {
                 <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} stroke="rgba(255,255,255,0.45)" />
                 <YAxis tickLine={false} axisLine={false} stroke="rgba(255,255,255,0.45)" />
-                <Tooltip content={<AdminTooltip />} />
+                <Tooltip content={<DashboardTooltip />} />
                 <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2.5} fill="url(#revenueFill)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -169,7 +159,7 @@ export function AdminDashboardPage() {
                 <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} stroke="rgba(255,255,255,0.45)" />
                 <YAxis tickLine={false} axisLine={false} stroke="rgba(255,255,255,0.45)" />
-                <Tooltip content={<AdminTooltip />} />
+                <Tooltip content={<DashboardTooltip />} />
                 <Bar dataKey="value" fill="#3b82f6" radius={[10, 10, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -195,17 +185,19 @@ export function AdminDashboardPage() {
           </div>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.inventoryMovements.map((point) => ({
-                label: formatPeriod(point.period),
-                entradas: point.entradas,
-                salidas: point.salidas,
-              }))}>
+              <LineChart
+                data={data.inventoryMovements.map((point) => ({
+                  label: formatPeriod(point.period),
+                  entradas: point.entradas,
+                  salidas: point.salidas,
+                }))}
+              >
                 <CartesianGrid stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} stroke="rgba(255,255,255,0.45)" />
                 <YAxis tickLine={false} axisLine={false} stroke="rgba(255,255,255,0.45)" />
-                <Tooltip content={<AdminTooltip />} />
-                <Line type="monotone" dataKey="entradas" stroke="#22c55e" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="salidas" stroke="#ef4444" strokeWidth={2.5} dot={false} />
+                <Tooltip content={<DashboardTooltip />} />
+                <Line type="linear" name="Entradas" dataKey="entradas" stroke="#22c55e" strokeWidth={2.5} dot={false} />
+                <Line type="linear" name="Salidas" dataKey="salidas" stroke="#ef4444" strokeWidth={2.5} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
