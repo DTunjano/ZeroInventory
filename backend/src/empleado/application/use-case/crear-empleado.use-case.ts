@@ -58,6 +58,8 @@ export class CrearEmpleadoUseCase {
       const usuario = new Usuario(
         0,
         dto.email,
+        dto.email,
+        dto.telefono ?? null,
         hashPassword,
         dto.nombre,
         null,

@@ -12,6 +12,7 @@ import { UpdateDireccionUseCase } from './application/use-cases/update-direccion
 import { DeleteDireccionUseCase } from './application/use-cases/delete-direccion.use-case';
 import { CreateMyDireccionUseCase } from './application/use-cases/create-my-direccion.use-case';
 import { GetMyDireccionesUseCase } from './application/use-cases/get-my-direcciones.use-case';
+import { SetPredeterminadaDireccionUseCase } from './application/use-cases/set-predeterminada-direccion.use-case';
 
 @Module({
   imports: [TypeOrmModule.forFeature([DireccionEntityORM]), ClienteModule],
@@ -24,6 +25,7 @@ import { GetMyDireccionesUseCase } from './application/use-cases/get-my-direccio
     GetAllDireccionesUseCase,
     GetDireccionByIdUseCase,
     GetMyDireccionesUseCase,
+    SetPredeterminadaDireccionUseCase,
     {
       provide: DireccionRepository,
       useClass: DireccionRepositoryImpl,

@@ -2,76 +2,225 @@
 
 @layer base {
   :root {
-    /* Light mode: azul + blanco */
+    /* Light mode: professional blue + white + dark saturated colors */
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --foreground: 220 13% 13%;
 
+    /* Surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 220 13% 13%;
+    
+    --surface: 220 16% 96%;
+    --surface-foreground: 220 13% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 220 13% 13%;
 
+    /* Colors - Strong & Saturated for Light Mode */
     --primary: 217 99% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 220 14% 20%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 13% 60%;
+    --muted-foreground: 220 13% 20%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 217 99% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Status & Semantic Colors - SOLID & DARK for visibility on white */
+    --destructive: 0 100% 45%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --success: 138 76% 36%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 41 96% 40%;
+    --warning-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --border: 220 13% 87%;
+    --input: 0 0% 100%;
+    --input-border: 220 13% 80%;
     --ring: 217 99% 50%;
 
     --radius: 0.75rem;
   }
 
   .dark {
-    /* Dark mode: azul + negro */
-    --background: 0 0% 3%;
-    --foreground: 0 0% 98%;
+    /* Dark mode: professional blue + dark grays/black */
+    --background: 217 33% 4%;
+    --foreground: 210 13% 98%;
 
-    --card: 0 0% 6%;
-    --card-foreground: 0 0% 98%;
+    /* Surfaces */
+    --card: 220 13% 8%;
+    --card-foreground: 210 13% 98%;
+    
+    --surface: 220 13% 12%;
+    --surface-foreground: 210 13% 98%;
 
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 13% 8%;
+    --popover-foreground: 210 13% 98%;
 
-    --primary: 217 99% 50%;
+    /* Colors */
+    --primary: 217 99% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 8%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 13% 50%;
+    --secondary-foreground: 210 13% 98%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 220 13% 30%;
+    --muted-foreground: 210 13% 65%;
 
-    --accent: 217 99% 95%;
-    --accent-foreground: 217 99% 50%;
+    --accent: 217 99% 60%;
+    --accent-foreground: 0 0% 15%;
 
+    /* Status Colors */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+    
+    --success: 142 72% 29%;
+    --success-foreground: 142 72% 90%;
+    
+    --warning: 48 96% 53%;
+    --warning-foreground: 0 0% 10%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 15%;
-    --ring: 217 99% 50%;
+    --border: 220 13% 20%;
+    --input: 220 13% 15%;
+    --input-border: 220 13% 25%;
+    --ring: 217 99% 55%;
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     margin: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   html {
     background-color: hsl(var(--background));
+    color-scheme: light dark;
+  }
+}
+
+/* Component utility classes using CSS variables directly */
+@layer components {
+  .card-base {
+    background-color: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    border-color: hsl(var(--border));
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+  }
+
+  .surface-base {
+    background-color: hsl(var(--surface));
+    color: hsl(var(--surface-foreground));
+    border-color: hsl(var(--border));
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border));
+  }
+
+  .input-base {
+    background-color: hsl(var(--input));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--input-border));
+    border-radius: calc(var(--radius) * 0.66);
+    padding: 0.5rem 0.75rem;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    border: 1px solid hsl(var(--input-border));
+  }
+
+  .input-base:focus {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  .button-primary {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    transition: background-color 0.18s ease, color 0.18s ease;
+  }
+
+  .button-primary:hover {
+    opacity: 0.9;
+  }
+
+  .button-secondary {
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    transition: background-color 0.18s ease, color 0.18s ease;
+  }
+
+  .button-secondary:hover {
+    opacity: 0.8;
+  }
+
+  .button-ghost {
+    background-color: transparent;
+    color: hsl(var(--foreground));
+    transition: background-color 0.18s ease, color 0.18s ease;
+  }
+
+  .button-ghost:hover {
+    background-color: hsl(var(--surface));
+  }
+
+  .text-muted {
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Status badges - Strong colors */
+  .badge-success {
+    background-color: hsl(var(--success) / 0.15);
+    color: hsl(var(--success));
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    border: 1px solid hsl(var(--success) / 0.4);
+  }
+
+  .badge-destructive {
+    background-color: hsl(var(--destructive) / 0.15);
+    color: hsl(var(--destructive));
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    border: 1px solid hsl(var(--destructive) / 0.4);
+  }
+
+  .badge-warning {
+    background-color: hsl(var(--warning) / 0.15);
+    color: hsl(var(--warning));
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    border: 1px solid hsl(var(--warning) / 0.4);
+  }
+
+  /* Table row hover - Light mode specific */
+  table tbody tr:hover {
+    background-color: hsl(var(--surface));
+  }
+
+  /* Prevent thead from changing color on hover (eliminate white flash) */
+  table thead:hover,
+  table thead tr:hover,
+  thead tr:hover {
+    background-color: hsl(var(--card)) !important;
+    color: inherit !important;
   }
 }

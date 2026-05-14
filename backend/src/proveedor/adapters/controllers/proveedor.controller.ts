@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -20,6 +21,8 @@ import { FilterProveedorDTO } from '../../application/dto/filters-proveedor-dto'
 import { UpdateProveedorUseCase } from '../../application/use-cases/update-proveedor.use-case';
 import { DeleteProveedorUseCase } from '../../application/use-cases/delete-proveedor.use-case';
 import { UpdateProveedorDTO } from '../../application/dto/update-proveedor-dto';
+import { ToggleProveedorUseCase } from '../../application/use-cases/toggle-proveedor.use-case';
+import { GetSuppliedProductCountUseCase } from '../../application/use-cases/get-supplied-product-count.use-case';
 import { CreateProveedorSwagger } from '../documentation/create-proveedor.swagger';
 import { GetAllProveedoresSwagger } from '../documentation/get-all-proveedor.swagger';
 import { GetProveedorByIdSwagger } from '../documentation/get-proveedor-by-id.swagger';
@@ -35,6 +38,8 @@ export class ProveedorController {
     private readonly getAllProveedoresUseCase: GetAllProveedoresUseCase,
     private readonly updateProveedorUseCase: UpdateProveedorUseCase,
     private readonly deleteProveedorUseCase: DeleteProveedorUseCase,
+    private readonly toggleProveedorUseCase: ToggleProveedorUseCase,
+    private readonly getSuppliedProductCountUseCase: GetSuppliedProductCountUseCase,
   ) {}
 
   @Post()
@@ -85,6 +90,25 @@ export class ProveedorController {
       throw new NotFoundException('Proveedor no encontrado');
     }
     return proveedor;
+  }
+
+  @Patch(':id/estado')
+  async toggleStatus(
+    @Param('id', ParseIntPipe) proveedorId: number,
+  ): Promise<Proveedor> {
+    const proveedor = await this.toggleProveedorUseCase.ejecutar(proveedorId);
+    if (!proveedor) {
+      throw new NotFoundException('Proveedor no encontrado');
+    }
+    return proveedor;
+  }
+
+  @Get(':id/productos-suministrados')
+  async getSuppliedProductCount(
+    @Param('id', ParseIntPipe) proveedorId: number,
+  ): Promise<{ total: number }> {
+    const total = await this.getSuppliedProductCountUseCase.ejecutar(proveedorId);
+    return { total };
   }
 
   @Delete(':id')

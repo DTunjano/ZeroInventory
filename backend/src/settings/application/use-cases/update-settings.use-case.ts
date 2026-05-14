@@ -4,6 +4,7 @@ import { ClienteRepository } from '../../../cliente/domain/repository/cliente.re
 import { DireccionRepository } from '../../../direccion/domain/repository/direccion.repository';
 import { Direccion } from '../../../direccion/domain/entity/direccion.entity';
 import { UpdateSettingsDto } from '../dto/update-settings.dto';
+import { ConflictException } from '@nestjs/common';
 
 @Injectable()
 export class UpdateSettingsUseCase {
@@ -32,6 +33,26 @@ export class UpdateSettingsUseCase {
     if (body.segundoApellido !== undefined) {
       usuario.segundoApellido = body.segundoApellido ?? null;
     }
+    if (body.username && body.username !== usuario.username) {
+      const existingUsername = await this.usuarioRepo.getByUsername(body.username);
+      if (existingUsername && existingUsername.usuarioId !== usuarioId) {
+        throw new ConflictException('Ya existe un usuario con ese nombre de usuario');
+      }
+      usuario.username = body.username;
+    }
+    if (body.email !== undefined) {
+      const normalizedEmail = body.email ? body.email.toLowerCase() : null;
+      if (normalizedEmail && normalizedEmail !== usuario.email) {
+        const existingEmail = await this.usuarioRepo.getByEmail(normalizedEmail);
+        if (existingEmail && existingEmail.usuarioId !== usuarioId) {
+          throw new ConflictException('Ya existe un usuario con ese correo electrónico');
+        }
+      }
+      usuario.email = normalizedEmail;
+    }
+    if (body.telefono !== undefined) {
+      usuario.telefono = body.telefono ?? null;
+    }
     if (body.theme !== undefined) {
       usuario.theme = body.theme;
     }
@@ -59,6 +80,7 @@ export class UpdateSettingsUseCase {
           const newDir = new Direccion(
             0,
             cliente.clienteId,
+            null,
             body.address.lineaDir,
             body.address.barrio,
             body.address.codigoPostal ?? null,

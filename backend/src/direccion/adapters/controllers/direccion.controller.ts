@@ -31,6 +31,7 @@ import { UpdateDireccionDTO } from '../../application/dto/update-direccion-dto';
 import { CreateMyDireccionDTO } from '../../application/dto/create-my-direccion.dto';
 import { CreateMyDireccionUseCase } from '../../application/use-cases/create-my-direccion.use-case';
 import { GetMyDireccionesUseCase } from '../../application/use-cases/get-my-direcciones.use-case';
+import { SetPredeterminadaDireccionUseCase } from '../../application/use-cases/set-predeterminada-direccion.use-case';
 import { CreateDireccionSwagger } from '../documentation/create-direccion.swagger';
 import { GetAllDireccionSwagger } from '../documentation/get-all-direccion.swagger';
 import { UpdateDireccionSwagger } from '../documentation/update-direccion.swagger';
@@ -48,6 +49,7 @@ export class DireccionController {
     private readonly getMyDireccionesUseCase: GetMyDireccionesUseCase,
     private readonly updateDireccionUseCase: UpdateDireccionUseCase,
     private readonly deleteDireccionUseCase: DeleteDireccionUseCase,
+    private readonly setPredeterminadaDireccionUseCase: SetPredeterminadaDireccionUseCase,
   ) {}
 
   @Post()
@@ -81,6 +83,17 @@ export class DireccionController {
       throw new NotFoundException('No se pudo crear la dirección');
     }
     return direccion;
+  }
+
+  @Post('me/:id/predeterminada')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.CUSTOMER)
+  async setPredeterminada(
+    @Req() req: Request,
+    @Param('id', ParseIntPipe) direccionId: number,
+  ): Promise<void> {
+    const authRequest = req as Request & { user: { sub: number } }
+    return this.setPredeterminadaDireccionUseCase.ejecutar(authRequest.user.sub, direccionId);
   }
 
   @Get()

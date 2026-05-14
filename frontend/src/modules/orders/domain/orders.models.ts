@@ -14,18 +14,20 @@ export interface OrderPayment {
   metodoPago: 'EFECTIVO' | 'TRANSFERENCIA';
   monto: number;
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
-  fechaPago: Date;
+  fechaPago: Date | string;
 }
+
+export type OrderStatus = 'CONFIRMADO' | 'COMPLETADO' | 'ENVIADO' | 'CANCELADO' | 'DEVUELTO';
 
 export interface Order {
   pedidoId: number;
   clienteId: number;
   direccionId: number;
-  estado: 'CONFIRMADO' | 'COMPLETADO' | 'ENVIADO' | 'CANCELADO' | 'DEVUELTO';
+  estado: OrderStatus;
   total: number;
-  fecha: Date;
-  detalles?: OrderItem[];
-  pago?: OrderPayment;
+  fecha: Date | string;
+  detalles: OrderItem[];
+  pago: OrderPayment | null;
 }
 
 export type GetOrdersInput = undefined;

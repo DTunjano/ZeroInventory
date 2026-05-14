@@ -1,8 +1,10 @@
 import { http } from '@/infrastructure/http/http'
 import type {
   UserSettings,
-  UpdateSettingsInput,
+  Theme,
+  UpdateGeneralSettingsInput,
   UpdatePasswordInput,
+  UpdateAppearanceInput,
 } from '../domain/settings.models'
 
 export const settingsService = {
@@ -11,8 +13,18 @@ export const settingsService = {
     return data
   },
 
-  async updateSettings(input: UpdateSettingsInput): Promise<{ message: string }> {
+  async getAppearance(): Promise<{ theme: Theme }> {
+    const { data } = await http.get<{ theme: Theme }>('/settings/appearance')
+    return data
+  },
+
+  async updateSettings(input: UpdateGeneralSettingsInput): Promise<{ message: string }> {
     const { data } = await http.put<{ message: string }>('/settings', input)
+    return data
+  },
+
+  async updateAppearance(input: UpdateAppearanceInput): Promise<{ message: string }> {
+    const { data } = await http.patch<{ message: string }>('/settings/appearance', input)
     return data
   },
 

@@ -37,7 +37,7 @@ export function ProductCard({
     <div
       className={cn(
         'group relative rounded-lg overflow-hidden',
-        'border border-white/10 bg-white/5',
+        'bg-white/5',
         'backdrop-blur-sm',
         'transition-all duration-300',
         'hover:border-blue-500/50 hover:bg-white/8 hover:shadow-xl hover:shadow-blue-500/10',

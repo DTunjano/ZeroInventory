@@ -16,6 +16,10 @@ export class UpdatePasswordUseCase {
       throw new UnauthorizedException('La nueva contraseña y la confirmación no coinciden');
     }
 
+    if (currentPassword === newPassword) {
+      throw new UnauthorizedException('La nueva contraseña debe ser diferente a la actual');
+    }
+
     const usuario = await this.usuarioRepo.getById(usuarioId);
     if (!usuario) {
       throw new NotFoundException('Usuario no encontrado');

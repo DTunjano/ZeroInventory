@@ -6,6 +6,7 @@ export enum Theme {
 export interface UserProfile {
   username: string;
   email: string;
+  telefono: string | null;
   primerNombre: string | null;
   segundoNombre: string | null;
   primerApellido: string | null;

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
-  Bell,
+  Building,
+  Truck,
   Briefcase,
   BarChart3,
   LayoutGrid,
@@ -13,10 +14,12 @@ import {
   Menu,
   X,
   LogOut,
+  Bell,
 } from 'lucide-react'
 import type { ComponentType } from 'react'
 
 import { useAuthStore } from '@/modules/auth/application/auth.store'
+import { useSettingsStore } from '@/modules/settings/application/settings.store'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import {
@@ -44,6 +47,7 @@ const navByRole: Record<RoleKey, AppLayoutNavItem[]> = {
     { to: '/admin/inventory-adjustments', label: 'Ajustes de inventario', icon: SlidersHorizontal },
     { to: '/admin/products', label: 'Productos', icon: Package },
     { to: '/admin/employees', label: 'Empleados', icon: Briefcase },
+    { to: '/admin/suppliers', label: 'Proveedores', icon: Truck },
     { to: '/admin/reports', label: 'Reportes', icon: BarChart3 },
     { to: '/settings', label: 'Configuración', icon: Settings },
   ],
@@ -56,6 +60,7 @@ const navByRole: Record<RoleKey, AppLayoutNavItem[]> = {
     { to: '/', label: 'Tienda', icon: LayoutGrid },
     { to: '/me/cart', label: 'Carrito', icon: ShoppingCart },
     { to: '/me/orders', label: 'Mis pedidos', icon: Package },
+    { to: '/me/direcciones', label: 'Direcciones', icon: Building },
     { to: '/settings', label: 'Configuración', icon: Settings },
   ],
 }
@@ -66,27 +71,43 @@ function pickNav(roles: string[]): AppLayoutNavItem[] {
   return navByRole.CUSTOMER
 }
 
+const sidebarLabelByRole: Record<RoleKey, string> = {
+  ADMIN: 'Panel de Admin',
+  EMPLOYEE: 'Panel de Empleado',
+  CUSTOMER: 'Mi Tienda',
+}
+
+function pickSidebarLabel(roles: string[]): string {
+  if (roles.includes('ADMIN')) return sidebarLabelByRole.ADMIN
+  if (roles.includes('EMPLOYEE')) return sidebarLabelByRole.EMPLOYEE
+  return sidebarLabelByRole.CUSTOMER
+}
+
 export function AppLayout(props: { title?: string }) {
   const { title } = props
   const navigate = useNavigate()
   const status = useAuthStore((s) => s.status)
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
+  const theme = useSettingsStore((s) => s.theme)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   const roles = (user?.roles ?? []).map((r) => r.toUpperCase())
   const nav = pickNav(roles)
+  const sidebarLabel = pickSidebarLabel(roles)
+  const isDark = theme === 'dark'
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
-      <aside className="fixed left-0 top-0 hidden border-r border-white/10 bg-zinc-950/90 md:flex md:flex-col h-dvh transition-all duration-300 ease-in-out z-50"
+    <div className={cn('min-h-dvh transition-colors duration-200', isDark ? 'bg-background text-foreground' : 'bg-white text-slate-900')}>
+      <aside className={cn('fixed left-0 top-0 hidden border-r md:flex md:flex-col h-dvh transition-all duration-300 ease-in-out z-50', isDark ? 'border-white/10 bg-zinc-950/90' : 'border-slate-200 bg-white')}
         style={{
           width: isSidebarCollapsed ? '5rem' : '17rem',
         }}
       >
           <div
             className={cn(
-              'flex h-16 items-center border-b border-white/10 px-4 overflow-hidden',
+              'flex h-16 items-center px-4 overflow-hidden',
+              isDark ? 'border-b border-white/10' : 'border-b border-slate-200',
               isSidebarCollapsed ? 'justify-end' : 'justify-between',
             )}
           >
@@ -96,10 +117,12 @@ export function AppLayout(props: { title?: string }) {
                   <Archive className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <div className="truncate text-base font-semibold leading-none text-white">
+                  <div className={cn('truncate text-base font-semibold leading-none', isDark ? 'text-white' : 'text-slate-900')}>
                     Zero Inventory
                   </div>
-                  <div className="mt-1 truncate text-xs text-white/60">Admin Panel</div>
+                  <div className={cn('mt-1 truncate text-xs', isDark ? 'text-white/60' : 'text-slate-500')}>
+                    {sidebarLabel}
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -108,14 +131,14 @@ export function AppLayout(props: { title?: string }) {
               variant="ghost"
               size="icon"
               onClick={() => setIsSidebarCollapsed((current) => !current)}
-              className="h-9 w-9 shrink-0 text-white/70 hover:bg-white/10 hover:text-white"
+              className={cn('h-9 w-9 shrink-0', isDark ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900')}
               aria-label={isSidebarCollapsed ? 'Abrir sidebar' : 'Cerrar sidebar'}
             >
               {isSidebarCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
             </Button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto p-2 min-h-0">
+          <nav className={cn('flex-1 overflow-y-auto p-2 min-h-0', isDark ? 'bg-zinc-950/90' : 'bg-white')}>
             {nav.map((item) => (
               <NavLink
                 key={item.to}
@@ -127,7 +150,9 @@ export function AppLayout(props: { title?: string }) {
                     isSidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-2',
                     isActive
                       ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
-                      : 'text-white/65 hover:bg-white/5 hover:text-white',
+                      : isDark
+                        ? 'text-white/65 hover:bg-white/5 hover:text-white'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
                   )
                 }
                 title={isSidebarCollapsed ? item.label : undefined}
@@ -145,12 +170,13 @@ export function AppLayout(props: { title?: string }) {
             ))}
           </nav>
 
-          <div className="mt-auto border-t border-white/10 p-3">
+          <div className={cn('mt-auto border-t p-3', isDark ? 'border-white/10' : 'border-slate-200')}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   className={cn(
-                    'flex w-full items-center gap-3 rounded-lg transition-all hover:bg-white/5 p-2',
+                    'flex w-full items-center gap-3 rounded-lg transition-all p-2',
+                    isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100',
                     isSidebarCollapsed ? 'justify-center' : '',
                   )}
                   aria-label="Menú de sesión"
@@ -162,10 +188,12 @@ export function AppLayout(props: { title?: string }) {
                   </div>
                   {!isSidebarCollapsed && (
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium text-white">
+                      <div className={cn('truncate text-sm font-medium', isDark ? 'text-white' : 'text-slate-900')}>
                         {status === 'authenticated' ? user?.username : '—'}
                       </div>
-                      <div className="text-xs text-white/40">Sesión</div>
+                      <div className={cn('text-xs', isDark ? 'text-white/40' : 'text-slate-500')}>
+                        Sesión
+                      </div>
                     </div>
                   )}
                 </button>
@@ -196,17 +224,17 @@ export function AppLayout(props: { title?: string }) {
         </aside>
 
         <div 
-          className="flex min-w-0 flex-col h-dvh overflow-hidden"
+          className="flex min-w-0 flex-col h-dvh overflow-hidden transition-colors duration-200"
           style={{
             marginLeft: isSidebarCollapsed ? '5rem' : '17rem',
           }}
         >
-          <header className="flex h-16 items-center gap-3 border-b border-white/10 bg-white/5 px-4 backdrop-blur-sm">
+          <header className={cn('flex h-16 items-center gap-3 border-b px-4 backdrop-blur-sm', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsSidebarCollapsed((current) => !current)}
-              className="h-10 w-10 text-white/70 hover:bg-white/10 hover:text-white md:hidden"
+              className={cn('h-10 w-10 md:hidden', isDark ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900')}
               aria-label={isSidebarCollapsed ? 'Abrir sidebar' : 'Cerrar sidebar'}
             >
               {isSidebarCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
@@ -215,18 +243,18 @@ export function AppLayout(props: { title?: string }) {
             <div className="min-w-0 flex-1">
               <Input
                 placeholder="Buscar…"
-                className="h-10 max-w-xl border-white/10 bg-zinc-950/70 text-white placeholder:text-white/40"
+                className={cn('h-10 max-w-xl', isDark ? 'border-white/10 bg-zinc-950/70 text-white placeholder:text-white/40' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-500')}
                 aria-label="Buscar"
               />
             </div>
 
-            <Button variant="ghost" size="icon" className="h-10 w-10 text-white/70 hover:bg-white/10 hover:text-white" aria-label="Notificaciones">
+            <Button variant="ghost" size="icon" className={cn('h-10 w-10', isDark ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900')} aria-label="Notificaciones">
               <Bell className="h-4 w-4" />
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-10 border-white/10 bg-zinc-950/70 text-white hover:bg-white/5">
+                <Button variant="outline" className={cn('h-10', isDark ? 'border-white/10 bg-zinc-950/70 text-white hover:bg-white/5' : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-100')}>
                   {user?.username ?? 'Cuenta'}
                 </Button>
               </DropdownMenuTrigger>
@@ -252,10 +280,10 @@ export function AppLayout(props: { title?: string }) {
             </DropdownMenu>
           </header>
 
-          <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 transition-all duration-300">
+          <main className={cn('min-w-0 flex-1 overflow-y-auto px-4 py-6 transition-all duration-300', isDark ? 'bg-background' : 'bg-white')}>
             {title ? (
               <div className="mb-6 flex items-center justify-between gap-4">
-                <h1 className="text-xl font-semibold tracking-tight text-white">{title}</h1>
+                <h1 className={cn('text-xl font-semibold tracking-tight', isDark ? 'text-white' : 'text-slate-900')}>{title}</h1>
               </div>
             ) : null}
             <Outlet />

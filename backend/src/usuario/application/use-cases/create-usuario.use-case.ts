@@ -9,6 +9,8 @@ export class CreateUsuarioUseCase {
 
   async ejecutar(data: {
     username: string;
+    email?: string | null;
+    telefono?: string | null;
     password: string;
     primerNombre: string | null;
     segundoNombre: string | null;
@@ -22,11 +24,20 @@ export class CreateUsuarioUseCase {
       );
     }
 
+    if (data.email) {
+      const existingEmail = await this.usuarioRepo.getByEmail(data.email);
+      if (existingEmail) {
+        throw new ConflictException('Ya existe un usuario con ese correo electrónico');
+      }
+    }
+
     const hashPassword = await bcrypt.hash(data.password, 10);
 
     const usuario = new Usuario(
       0,
       data.username,
+      data.email ?? null,
+      data.telefono ?? null,
       hashPassword,
       data.primerNombre ?? null,
       data.segundoNombre ?? null,

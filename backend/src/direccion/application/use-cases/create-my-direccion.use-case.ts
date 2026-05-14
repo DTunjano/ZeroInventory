@@ -21,10 +21,12 @@ export class CreateMyDireccionUseCase {
     const direccion = new Direccion(
       0,
       cliente.clienteId,
+      null,
       data.lineaDir,
       data.barrio,
       data.codigoPostal ?? null,
       data.infoAdiccional ?? null,
+      data.esPredeterminada ?? false,
     )
 
     return this.direccionRepo.create(direccion)

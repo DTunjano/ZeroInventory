@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, MinLength } from 'class-validator';
+import { IsNotEmpty, Matches, MinLength } from 'class-validator';
 
 export class UpdatePasswordDto {
   @ApiProperty({ description: 'Contraseña actual del usuario' })
@@ -8,7 +8,10 @@ export class UpdatePasswordDto {
 
   @ApiProperty({ description: 'Nueva contraseña' })
   @IsNotEmpty({ message: 'La nueva contraseña es obligatoria' })
-  @MinLength(6, { message: 'La nueva contraseña debe tener al menos 6 caracteres' })
+  @MinLength(8, { message: 'La nueva contraseña debe tener al menos 8 caracteres' })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/, {
+    message: 'La nueva contraseña debe incluir mayúsculas, minúsculas, números y símbolos',
+  })
   newPassword!: string;
 
   @ApiProperty({ description: 'Confirmar nueva contraseña' })

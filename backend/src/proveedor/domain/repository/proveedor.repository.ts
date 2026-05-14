@@ -14,4 +14,6 @@ export abstract class ProveedorRepository {
   }>;
   abstract update(proveedor: Proveedor): Promise<Proveedor>;
   abstract delete(proveedorId: number): Promise<boolean>;
+  abstract toggleActive(proveedorId: number): Promise<Proveedor>;
+  abstract getSuppliedProductCount(proveedorId: number): Promise<number>;
 }

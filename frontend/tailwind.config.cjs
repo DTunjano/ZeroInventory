@@ -16,6 +16,8 @@ module.exports = {
         foreground: 'hsl(var(--foreground))',
         card: 'hsl(var(--card))',
         'card-foreground': 'hsl(var(--card-foreground))',
+        surface: 'hsl(var(--surface))',
+        'surface-foreground': 'hsl(var(--surface-foreground))',
         popover: 'hsl(var(--popover))',
         'popover-foreground': 'hsl(var(--popover-foreground))',
         primary: {
@@ -38,11 +40,25 @@ module.exports = {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
+        'input-border': 'hsl(var(--input-border))',
         ring: 'hsl(var(--ring))',
+      },
+      transitionDuration: {
+        fast: '150ms',
       },
     },
   },
   plugins: [animate],
 }
+
+

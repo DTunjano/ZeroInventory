@@ -14,6 +14,19 @@ export class DireccionesHttpApi {
     const { data } = await http.post<DireccionView>('/direcciones/me', input)
     return data
   }
+
+  async updateMyDireccion(direccionId: number, input: CreateDireccionInput): Promise<DireccionView> {
+    const { data } = await http.put<DireccionView>(`/direcciones/${direccionId}`, input)
+    return data
+  }
+
+  async deleteMyDireccion(direccionId: number): Promise<void> {
+    await http.delete(`/direcciones/${direccionId}`)
+  }
+
+  async setPredeterminada(direccionId: number): Promise<void> {
+    await http.post(`/direcciones/me/${direccionId}/predeterminada`)
+  }
 }
 
 export const direccionesApi = new DireccionesHttpApi()

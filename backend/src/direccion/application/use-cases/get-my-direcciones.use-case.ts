@@ -1,28 +1,31 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
-
-import { ClienteRepository } from '../../../cliente/domain/repository/cliente.repository'
-import { Direccion } from '../../domain/entity/direccion.entity'
-import { DireccionRepository } from '../../domain/repository/direccion.repository'
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { DireccionEntityORM } from '../../infrastructure/persistence/direccion.orm-entity';
+import { ClienteRepository } from '../../../cliente/domain/repository/cliente.repository';
+import { Direccion } from '../../domain/entity/direccion.entity';
+import { DireccionMapper } from '../../infrastructure/mappers/direccion.mapper';
 
 @Injectable()
 export class GetMyDireccionesUseCase {
   constructor(
     private readonly clienteRepo: ClienteRepository,
-    private readonly direccionRepo: DireccionRepository,
+    @InjectRepository(DireccionEntityORM)
+    private readonly direccionRepo: Repository<DireccionEntityORM>,
   ) {}
 
   async ejecutar(usuarioId: number): Promise<Direccion[]> {
-    const cliente = await this.clienteRepo.getByUsuarioId(usuarioId)
+    const cliente = await this.clienteRepo.getByUsuarioId(usuarioId);
     if (!cliente) {
-      throw new NotFoundException('El usuario no tiene un cliente asociado')
+      return [];
     }
 
-    const result = await this.direccionRepo.getAll({
-      clienteId: cliente.clienteId,
-      page: 1,
-      limit: 100,
-    })
+    // Order: predeterminada primero, luego por id ascendente
+    const entities = await this.direccionRepo.find({
+      where: { clienteId: cliente.clienteId },
+      order: { esPredeterminada: 'DESC', direccionId: 'ASC' },
+    });
 
-    return result.data
+    return entities.map((e) => DireccionMapper.toDomain(e));
   }
 }

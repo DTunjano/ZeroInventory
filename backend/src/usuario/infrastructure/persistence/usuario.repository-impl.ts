@@ -40,6 +40,13 @@ export class UsuarioRepositoryImpl implements UsuarioRepository {
     return entity ? UsuarioMapper.toDomain(entity) : null;
   }
 
+  async getByEmail(email: string): Promise<Usuario | null> {
+    const entity = await this.repo.findOne({
+      where: { email: email },
+    });
+    return entity ? UsuarioMapper.toDomain(entity) : null;
+  }
+
   async getAll(filters?: FiltersUsuarioDTO): Promise<{
     data: Usuario[];
     total: number;

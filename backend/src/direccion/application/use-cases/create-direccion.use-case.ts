@@ -16,6 +16,7 @@ export class CreateDireccionUseCase {
     const direccion = new Direccion(
       0,
       data.clienteId,
+      null,
       data.lineaDir,
       data.barrio,
       data.codigoPostal ?? null,

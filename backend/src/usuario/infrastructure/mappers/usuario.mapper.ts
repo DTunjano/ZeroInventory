@@ -6,6 +6,8 @@ export class UsuarioMapper {
     return new Usuario(
       entity.usuarioId,
       entity.username,
+      entity.email,
+      entity.telefono,
       entity.password,
       entity.primerNombre,
       entity.segundoNombre,
@@ -22,6 +24,8 @@ export class UsuarioMapper {
     const entity = new UsuarioEntityORM();
     entity.usuarioId = domain.usuarioId;
     entity.username = domain.username;
+    entity.email = domain.email;
+    entity.telefono = domain.telefono;
     entity.password = domain.password;
     entity.primerNombre = domain.primerNombre;
     entity.segundoNombre = domain.segundoNombre;

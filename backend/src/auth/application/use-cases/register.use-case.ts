@@ -39,6 +39,8 @@ export class RegisterUseCase {
     const usuario = new Usuario(
       0,
       input.username,
+      null,
+      null,
       passwordHash,
       input.primerNombre ?? null,
       null,

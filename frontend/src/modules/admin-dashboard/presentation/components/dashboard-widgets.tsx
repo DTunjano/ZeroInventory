@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Badge } from '@/shared/ui/badge'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { cn } from '@/shared/lib/utils'
+import { useSettingsStore } from '@/modules/settings/application/settings.store'
 
 import type {
   AdminDashboardSummary,
@@ -101,20 +102,23 @@ export function DashboardStatCard({
   icon: ComponentType<{ className?: string }>
   trend?: { value: number; direction: 'up' | 'down' | 'flat' }
 }) {
+  const theme = useSettingsStore((state) => state.theme)
+  const isDark = theme === 'dark'
+
   return (
-    <Card className="overflow-hidden border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.03] shadow-[0_24px_80px_rgba(0,0,0,0.24)] transition-transform duration-300 hover:-translate-y-0.5 hover:border-blue-500/30">
+    <Card className={cn('overflow-hidden transition-transform duration-300 hover:-translate-y-0.5', isDark ? 'border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.03] shadow-[0_24px_80px_rgba(0,0,0,0.24)] hover:border-blue-500/30' : 'border-slate-200 bg-white shadow-sm hover:border-blue-300 hover:shadow-md')}>
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div>
-          <CardDescription className="text-sm text-white/65">{title}</CardDescription>
-          <CardTitle className="mt-3 text-3xl font-semibold tracking-tight text-white">{value}</CardTitle>
+          <CardDescription className={cn('text-sm', isDark ? 'text-white/65' : 'text-slate-500')}>{title}</CardDescription>
+          <CardTitle className={cn('mt-3 text-3xl font-semibold tracking-tight', isDark ? 'text-white' : 'text-slate-900')}>{value}</CardTitle>
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-blue-500/10 text-blue-300">
+        <div className={cn('flex h-11 w-11 items-center justify-center rounded-2xl border', isDark ? 'border-white/10 bg-blue-500/10 text-blue-300' : 'border-blue-100 bg-blue-50 text-blue-600')}>
           <Icon className="h-5 w-5" />
         </div>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex items-center justify-between gap-3 text-sm">
-          <span className="text-white/55">{description}</span>
+          <span className={isDark ? 'text-white/55' : 'text-slate-500'}>{description}</span>
           {trend ? <TrendLabel value={trend.value} direction={trend.direction} /> : null}
         </div>
       </CardContent>
@@ -131,10 +135,13 @@ export function DashboardPanelCard({
   description: string
   children: ReactNode
 }) {
+  const theme = useSettingsStore((state) => state.theme)
+  const isDark = theme === 'dark'
+
   return (
-    <Card className="overflow-hidden border-white/10 bg-white/[0.04] shadow-[0_24px_80px_rgba(0,0,0,0.2)]">
+    <Card className={cn('overflow-hidden', isDark ? 'border-white/10 bg-white/[0.04] shadow-[0_24px_80px_rgba(0,0,0,0.2)]' : 'border-slate-200 bg-white shadow-sm')}>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-xl text-white">{title}</CardTitle>
+        <CardTitle className={cn('text-xl', isDark ? 'text-white' : 'text-slate-900')}>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>{children}</CardContent>
@@ -146,24 +153,24 @@ export function DashboardSkeleton() {
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-6">
       <div className="space-y-2">
-        <Skeleton className="h-10 w-72 bg-white/10" />
-        <Skeleton className="h-5 w-96 bg-white/10" />
+        <Skeleton className="h-10 w-72 bg-slate-200 dark:bg-white/10" />
+        <Skeleton className="h-5 w-96 bg-slate-200 dark:bg-white/10" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 7 }).map((_, index) => (
-          <Skeleton key={index} className="h-36 rounded-2xl bg-white/10" />
+          <Skeleton key={index} className="h-36 rounded-2xl bg-slate-200 dark:bg-white/10" />
         ))}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Skeleton className="h-[360px] rounded-2xl bg-white/10" />
-        <Skeleton className="h-[360px] rounded-2xl bg-white/10" />
+        <Skeleton className="h-[360px] rounded-2xl bg-slate-200 dark:bg-white/10" />
+        <Skeleton className="h-[360px] rounded-2xl bg-slate-200 dark:bg-white/10" />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Skeleton className="h-[420px] rounded-2xl bg-white/10" />
-        <Skeleton className="h-[420px] rounded-2xl bg-white/10" />
+        <Skeleton className="h-[420px] rounded-2xl bg-slate-200 dark:bg-white/10" />
+        <Skeleton className="h-[420px] rounded-2xl bg-slate-200 dark:bg-white/10" />
       </div>
     </div>
   )
@@ -171,23 +178,23 @@ export function DashboardSkeleton() {
 
 export function TopProductsList({ products }: { products: TopProductPoint[] }) {
   if (!products.length) {
-    return <div className="text-sm text-white/55">Todavía no hay productos vendidos para mostrar.</div>
+    return <div className="text-sm text-slate-500 dark:text-white/55">Todavía no hay productos vendidos para mostrar.</div>
   }
 
   return (
     <div className="space-y-3">
       {products.map((product, index) => (
-        <div key={product.productId} className="flex items-center gap-4 rounded-2xl border border-white/8 bg-black/25 px-4 py-4">
+        <div key={product.productId} className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm dark:border-white/8 dark:bg-black/25">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-sm font-semibold text-white">
             {index + 1}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="truncate font-semibold text-white">{product.name}</div>
-            <div className="text-sm text-white/55">{formatCompact(product.soldQuantity)} vendidos</div>
+            <div className="truncate font-semibold text-slate-900 dark:text-white">{product.name}</div>
+            <div className="text-sm text-slate-500 dark:text-white/55">{formatCompact(product.soldQuantity)} vendidos</div>
           </div>
           <div className="text-right">
-            <div className="font-semibold text-white">{formatCurrency(product.revenue)}</div>
-            <div className="text-xs text-white/45">Ingresos</div>
+            <div className="font-semibold text-slate-900 dark:text-white">{formatCurrency(product.revenue)}</div>
+            <div className="text-xs text-slate-400 dark:text-white/45">Ingresos</div>
           </div>
         </div>
       ))}
@@ -197,18 +204,18 @@ export function TopProductsList({ products }: { products: TopProductPoint[] }) {
 
 export function RecentOrdersList({ orders }: { orders: RecentOrderPoint[] }) {
   if (!orders.length) {
-    return <div className="text-sm text-white/55">No hay pedidos aprobados recientes.</div>
+    return <div className="text-sm text-slate-500 dark:text-white/55">No hay pedidos aprobados recientes.</div>
   }
 
   return (
     <div className="space-y-3">
       {orders.map((order) => (
-        <div key={order.orderId} className="rounded-2xl border border-white/8 bg-black/25 px-4 py-4 transition-colors hover:border-blue-500/30">
+        <div key={order.orderId} className="rounded-2xl border border-slate-200 bg-white px-4 py-4 transition-colors hover:border-blue-300 dark:border-white/8 dark:bg-black/25 dark:hover:border-blue-500/30">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="font-semibold text-white">Pedido #{order.orderId}</div>
-              <div className="text-sm text-white/55">{order.customerName}</div>
-              <div className="mt-1 flex flex-wrap gap-2 text-xs text-white/40">
+              <div className="font-semibold text-slate-900 dark:text-white">Pedido #{order.orderId}</div>
+              <div className="text-sm text-slate-500 dark:text-white/55">{order.customerName}</div>
+              <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-400 dark:text-white/40">
                 <span>{formatDateTime(order.date)}</span>
                 <span>•</span>
                 <span>{formatCompact(order.itemsCount)} productos</span>
@@ -217,8 +224,8 @@ export function RecentOrdersList({ orders }: { orders: RecentOrderPoint[] }) {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-lg font-semibold text-white">{formatCurrency(order.total)}</div>
-              <Badge className="mt-2 border-0 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/15">
+              <div className="text-lg font-semibold text-slate-900 dark:text-white">{formatCurrency(order.total)}</div>
+              <Badge className="mt-2 border-0 bg-emerald-600 text-white hover:bg-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/15">
                 {order.paymentStatus}
               </Badge>
             </div>
@@ -231,23 +238,23 @@ export function RecentOrdersList({ orders }: { orders: RecentOrderPoint[] }) {
 
 export function ActivityFeedList({ activity }: { activity: RecentActivityPoint[] }) {
   if (!activity.length) {
-    return <div className="text-sm text-white/55">Sin movimientos de inventario recientes.</div>
+    return <div className="text-sm text-slate-500 dark:text-white/55">Sin movimientos de inventario recientes.</div>
   }
 
   return (
     <div className="space-y-3">
       {activity.map((item) => (
-        <div key={item.movementId} className="flex items-center gap-4 rounded-2xl border border-white/8 bg-black/25 px-4 py-4">
+        <div key={item.movementId} className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm dark:border-white/8 dark:bg-black/25">
           <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl', item.typeMovement === 'SALIDA' ? 'bg-rose-500/15 text-rose-300' : 'bg-emerald-500/15 text-emerald-300')}>
             <Clock3 className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="truncate font-semibold text-white">{item.productName}</div>
-            <div className="text-sm text-white/55">
+            <div className="truncate font-semibold text-slate-900 dark:text-white">{item.productName}</div>
+            <div className="text-sm text-slate-500 dark:text-white/55">
               {item.typeMovement} · {formatCompact(item.quantity)} unidades · Ref {item.referenceId}
             </div>
           </div>
-          <div className="text-xs text-white/45">{formatDateTime(item.date)}</div>
+          <div className="text-xs text-slate-400 dark:text-white/45">{formatDateTime(item.date)}</div>
         </div>
       ))}
     </div>

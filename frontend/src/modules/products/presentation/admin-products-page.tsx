@@ -522,11 +522,19 @@ export function AdminProductsPage() {
               <Label htmlFor="proveedorId">Proveedor</Label>
               <Select id="proveedorId" {...form.register('proveedorId')}>
                 <option value="">Selecciona un proveedor…</option>
-                {(providersQuery.data ?? []).map((p) => (
-                  <option key={p.proveedorId} value={String(p.proveedorId)}>
-                    {p.nombre}
-                  </option>
-                ))}
+                {(providersQuery.data ?? []).map((p) => {
+                  const isInactive = !p.isActive
+                  const productProveedorId = editing?.proveedorId
+                  const isCurrentProductProvider = productProveedorId === p.proveedorId
+                  const shouldShow = !isInactive || isCurrentProductProvider
+
+                  return shouldShow ? (
+                    <option key={p.proveedorId} value={String(p.proveedorId)}>
+                      {p.nombre}
+                      {isInactive && isCurrentProductProvider ? ' (Inactivo)' : ''}
+                    </option>
+                  ) : null
+                })}
               </Select>
               {form.formState.errors.proveedorId?.message ? (
                 <p className="text-xs text-destructive">

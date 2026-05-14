@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Transform } from 'class-transformer'
-import { IsNotEmpty, IsOptional } from 'class-validator'
+import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator'
 
 export class CreateMyDireccionDTO {
   @ApiProperty({
@@ -29,6 +29,15 @@ export class CreateMyDireccionDTO {
   @IsOptional()
   @Transform(({ value }: { value: string }) => (typeof value === 'string' ? value.trim() : value))
   codigoPostal?: string | null
+
+  @ApiPropertyOptional({
+    description: 'Indica si es la dirección predeterminada',
+    example: false,
+    type: Boolean,
+  })
+  @IsOptional()
+  @IsBoolean()
+  esPredeterminada?: boolean
 
   @ApiPropertyOptional({
     description: 'Información adicional',

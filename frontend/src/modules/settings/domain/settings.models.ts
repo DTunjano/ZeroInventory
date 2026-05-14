@@ -2,7 +2,8 @@ export type Theme = 'dark' | 'light'
 
 export interface UserProfile {
   username: string
-  email: string
+  email: string | null
+  telefono: string | null
   primerNombre: string | null
   segundoNombre: string | null
   primerApellido: string | null
@@ -23,13 +24,19 @@ export interface UserSettings {
   theme: Theme
 }
 
-export interface UpdateSettingsInput {
-  primerNombre?: string
-  segundoNombre?: string
-  primerApellido?: string
-  segundoApellido?: string
-  theme?: Theme
-  address?: UserAddress
+export interface UpdateGeneralSettingsInput {
+  username?: string
+  email?: string | null
+  telefono?: string | null
+  primerNombre?: string | null
+  segundoNombre?: string | null
+  primerApellido?: string | null
+  segundoApellido?: string | null
+  address?: UserAddress | null
+}
+
+export interface UpdateAppearanceInput {
+  theme: Theme
 }
 
 export interface UpdatePasswordInput {

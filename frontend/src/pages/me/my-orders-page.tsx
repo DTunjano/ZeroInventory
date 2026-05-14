@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDown, Loader2, ShoppingBag } from 'lucide-react'
+import { ChevronDown, Loader2, ShoppingBag, Package, CreditCard, Calendar, AlertCircle } from 'lucide-react'
 import { getMyOrders } from '@/modules/orders/application/orders.use-cases'
 import { ordersQueryKey } from '@/modules/orders/infrastructure/orders.api'
 import type { Order } from '@/modules/orders/domain/orders.models'
@@ -32,9 +32,8 @@ function getStatusBadgeVariant(estado: Order['estado']): 'default' | 'secondary'
     case 'COMPLETADO':
       return 'default'
     case 'CONFIRMADO':
-      return 'secondary'
     case 'ENVIADO':
-      return 'default'
+      return 'secondary'
     case 'CANCELADO':
     case 'DEVUELTO':
       return 'destructive'
@@ -43,20 +42,37 @@ function getStatusBadgeVariant(estado: Order['estado']): 'default' | 'secondary'
   }
 }
 
+function getStatusLabel(estado: Order['estado']): string {
+  switch (estado) {
+    case 'CONFIRMADO': return 'Pendiente'
+    case 'COMPLETADO': return 'Pagado'
+    case 'ENVIADO': return 'Enviado'
+    case 'CANCELADO': return 'Cancelado'
+    case 'DEVUELTO': return 'Devuelto'
+    default: return estado
+  }
+}
+
 function OrderDetailCard(props: { order: Order }) {
   const { order } = props
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <Card className="overflow-hidden border bg-card/80 shadow-sm">
+    <Card className="overflow-hidden border bg-card/90 shadow-sm transition-shadow hover:shadow-md">
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-primary" />
               <h3 className="text-lg font-semibold">Pedido #{order.pedidoId}</h3>
-              <Badge variant={getStatusBadgeVariant(order.estado)}>{order.estado}</Badge>
+              <Badge variant={getStatusBadgeVariant(order.estado)}>
+                {getStatusLabel(order.estado)}
+              </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">{formatDate(order.fecha)}</p>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>{formatDate(order.fecha)}</span>
+            </div>
           </div>
           <div className="text-right">
             <p className="text-sm text-muted-foreground">Total</p>
@@ -67,13 +83,17 @@ function OrderDetailCard(props: { order: Order }) {
 
       <CardContent className="space-y-4 pb-4">
         {expanded && (
-          <>
+          <div className="space-y-4">
+            <div className="h-px bg-border" />
             {/* Order Details */}
-            {order.detalles && order.detalles.length > 0 && (
+            <div>
+              <h4 className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Package className="h-4 w-4" />
+                Productos
+              </h4>
               <div className="space-y-2 rounded-lg border bg-background p-3">
-                <h4 className="text-sm font-medium">Productos</h4>
-                <div className="space-y-2">
-                  {order.detalles.map((item) => (
+                {order.detalles && order.detalles.length > 0 ? (
+                  order.detalles.map((item) => (
                     <div
                       key={item.pedidoDetalleId}
                       className="flex items-center justify-between gap-2 text-sm"
@@ -86,16 +106,24 @@ function OrderDetailCard(props: { order: Order }) {
                       </div>
                       <p className="font-medium">{formatPrice(item.subtotal)}</p>
                     </div>
-                  ))}
-                </div>
+                  ))
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <AlertCircle className="h-4 w-4" />
+                    No hay detalles de productos disponibles
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             {/* Payment Info */}
-            {order.pago && (
-              <div className="space-y-2 rounded-lg border bg-background p-3">
-                <h4 className="text-sm font-medium">Información de pago</h4>
-                <div className="space-y-1 text-sm">
+            <div>
+              <h4 className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <CreditCard className="h-4 w-4" />
+                Información de pago
+              </h4>
+              {order.pago ? (
+                <div className="space-y-2 rounded-lg border bg-background p-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Método:</span>
                     <span className="font-medium">
@@ -104,16 +132,39 @@ function OrderDetailCard(props: { order: Order }) {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Estado:</span>
-                    <Badge variant="secondary">{order.pago.estado}</Badge>
+                    <Badge
+                      variant={
+                        order.pago.estado === 'APROBADO'
+                          ? 'default'
+                          : order.pago.estado === 'RECHAZADO'
+                            ? 'destructive'
+                            : 'secondary'
+                      }
+                    >
+                      {order.pago.estado === 'PENDIENTE'
+                        ? 'Pendiente'
+                        : order.pago.estado === 'APROBADO'
+                          ? 'Aprobado'
+                          : 'Rechazado'}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Monto:</span>
+                    <span className="font-medium">{formatPrice(order.pago.monto)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Fecha de pago:</span>
                     <span className="font-medium">{formatDate(order.pago.fechaPago)}</span>
                   </div>
                 </div>
-              </div>
-            )}
-          </>
+              ) : (
+                <div className="flex items-center gap-2 rounded-lg border bg-background p-3 text-sm text-muted-foreground">
+                  <AlertCircle className="h-4 w-4" />
+                  No hay información de pago disponible
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
         <Button
@@ -148,8 +199,6 @@ function EmptyState() {
 }
 
 export function MyOrdersPage() {
-  const [expanded, setExpanded] = useState<number | null>(null)
-
   const ordersQuery = useQuery({
     queryKey: ordersQueryKey,
     queryFn: getMyOrders,

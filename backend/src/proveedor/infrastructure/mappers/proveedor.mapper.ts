@@ -6,8 +6,10 @@ export class ProveedorMapper {
     return new Proveedor(
       entity.proveedorId,
       entity.nombre,
+      entity.nombreTitular,
       entity.telefono,
       entity.email,
+      entity.isActive,
     );
   }
 
@@ -15,8 +17,10 @@ export class ProveedorMapper {
     const entity = new ProveedorEntityORM();
     entity.proveedorId = domain.proveedorId;
     entity.nombre = domain.nombre;
+    entity.nombreTitular = domain.nombreTitular;
     entity.telefono = domain.telefono;
     entity.email = domain.email;
+    entity.isActive = domain.isActive;
     return entity;
   }
 }

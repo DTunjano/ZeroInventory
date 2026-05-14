@@ -126,7 +126,7 @@ export function AdminDashboardPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <DashboardPanelCard title="Revenue Overview" description="Monthly sales performance">
+        <DashboardPanelCard title="Resumen de Ingresos" description="Desempeño de ventas mensual">
           <div className="mb-4 flex flex-wrap gap-2">
             <DashboardLegendChip label="Ingresos aprobados" color="#3b82f6" />
           </div>
@@ -149,7 +149,7 @@ export function AdminDashboardPage() {
           </div>
         </DashboardPanelCard>
 
-        <DashboardPanelCard title="Order Volume" description="Monthly order count">
+        <DashboardPanelCard title="Volumen de Pedidos" description="Conteo de pedidos mensual">
           <div className="mb-4 flex flex-wrap gap-2">
             <DashboardLegendChip label="Pedidos" color="#60a5fa" />
           </div>
@@ -168,7 +168,7 @@ export function AdminDashboardPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <DashboardPanelCard title="Top products sold" description="Calculated from Kárdex salida/venta movements">
+        <DashboardPanelCard title="Productos más vendidos" description="Calculado a partir de movimientos de salida/venta del Kárdex">
           <TopProductsList products={data.topProducts} />
         </DashboardPanelCard>
 
@@ -178,7 +178,7 @@ export function AdminDashboardPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <DashboardPanelCard title="Inventory movements" description="Monthly kárdex activity">
+        <DashboardPanelCard title="Movimientos de Inventario" description="Actividad mensual del Kárdex">
           <div className="mb-4 flex flex-wrap gap-2">
             <DashboardLegendChip label="Entradas" color="#22c55e" />
             <DashboardLegendChip label="Salidas" color="#ef4444" />

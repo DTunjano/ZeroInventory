@@ -5,6 +5,7 @@ export interface DireccionView {
   barrio: string
   codigoPostal: string | null
   infoAdiccional: string | null
+  esPredeterminada: boolean
 }
 
 export interface CreateDireccionInput {
@@ -12,4 +13,5 @@ export interface CreateDireccionInput {
   barrio: string
   codigoPostal?: string | null
   infoAdiccional?: string | null
+  esPredeterminada?: boolean
 }

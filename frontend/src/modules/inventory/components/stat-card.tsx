@@ -1,4 +1,5 @@
 import { AlertCircle, Archive, TrendingDown, Package } from 'lucide-react'
+import { useSettingsStore } from '@/modules/settings/application/settings.store'
 
 export type StatCardVariant = 'total' | 'low' | 'critical' | 'out'
 
@@ -45,20 +46,22 @@ const variantConfig: Record<StatCardVariant, {
 export function StatCard({ variant, label, value, description, isLoading = false }: StatCardProps) {
   const config = variantConfig[variant]
   const Icon = config.icon
+  const theme = useSettingsStore((state) => state.theme)
+  const isDark = theme === 'dark'
 
   return (
-    <div className={`rounded-2xl border border-white/10 ${config.bgColor} p-6`}>
+    <div className={`rounded-2xl border p-6 ${isDark ? `border-white/10 ${config.bgColor}` : 'border-slate-200 bg-white shadow-sm'}`}>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-zinc-300">{label}</p>
+          <p className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-slate-500'}`}>{label}</p>
           {isLoading ? (
-            <div className="mt-2 h-9 w-20 animate-pulse rounded-md bg-white/10" />
+            <div className={`mt-2 h-9 w-20 animate-pulse rounded-md ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
           ) : (
-            <p className="mt-2 text-3xl font-bold text-white">{value}</p>
+            <p className={`mt-2 text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{value}</p>
           )}
-          {description && <p className="mt-1 text-xs text-zinc-400">{description}</p>}
+          {description && <p className={`mt-1 text-xs ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>{description}</p>}
         </div>
-        <div className={`rounded-xl ${config.accentBg} p-3`}>
+        <div className={`rounded-xl p-3 ${isDark ? config.accentBg : 'bg-blue-50'}`}>
           <Icon className={`h-6 w-6 ${config.iconColor}`} />
         </div>
       </div>

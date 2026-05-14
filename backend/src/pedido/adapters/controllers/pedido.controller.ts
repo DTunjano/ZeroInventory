@@ -26,7 +26,8 @@ import { CreatePedidoSwagger } from '../documentation/create-pedido.swagger';
 import { GetAllPedidoSwagger } from '../documentation/get-all-pedido.swagger';
 import { UpdatePedidoSwagger } from '../documentation/update-pedido.swagger';
 import { DeletePedidoSwagger } from '../documentation/delete-pedido.swagger';
-import { GetPedidoByIdSwagger } from '../documentation/get-pedido-by-id.swagger';import { GetOrdersByClienteUseCase } from '../../application/use-cases/get-orders-by-cliente.use-case';
+import { GetPedidoByIdSwagger } from '../documentation/get-pedido-by-id.swagger';
+import { GetOrdersByClienteUseCase, OrderView } from '../../application/use-cases/get-orders-by-cliente.use-case';
 import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
 import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
@@ -49,7 +50,7 @@ export class PedidoController {
   @Get('me')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolNombreEnum.CUSTOMER)
-  async getMyOrders(@Req() req: { user: JwtAccessPayload }): Promise<Pedido[]> {
+  async getMyOrders(@Req() req: { user: JwtAccessPayload }): Promise<OrderView[]> {
     const cliente = await this.clienteRepo.getByUsuarioId(req.user.sub);
     if (!cliente) {
       return [];

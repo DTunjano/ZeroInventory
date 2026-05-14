@@ -6,10 +6,12 @@ export class DireccionMapper {
     return new Direccion(
       entity.direccionId,
       entity.clienteId,
+      entity.proveedorId,
       entity.lineaDir,
       entity.barrio,
       entity.codigoPostal,
       entity.infoAdiccional,
+      entity.esPredeterminada,
     );
   }
 
@@ -17,10 +19,12 @@ export class DireccionMapper {
     const entity = new DireccionEntityORM();
     entity.direccionId = domain.direccionId;
     entity.clienteId = domain.clienteId;
+    entity.proveedorId = domain.proveedorId;
     entity.lineaDir = domain.lineaDir;
     entity.barrio = domain.barrio;
     entity.codigoPostal = domain.codigoPostal;
     entity.infoAdiccional = domain.infoAdiccional;
+    entity.esPredeterminada = domain.esPredeterminada;
     return entity;
   }
 }

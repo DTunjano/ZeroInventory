@@ -40,7 +40,8 @@ export class GetSettingsUseCase {
     return {
       profile: {
         username: usuario.username,
-        email: usuario.username, // username funciona como email de login
+        email: usuario.email ?? '',
+        telefono: usuario.telefono,
         primerNombre: usuario.primerNombre,
         segundoNombre: usuario.segundoNombre,
         primerApellido: usuario.primerApellido,

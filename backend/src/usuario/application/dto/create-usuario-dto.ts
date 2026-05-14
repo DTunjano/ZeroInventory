@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsOptional, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Matches, MinLength, IsNotEmpty } from 'class-validator';
 
 export class CreateUsuarioDTO {
   @ApiProperty({
@@ -23,6 +23,29 @@ export class CreateUsuarioDTO {
   @IsNotEmpty({ message: 'La contraseña es obligatoria' })
   @MinLength(6, { message: 'La contraseña debe tener mínimo 6 caracteres' })
   password!: string;
+
+  @ApiPropertyOptional({
+    description: 'Correo electrónico del usuario',
+    example: 'john@example.com',
+    type: String,
+  })
+  @IsOptional()
+  @IsEmail({}, { message: 'El correo electrónico no es válido' })
+  @Transform(({ value }: { value: string }) => value?.trim().toLowerCase() || null)
+  email?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Teléfono del usuario',
+    example: '+57 300 123 4567',
+    type: String,
+  })
+  @IsOptional()
+  @IsString()
+  @Matches(/^[0-9+()\-\s]{7,20}$/, {
+    message: 'El teléfono no tiene un formato válido',
+  })
+  @Transform(({ value }: { value: string }) => value?.trim() || null)
+  telefono?: string | null;
 
   @ApiPropertyOptional({
     description: 'Primer nombre del usuario',

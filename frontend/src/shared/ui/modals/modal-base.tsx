@@ -36,14 +36,14 @@ export function ModalBase(props: {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          'w-[calc(100%-2rem)] max-w-3xl max-h-[90vh] overflow-hidden border border-white/10 bg-gray-950/95 p-0 !opacity-100 text-white shadow-2xl shadow-black/50 backdrop-blur-xl',
+          'w-[calc(100%-2rem)] max-w-3xl max-h-[90vh] overflow-hidden border border-slate-200 bg-white p-0 !opacity-100 text-slate-900 shadow-2xl shadow-slate-200/60 backdrop-blur-xl dark:border-white/10 dark:bg-gray-950/95 dark:text-white dark:shadow-black/50',
           contentClassName,
         )}
       >
         <div className="flex max-h-[90vh] flex-col bg-transparent">
-          <DialogHeader className="border-b border-white/10 bg-white/5 p-6">
+          <DialogHeader className="border-b border-slate-200 bg-slate-50 p-6 dark:border-white/10 dark:bg-white/5">
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/20 text-blue-300">
+              <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div className="min-w-0 space-y-1">
@@ -65,7 +65,7 @@ export function ModalBase(props: {
           </div>
 
           {footer ? (
-            <DialogFooter className="border-t border-white/10 bg-white/5 p-6">
+            <DialogFooter className="border-t border-slate-200 bg-slate-50 p-6 dark:border-white/10 dark:bg-white/5">
               {footer}
             </DialogFooter>
           ) : null}

@@ -16,12 +16,30 @@ export class DireccionRepositoryImpl implements DireccionRepository {
 
   async create(direccion: Direccion): Promise<Direccion> {
     const entity = DireccionMapper.toPersistence(direccion);
+    
+    // Si es predeterminada, desmarcar las otras del mismo cliente
+    if (entity.esPredeterminada && entity.clienteId) {
+      await this.repo.update(
+        { clienteId: entity.clienteId, esPredeterminada: true },
+        { esPredeterminada: false },
+      );
+    }
+    
     const saved = await this.repo.save(entity);
     return DireccionMapper.toDomain(saved);
   }
 
   async update(direccion: Direccion): Promise<Direccion> {
     const entity = DireccionMapper.toPersistence(direccion);
+    
+    // Si es predeterminada, desmarcar las otras del mismo cliente
+    if (entity.esPredeterminada && entity.clienteId) {
+      await this.repo.update(
+        { clienteId: entity.clienteId, esPredeterminada: true },
+        { esPredeterminada: false },
+      );
+    }
+    
     const saved = await this.repo.save(entity);
     return DireccionMapper.toDomain(saved);
   }

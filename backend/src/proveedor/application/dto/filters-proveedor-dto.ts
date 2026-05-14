@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, Min } from 'class-validator';
+import { IsBoolean, IsOptional, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
@@ -21,6 +21,15 @@ export class FilterProveedorDTO {
   @IsOptional()
   @Transform(({ value }: { value: string }) => value?.trim())
   email?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filtrar proveedores por estado',
+    type: Boolean,
+    example: true,
+  })
+  @IsOptional()
+  @Type(() => Boolean)
+  isActive?: boolean;
 
   @ApiPropertyOptional({
     description: 'Número de página para paginación',

@@ -5,6 +5,7 @@ export abstract class UsuarioRepository {
   abstract create(usuario: Usuario): Promise<Usuario>;
   abstract getById(usuarioId: number): Promise<Usuario | null>;
   abstract getByUsername(username: string): Promise<Usuario | null>;
+  abstract getByEmail(email: string): Promise<Usuario | null>;
   abstract getAll(filters?: FiltersUsuarioDTO): Promise<{
     data: Usuario[];
     total: number;

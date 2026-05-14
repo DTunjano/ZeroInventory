@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsIn, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsString, Matches, MinLength } from 'class-validator';
 
 class AddressDto {
   @IsString()
@@ -19,6 +19,28 @@ class AddressDto {
 }
 
 export class UpdateSettingsDto {
+  @ApiPropertyOptional({ description: 'Nombre de usuario' })
+  @IsOptional()
+  @IsString()
+  @MinLength(3, { message: 'El nombre de usuario debe tener mínimo 3 caracteres' })
+  @Transform(({ value }: { value: string }) => value?.trim())
+  username?: string;
+
+  @ApiPropertyOptional({ description: 'Correo electrónico del usuario' })
+  @IsOptional()
+  @IsEmail({}, { message: 'El correo electrónico no es válido' })
+  @Transform(({ value }: { value: string }) => value?.trim().toLowerCase())
+  email?: string | null;
+
+  @ApiPropertyOptional({ description: 'Número de teléfono del usuario' })
+  @IsOptional()
+  @IsString()
+  @Matches(/^[0-9+()\-\s]{7,20}$/, {
+    message: 'El teléfono no tiene un formato válido',
+  })
+  @Transform(({ value }: { value: string }) => value?.trim() || null)
+  telefono?: string | null;
+
   @ApiPropertyOptional({ description: 'Primer nombre del usuario' })
   @IsOptional()
   @IsString()
@@ -43,18 +65,13 @@ export class UpdateSettingsDto {
   @Transform(({ value }: { value: string }) => value?.trim())
   segundoApellido?: string;
 
-  @ApiPropertyOptional({ description: 'Correo electrónico del usuario' })
+  @ApiPropertyOptional({ description: 'Dirección del usuario' })
   @IsOptional()
-  @IsEmail()
-  @Transform(({ value }: { value: string }) => value?.trim().toLowerCase())
-  email?: string;
+  address?: AddressDto;
 
   @ApiPropertyOptional({ description: 'Tema de la aplicación' })
   @IsOptional()
   @IsIn(['dark', 'light'])
+  @Transform(({ value }: { value: string }) => value?.trim())
   theme?: 'dark' | 'light';
-
-  @ApiPropertyOptional({ description: 'Dirección del usuario' })
-  @IsOptional()
-  address?: AddressDto;
 }

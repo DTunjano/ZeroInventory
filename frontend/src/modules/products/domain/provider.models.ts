@@ -3,6 +3,7 @@ import type { PaginatedResult } from './product.models'
 export interface Provider {
   proveedorId: number
   nombre: string
+  isActive: boolean
 }
 
 export type ProviderFilters = {

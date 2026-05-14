@@ -1,4 +1,6 @@
 import { Input } from '@/shared/ui/input'
+import { cn } from '@/shared/lib/utils'
+import { useSettingsStore } from '@/modules/settings/application/settings.store'
 import type { InventoryStatusType } from '../domain/inventory.models'
 
 interface InventoryFilterBarProps {
@@ -32,6 +34,9 @@ export function InventoryFilterBar({
   isActiveFilter,
   onIsActiveChange,
 }: InventoryFilterBarProps) {
+  const theme = useSettingsStore((state) => state.theme)
+  const isDark = theme === 'dark'
+
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="w-full max-w-sm">
@@ -39,11 +44,11 @@ export function InventoryFilterBar({
           placeholder="Buscar por nombre o código SKU…"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="h-10 rounded-lg border-white/10 bg-zinc-950/70 px-3 text-sm text-white placeholder:text-zinc-500"
+          className={cn('h-10 rounded-lg px-3 text-sm', isDark ? 'border-white/10 bg-zinc-950/70 text-white placeholder:text-zinc-500' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400')}
         />
       </div>
 
-      <div className="inline-flex rounded-lg border border-white/10 bg-zinc-900/70 p-1">
+      <div className={cn('inline-flex rounded-lg border p-1', isDark ? 'border-white/10 bg-zinc-900/70' : 'border-slate-200 bg-slate-100')}>
         {statusOptions.map(({ label, value }) => (
           <button
             key={value}
@@ -51,8 +56,10 @@ export function InventoryFilterBar({
             onClick={() => onStatusChange(value)}
             className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
               statusFilter === value
-                ? 'bg-blue-500 text-white'
-                : 'text-zinc-300 hover:bg-white/10 hover:text-white'
+                ? 'bg-blue-600 text-white'
+                : isDark
+                  ? 'text-zinc-300 hover:bg-white/10 hover:text-white'
+                  : 'text-slate-600 hover:bg-white hover:text-slate-900'
             }`}
           >
             {label}
@@ -60,7 +67,7 @@ export function InventoryFilterBar({
         ))}
       </div>
 
-      <div className="inline-flex rounded-lg border border-white/10 bg-zinc-900/70 p-1">
+      <div className={cn('inline-flex rounded-lg border p-1', isDark ? 'border-white/10 bg-zinc-900/70' : 'border-slate-200 bg-slate-100')}>
         {activeOptions.map(({ label, value }) => (
           <button
             key={String(value)}
@@ -68,8 +75,10 @@ export function InventoryFilterBar({
             onClick={() => onIsActiveChange(value)}
             className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
               isActiveFilter === value
-                ? 'bg-blue-500 text-white'
-                : 'text-zinc-300 hover:bg-white/10 hover:text-white'
+                ? 'bg-blue-600 text-white'
+                : isDark
+                  ? 'text-zinc-300 hover:bg-white/10 hover:text-white'
+                  : 'text-slate-600 hover:bg-white hover:text-slate-900'
             }`}
           >
             {label}
