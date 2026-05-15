@@ -15,6 +15,8 @@ import {
   X,
   LogOut,
   Bell,
+  Sparkles,
+  HelpCircle,
 } from 'lucide-react'
 import type { ComponentType } from 'react'
 
@@ -246,7 +248,7 @@ export function AppLayout(props: { title?: string }) {
             marginLeft: isSidebarCollapsed ? '5rem' : '17rem',
           }}
         >
-          <header className={cn('flex h-16 items-center gap-3 border-b px-4 backdrop-blur-sm', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+          <header className={cn('app-topbar flex h-16 items-center gap-3 border-b px-4 backdrop-blur-sm', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
             <Button
               variant="ghost"
               size="icon"
@@ -258,45 +260,33 @@ export function AppLayout(props: { title?: string }) {
             </Button>
 
             <div className="min-w-0 flex-1">
-              <Input
-                placeholder="Buscar…"
-                className={cn('h-10 max-w-xl', isDark ? 'border-white/10 bg-zinc-950/70 text-white placeholder:text-white/40' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-500')}
-                aria-label="Buscar"
-              />
+              <div className="flex items-center gap-3">
+                <Button asChild variant="ghost" size="icon" className={cn(isDark ? 'text-white/70' : 'text-slate-600')}>
+                  <Link to="/">
+                    <LayoutGrid className="h-5 w-5" />
+                  </Link>
+                </Button>
+
+                <Button variant="ghost" size="icon" className={cn(isDark ? 'text-white/70' : 'text-slate-600')} title="Ofertas">
+                  <Sparkles className="h-5 w-5" />
+                </Button>
+
+                <Button variant="ghost" size="icon" className={cn(isDark ? 'text-white/70' : 'text-slate-600')} title="Ayuda">
+                  <HelpCircle className="h-5 w-5" />
+                </Button>
+
+                <div className={cn('ml-4 hidden min-w-0 items-center gap-2 rounded-2xl px-3 py-2', isDark ? 'bg-white/3' : 'bg-slate-100')}>
+                  <div className={cn('text-sm font-medium', isDark ? 'text-white/80' : 'text-slate-800')}>Súper atajos</div>
+                  <div className={cn('text-xs', isDark ? 'text-white/50' : 'text-slate-500')}>Accede rápido a la tienda y soporte</div>
+                </div>
+              </div>
             </div>
 
             <Button variant="ghost" size="icon" className={cn('h-10 w-10', isDark ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900')} aria-label="Notificaciones">
               <Bell className="h-4 w-4" />
             </Button>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className={cn('h-10', isDark ? 'border-white/10 bg-zinc-950/70 text-white hover:bg-white/5' : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-100')}>
-                  {accountDisplayName}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>
-                  {accountLabel}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/">Ir a inicio</Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={async (e) => {
-                    e.preventDefault()
-                    await goToAuthEntry()
-                  }}
-                  className={cn(
-                    isAuthenticated ? 'text-red-400 focus:bg-red-500/10 focus:text-red-300' : 'text-blue-400 focus:bg-blue-500/10 focus:text-blue-300',
-                  )}
-                >
-                  {accountActionLabel}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Usuario: eliminado del header porque ya existe en la sidebar */}
           </header>
 
           <main className={cn('min-w-0 flex-1 overflow-y-auto px-4 py-6 transition-all duration-300', isDark ? 'bg-background' : 'bg-white')}>

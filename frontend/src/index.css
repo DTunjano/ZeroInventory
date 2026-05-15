@@ -121,6 +121,21 @@
     will-change: transform;
   }
 
+  /* Remove prominent blue focus rings in header and tabs to match design preference */
+  .app-topbar button:focus,
+  .app-topbar button:focus-visible,
+  .app-topbar a:focus,
+  .app-topbar a:focus-visible,
+  .app-topbar input:focus,
+  .app-topbar input:focus-visible,
+  [role="tab"]:focus,
+  [role="tab"]:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-color: transparent !important;
+    --tw-ring-offset-color: transparent !important;
+  }
+
   .card-base {
     background-color: hsl(var(--card));
     color: hsl(var(--card-foreground));
