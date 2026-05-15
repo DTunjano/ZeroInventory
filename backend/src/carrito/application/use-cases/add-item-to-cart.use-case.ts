@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   Carrito,
   EstadoCarritoEnum,
@@ -36,10 +32,6 @@ export class AddItemToCartUseCase {
       throw new NotFoundException('Producto no encontrado');
     }
 
-    if (params.cantidad > producto.cantidad) {
-      throw new BadRequestException('Stock insuficiente');
-    }
-
     let carrito = await this.carritoRepo.getOpenCartByUsuarioId(params.usuarioId);
     if (!carrito) {
       carrito = await this.carritoRepo.create(
@@ -59,10 +51,6 @@ export class AddItemToCartUseCase {
     );
 
     const nuevaCantidad = (existente?.cantidad ?? 0) + params.cantidad;
-    if (nuevaCantidad > producto.cantidad) {
-      throw new BadRequestException('Stock insuficiente');
-    }
-
     if (existente) {
       await this.carritoDetalleRepo.update(
         new CarritoDetalle(

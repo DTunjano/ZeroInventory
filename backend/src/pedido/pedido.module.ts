@@ -10,6 +10,7 @@ import { GetPedidoByIdUseCase } from './application/use-cases/get-pedido-by-id.u
 import { UpdatePedidoUseCase } from './application/use-cases/update-pedido.use-case';
 import { DeletePedidoUseCase } from './application/use-cases/delete-pedido.use-case';
 import { GetOrdersByClienteUseCase } from './application/use-cases/get-orders-by-cliente.use-case';
+import { GetNextPedidoNumberUseCase } from './application/use-cases/get-next-pedido-number.use-case';
 import { ClienteModule } from '../cliente/cliente.module';
 
 @Module({
@@ -22,6 +23,7 @@ import { ClienteModule } from '../cliente/cliente.module';
     GetAllPedidosUseCase,
     GetPedidoByIdUseCase,
     GetOrdersByClienteUseCase,
+    GetNextPedidoNumberUseCase,
     {
       provide: PedidoRepository,
       useClass: PedidoRepositoryImpl,

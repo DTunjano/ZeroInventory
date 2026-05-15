@@ -64,7 +64,7 @@ function OrderDetailCard(props: { order: Order }) {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Package className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Pedido #{order.pedidoId}</h3>
+              <h3 className="text-lg font-semibold">Pedido #{order.numeroPedidoUsuario}</h3>
               <Badge variant={getStatusBadgeVariant(order.estado)}>
                 {getStatusLabel(order.estado)}
               </Badge>

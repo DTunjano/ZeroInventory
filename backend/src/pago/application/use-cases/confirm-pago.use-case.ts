@@ -35,6 +35,7 @@ export class ConfirmPagoUseCase {
       pedido.direccionId,
       EstadoPedidoEnum.COMPLETADO,
       pedido.total,
+      pedido.numeroPedidoUsuario,
       pedido.fecha,
     );
 

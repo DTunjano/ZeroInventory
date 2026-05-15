@@ -89,7 +89,7 @@ export class CarritoController {
   async checkout(
     @Req() req: { user: JwtAccessPayload },
     @Body() body: CheckoutCartDTO,
-  ): Promise<{ pedidoId: number; total: number }> {
+  ): Promise<{ pedidoId: number; total: number; numeroPedidoUsuario: number }> {
     return this.checkoutCartUseCase.ejecutar({
       usuarioId: req.user.sub,
       direccionId: body.direccionId,

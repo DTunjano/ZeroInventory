@@ -24,6 +24,7 @@ export class UpdatePedidoUseCase {
       cambios.direccionId ?? actual.direccionId,
       cambios.estado ?? actual.estado,
       cambios.total ?? actual.total,
+      actual.numeroPedidoUsuario,
       actual.fecha,
     );
     return this.pedidoRepo.update(pedido);

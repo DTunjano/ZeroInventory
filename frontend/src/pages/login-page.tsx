@@ -46,7 +46,7 @@ export function LoginPage() {
   })
 
   return (
-    <div className="min-h-dvh bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.22),_transparent_30%),linear-gradient(135deg,_#09090b_0%,_#16111a_100%)] px-4 py-8 text-white sm:px-6 lg:px-8">
+    <div className="min-h-dvh bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.24),_transparent_32%),linear-gradient(135deg,_#09090b_0%,_#0b1220_100%)] px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto grid min-h-[calc(100dvh-4rem)] max-w-6xl items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="space-y-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-blue-200">

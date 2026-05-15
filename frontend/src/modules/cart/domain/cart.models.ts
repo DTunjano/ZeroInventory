@@ -18,7 +18,6 @@ export interface OpenCartItemView {
   precioUnitario: number
   subtotal: number
   productoNombre: string
-  stockDisponible: number
 }
 
 export interface OpenCartView {
@@ -45,4 +44,17 @@ export interface CheckoutCartInput {
 export interface CheckoutCartResult {
   pedidoId: number
   total: number
+  numeroPedidoUsuario: number
+}
+
+export interface CheckoutStockIssueProduct {
+  nombre: string
+  stockDisponible: number
+  cantidadSolicitada: number
+}
+
+export interface CheckoutStockInsufficientResponse {
+  error: 'STOCK_INSUFFICIENT'
+  message: string
+  productos: CheckoutStockIssueProduct[]
 }

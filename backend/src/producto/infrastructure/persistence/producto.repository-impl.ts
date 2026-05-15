@@ -33,6 +33,19 @@ export class ProductoRepositoryImpl implements ProductoRepository {
     return entity ? ProductoMapper.toDomain(entity) : null;
   }
 
+  async getByIds(productoIds: number[]): Promise<Producto[]> {
+    if (productoIds.length === 0) {
+      return [];
+    }
+
+    const entities = await this.repo
+      .createQueryBuilder('producto')
+      .where('producto.productoId IN (:...productoIds)', { productoIds })
+      .getMany();
+
+    return entities.map((entity) => ProductoMapper.toDomain(entity));
+  }
+
   async getAll(filters?: FiltersProductDTO): Promise<{
     data: Producto[];
     total: number;

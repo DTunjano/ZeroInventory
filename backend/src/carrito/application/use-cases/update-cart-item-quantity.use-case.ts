@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CarritoRepository } from '../../domain/repository/carrito.repository';
 import { CarritoDetalleRepository } from '../../../carrito-detalle/domain/repository/carrito-detalle.repository';
 import { ProductoRepository } from '../../../producto/domain/repository/producto.repository';
@@ -39,10 +35,6 @@ export class UpdateCartItemQuantityUseCase {
     const producto = await this.productoRepo.getById(detalle.productoId);
     if (!producto || !producto.isActive) {
       throw new NotFoundException('Producto no encontrado');
-    }
-
-    if (params.cantidad > producto.cantidad) {
-      throw new BadRequestException('Stock insuficiente');
     }
 
     await this.carritoDetalleRepo.update({

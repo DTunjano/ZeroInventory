@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Building,
@@ -83,6 +83,8 @@ function pickSidebarLabel(roles: string[]): string {
   return sidebarLabelByRole.CUSTOMER
 }
 
+const guestNav: AppLayoutNavItem[] = [{ to: '/', label: 'Tienda', icon: LayoutGrid }]
+
 export function AppLayout(props: { title?: string }) {
   const { title } = props
   const navigate = useNavigate()
@@ -91,11 +93,25 @@ export function AppLayout(props: { title?: string }) {
   const logout = useAuthStore((s) => s.logout)
   const theme = useSettingsStore((s) => s.theme)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const isAuthenticated = status === 'authenticated'
 
   const roles = (user?.roles ?? []).map((r) => r.toUpperCase())
-  const nav = pickNav(roles)
+  const nav = isAuthenticated ? pickNav(roles) : guestNav
   const sidebarLabel = pickSidebarLabel(roles)
   const isDark = theme === 'dark'
+  const accountDisplayName = isAuthenticated ? user?.username : 'Cuenta'
+  const accountLabel = isAuthenticated ? user?.username : 'Cuenta'
+  const accountActionLabel = isAuthenticated ? 'Cerrar sesión' : 'Iniciar sesión'
+
+  const goToAuthEntry = useMemo(
+    () => async () => {
+      if (isAuthenticated) {
+        await logout()
+      }
+      navigate('/login', { replace: true })
+    },
+    [isAuthenticated, logout, navigate],
+  )
 
   return (
     <div className={cn('min-h-dvh transition-colors duration-200', isDark ? 'bg-background text-foreground' : 'bg-white text-slate-900')}>
@@ -182,14 +198,14 @@ export function AppLayout(props: { title?: string }) {
                   aria-label="Menú de sesión"
                 >
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-xs font-bold text-white">
-                    {status === 'authenticated' && user?.username
+                    {isAuthenticated && user?.username
                       ? user.username.slice(0, 2).toUpperCase()
                       : '—'}
                   </div>
                   {!isSidebarCollapsed && (
                     <div className="min-w-0 flex-1">
                       <div className={cn('truncate text-sm font-medium', isDark ? 'text-white' : 'text-slate-900')}>
-                        {status === 'authenticated' ? user?.username : '—'}
+                        {accountDisplayName}
                       </div>
                       <div className={cn('text-xs', isDark ? 'text-white/40' : 'text-slate-500')}>
                         Sesión
@@ -200,7 +216,7 @@ export function AppLayout(props: { title?: string }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align={isSidebarCollapsed ? 'end' : 'start'} className="w-56">
                 <DropdownMenuLabel>
-                  {status === 'authenticated' ? user?.username : 'Invitado'}
+                  {accountLabel}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -210,13 +226,14 @@ export function AppLayout(props: { title?: string }) {
                 <DropdownMenuItem
                   onSelect={async (e) => {
                     e.preventDefault()
-                    await logout()
-                    navigate('/login', { replace: true })
+                    await goToAuthEntry()
                   }}
-                  className="text-red-400 focus:bg-red-500/10 focus:text-red-300"
+                  className={cn(
+                    isAuthenticated ? 'text-red-400 focus:bg-red-500/10 focus:text-red-300' : 'text-blue-400 focus:bg-blue-500/10 focus:text-blue-300',
+                  )}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Cerrar sesión
+                  {accountActionLabel}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -255,12 +272,12 @@ export function AppLayout(props: { title?: string }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className={cn('h-10', isDark ? 'border-white/10 bg-zinc-950/70 text-white hover:bg-white/5' : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-100')}>
-                  {user?.username ?? 'Cuenta'}
+                  {accountDisplayName}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>
-                  {status === 'authenticated' ? user?.username : 'Invitado'}
+                  {accountLabel}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -270,11 +287,13 @@ export function AppLayout(props: { title?: string }) {
                 <DropdownMenuItem
                   onSelect={async (e) => {
                     e.preventDefault()
-                    await logout()
-                    navigate('/login', { replace: true })
+                    await goToAuthEntry()
                   }}
+                  className={cn(
+                    isAuthenticated ? 'text-red-400 focus:bg-red-500/10 focus:text-red-300' : 'text-blue-400 focus:bg-blue-500/10 focus:text-blue-300',
+                  )}
                 >
-                  Cerrar sesión
+                  {accountActionLabel}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

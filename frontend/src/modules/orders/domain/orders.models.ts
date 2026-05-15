@@ -21,6 +21,7 @@ export type OrderStatus = 'CONFIRMADO' | 'COMPLETADO' | 'ENVIADO' | 'CANCELADO' 
 
 export interface Order {
   pedidoId: number;
+  numeroPedidoUsuario: number;
   clienteId: number;
   direccionId: number;
   estado: OrderStatus;

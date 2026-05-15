@@ -1,20 +1,21 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Loader2, Minus, Plus, ShoppingBag, Trash2, AlertCircle } from 'lucide-react'
+import { Loader2, Minus, Plus, ShoppingBag, Trash2, ArrowLeft, Search, CreditCard, MapPin, AlertTriangle, PackageX, RotateCcw } from 'lucide-react'
+import { AxiosError } from 'axios'
 import { toast } from 'sonner'
 
 import { clearCart, checkoutCart, getMyCart, removeFromCart, updateCartItemQuantity } from '@/modules/cart/application/cart.use-cases'
 import { cartQueryKey } from '@/modules/cart/infrastructure/cart.api'
-import type { OpenCartItemView, OpenCartView } from '@/modules/cart/domain/cart.models'
+import type { CheckoutStockInsufficientResponse, OpenCartItemView } from '@/modules/cart/domain/cart.models'
 import { listImagesByProduct } from '@/modules/products/application/product-images.use-cases'
 import { createMyDireccion, getMyDirecciones } from '@/modules/direcciones/application/direcciones.use-cases'
 import { direccionesQueryKey } from '@/modules/direcciones/infrastructure/direcciones.api'
 import type { CreateDireccionInput, DireccionView } from '@/modules/direcciones/domain/direccion.models'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useVirtualScroll } from '@/shared/hooks/useVirtualScroll'
-import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Select } from '@/shared/ui/select'
 import { Skeleton } from '@/shared/ui/skeleton'
@@ -25,14 +26,6 @@ function formatPrice(value: number): string {
     currency: 'COP',
     maximumFractionDigits: 0,
   }).format(value)
-}
-
-function useProductImage(productoId: number) {
-  return useQuery({
-    queryKey: ['cart-item-image', productoId],
-    queryFn: () => listImagesByProduct(productoId),
-    staleTime: 1000 * 60 * 5,
-  })
 }
 
 function EmptyState() {
@@ -55,13 +48,12 @@ function EmptyState() {
 
 function QuantitySelector(props: {
   quantity: number
-  stockDisponible: number
   disabled: boolean
   onDecrease: () => void
   onIncrease: () => void
   onInputChange: (value: number) => void
 }) {
-  const { quantity, stockDisponible, disabled, onDecrease, onIncrease, onInputChange } = props
+  const { quantity, disabled, onDecrease, onIncrease, onInputChange } = props
   const [inputValue, setInputValue] = useState(String(quantity))
 
   useEffect(() => {
@@ -69,41 +61,22 @@ function QuantitySelector(props: {
   }, [quantity])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value.replace(/[^0-9]/g, '')
-    const newValue = rawValue === '' ? '' : rawValue
-    setInputValue(newValue)
-
-    let numericValue = Number(newValue)
-    if (Number.isNaN(numericValue) || numericValue < 1) {
-      numericValue = 1
-    }
-
-    setInputValue(String(numericValue))
-    onInputChange(numericValue)
+    let raw = e.target.value.replace(/[^0-9]/g, '')
+    if (raw.startsWith('0')) raw = raw.replace(/^0+/, '') || '0'
+    setInputValue(raw)
   }
 
   const handleBlur = () => {
-    let numericValue = Number(inputValue)
-    if (Number.isNaN(numericValue) || numericValue < 1) {
-      numericValue = 1
-    }
-
-    setInputValue(String(numericValue))
-    onInputChange(numericValue)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.currentTarget.blur()
-    }
+    let num = Number(inputValue)
+    if (!inputValue || Number.isNaN(num) || num < 1) num = 1
+    setInputValue(String(num))
+    onInputChange(num)
   }
 
   return (
     <div className="inline-flex items-center rounded-md border bg-background">
       <Button
-        type="button"
-        variant="ghost"
-        size="icon"
+        type="button" variant="ghost" size="icon"
         className="h-9 w-9 rounded-none rounded-l-md"
         disabled={disabled || quantity <= 1}
         onClick={onDecrease}
@@ -116,15 +89,13 @@ function QuantitySelector(props: {
         value={inputValue}
         onChange={handleChange}
         onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
+        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
         className="h-9 w-14 rounded-none border-0 border-x px-2 text-center text-sm font-medium tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0"
         disabled={disabled}
         aria-label="Cantidad"
       />
       <Button
-        type="button"
-        variant="ghost"
-        size="icon"
+        type="button" variant="ghost" size="icon"
         className="h-9 w-9 rounded-none rounded-r-md"
         disabled={disabled}
         onClick={onIncrease}
@@ -140,15 +111,18 @@ function CartItemCard(props: {
   item: OpenCartItemView
   onDecrease: () => void
   onIncrease: () => void
-  onRemove: () => void
   onQuantityChange: (value: number) => void
+  onRemove: () => void
   disabled: boolean
 }) {
   const { item, onDecrease, onIncrease, onRemove, onQuantityChange, disabled } = props
 
-  const imageQuery = useProductImage(item.productoId)
+  const imageQuery = useQuery({
+    queryKey: ['cart-item-image', item.productoId],
+    queryFn: () => listImagesByProduct(item.productoId),
+    staleTime: 1000 * 60 * 5,
+  })
   const imageUrl = imageQuery.data?.data?.[0]?.url ?? null
-  const isOutOfStock = item.cantidad >= item.stockDisponible
 
   return (
     <Card className="overflow-hidden border bg-card/80 shadow-sm">
@@ -156,57 +130,38 @@ function CartItemCard(props: {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="h-24 w-full shrink-0 overflow-hidden rounded-lg border bg-muted/20 sm:h-24 sm:w-24">
             {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={item.productoNombre}
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
+              <img src={imageUrl} alt={item.productoNombre} className="h-full w-full object-cover" loading="lazy" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
                 {imageQuery.isLoading ? 'Cargando…' : 'Sin imagen'}
               </div>
             )}
           </div>
-
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 space-y-1">
                 <h3 className="truncate text-base font-semibold">{item.productoNombre}</h3>
-                <p className="text-sm text-muted-foreground">
-                  Precio unitario: {formatPrice(item.precioUnitario)}
-                </p>
+                <p className="text-sm text-muted-foreground">Precio: {formatPrice(item.precioUnitario)}</p>
               </div>
-
             </div>
-
             <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
                 <div className="text-sm text-muted-foreground">Cantidad</div>
                 <QuantitySelector
                   quantity={item.cantidad}
-                  stockDisponible={item.stockDisponible}
                   disabled={disabled}
                   onDecrease={onDecrease}
                   onIncrease={onIncrease}
                   onInputChange={onQuantityChange}
                 />
               </div>
-
               <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
                 <div className="text-sm text-muted-foreground">Subtotal</div>
                 <div className="text-lg font-semibold">{formatPrice(item.subtotal)}</div>
               </div>
             </div>
-
             <div className="flex justify-end">
-              <Button
-                type="button"
-                variant="ghost"
-                className="text-destructive hover:text-destructive"
-                disabled={disabled}
-                onClick={onRemove}
-              >
+              <Button type="button" variant="ghost" className="text-destructive hover:text-destructive" disabled={disabled} onClick={onRemove}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 Eliminar
               </Button>
@@ -220,7 +175,6 @@ function CartItemCard(props: {
 
 function CartSummary(props: {
   subtotal: number
-  impuestos: number
   total: number
   direcciones: DireccionView[]
   direccionId: string
@@ -238,42 +192,20 @@ function CartSummary(props: {
   onCheckout: () => void
   onClearCart: () => void
 }) {
-  const {
-    subtotal,
-    impuestos,
-    total,
-    direcciones,
-    direccionId,
-    metodoPago,
-    isAddressesLoading,
-    isCreatingAddress,
-    isBusy,
-    showNewAddressForm,
-    newDireccion,
-    onDireccionIdChange,
-    onMetodoPagoChange,
-    onToggleNewAddressForm,
-    onNewDireccionChange,
-    onCreateAddress,
-    onCheckout,
-    onClearCart,
-  } = props
+  const { subtotal, total, direcciones, direccionId, metodoPago, isAddressesLoading, isCreatingAddress, isBusy, showNewAddressForm, newDireccion, onDireccionIdChange, onMetodoPagoChange, onToggleNewAddressForm, onNewDireccionChange, onCreateAddress, onCheckout, onClearCart } = props
 
   return (
     <Card className="border bg-card/80 shadow-sm">
       <CardHeader>
-        <CardTitle>Resumen de compra</CardTitle>
-        <CardDescription>Revisa tu pedido antes de confirmarlo.</CardDescription>
+        <div className="flex items-center justify-between">
+          <CardTitle>Resumen de compra</CardTitle>
+        </div>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="space-y-3 rounded-lg border bg-background p-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>
             <span className="font-medium">{formatPrice(subtotal)}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Impuestos</span>
-            <span className="font-medium">{formatPrice(impuestos)}</span>
           </div>
           <div className="flex items-center justify-between border-t pt-3 text-base font-semibold">
             <span>Total</span>
@@ -283,93 +215,51 @@ function CartSummary(props: {
 
         <div className="space-y-3 rounded-lg border bg-background p-4">
           <div className="flex items-center justify-between gap-3">
-            <div>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
               <div className="text-sm font-medium">Dirección de entrega</div>
-              <p className="text-xs text-muted-foreground">
-                Elige una dirección guardada o crea una nueva antes de pagar.
-              </p>
             </div>
-            <Button variant="ghost" size="sm" type="button" onClick={onToggleNewAddressForm}>
+            <Button variant="ghost" size="sm" onClick={onToggleNewAddressForm}>
               {showNewAddressForm ? 'Ocultar' : 'Agregar nueva'}
             </Button>
           </div>
 
           {isAddressesLoading ? (
-            <div className="rounded-md border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-              Cargando direcciones…
-            </div>
+            <div className="rounded-md border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">Cargando direcciones…</div>
           ) : direcciones.length ? (
-            <Select
-              id="direccionId"
-              value={direccionId}
-              onChange={(event) => onDireccionIdChange(event.target.value)}
-            >
+            <Select id="direccionId" value={direccionId} onChange={(e) => onDireccionIdChange(e.target.value)}>
               <option value="">Selecciona una dirección</option>
-              {direcciones.map((direccion) => (
-                <option key={direccion.direccionId} value={direccion.direccionId}>
-                  {direccion.lineaDir} - {direccion.barrio}
-                </option>
+              {direcciones.map((d) => (
+                <option key={d.direccionId} value={d.direccionId}>{d.lineaDir} - {d.barrio}</option>
               ))}
             </Select>
           ) : (
             <div className="rounded-md border border-dashed border-destructive/30 bg-destructive/5 px-3 py-3 text-sm text-destructive flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <div>
-                <p className="font-medium">No tienes direcciones guardadas todavía.</p>
-                <p className="text-xs">Debes agregar una dirección para poder confirmar tu compra.</p>
-              </div>
+              <span>No tienes direcciones guardadas todavía. Debes agregar una para poder confirmar tu compra.</span>
             </div>
           )}
 
           {showNewAddressForm ? (
             <div className="grid gap-3 rounded-md border bg-card p-4">
               <div className="grid gap-2">
-                <label className="text-sm font-medium" htmlFor="lineaDir">
-                  Línea de dirección
-                </label>
-                <Input
-                  id="lineaDir"
-                  placeholder="Calle 10 No. 20-30"
-                  value={newDireccion.lineaDir}
-                  onChange={(event) => onNewDireccionChange('lineaDir', event.target.value)}
-                />
+                <label className="text-sm font-medium">Línea de dirección</label>
+                <Input placeholder="Calle 10 No. 20-30" value={newDireccion.lineaDir} onChange={(e) => onNewDireccionChange('lineaDir', e.target.value)} />
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium" htmlFor="barrio">
-                    Barrio
-                  </label>
-                  <Input
-                    id="barrio"
-                    placeholder="Centro"
-                    value={newDireccion.barrio}
-                    onChange={(event) => onNewDireccionChange('barrio', event.target.value)}
-                  />
+                  <label className="text-sm font-medium">Barrio</label>
+                  <Input placeholder="Centro" value={newDireccion.barrio} onChange={(e) => onNewDireccionChange('barrio', e.target.value)} />
                 </div>
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium" htmlFor="codigoPostal">
-                    Código postal
-                  </label>
-                  <Input
-                    id="codigoPostal"
-                    placeholder="080001"
-                    value={newDireccion.codigoPostal ?? ''}
-                    onChange={(event) => onNewDireccionChange('codigoPostal', event.target.value)}
-                  />
+                  <label className="text-sm font-medium">Código postal</label>
+                  <Input placeholder="080001" value={newDireccion.codigoPostal ?? ''} onChange={(e) => onNewDireccionChange('codigoPostal', e.target.value)} />
                 </div>
               </div>
               <div className="grid gap-2">
-                <label className="text-sm font-medium" htmlFor="infoAdiccional">
-                  Información adicional
-                </label>
-                <Input
-                  id="infoAdiccional"
-                  placeholder="Apartamento 305, torre B"
-                  value={newDireccion.infoAdiccional ?? ''}
-                  onChange={(event) => onNewDireccionChange('infoAdiccional', event.target.value)}
-                />
+                <label className="text-sm font-medium">Información adicional</label>
+                <Input placeholder="Apartamento 305, torre B" value={newDireccion.infoAdiccional ?? ''} onChange={(e) => onNewDireccionChange('infoAdiccional', e.target.value)} />
               </div>
-              <Button type="button" variant="outline" disabled={isCreatingAddress} onClick={onCreateAddress}>
+              <Button variant="outline" disabled={isCreatingAddress} onClick={onCreateAddress}>
                 {isCreatingAddress ? 'Guardando…' : 'Guardar dirección'}
               </Button>
             </div>
@@ -377,14 +267,8 @@ function CartSummary(props: {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="metodoPago">
-            Método de pago
-          </label>
-          <Select
-            id="metodoPago"
-            value={metodoPago}
-            onChange={(event) => onMetodoPagoChange(event.target.value as 'EFECTIVO' | 'TRANSFERENCIA')}
-          >
+          <label className="text-sm font-medium" htmlFor="metodoPago">Método de pago</label>
+          <Select id="metodoPago" value={metodoPago} onChange={(e) => onMetodoPagoChange(e.target.value as 'EFECTIVO' | 'TRANSFERENCIA')}>
             <option value="TRANSFERENCIA">Transferencia</option>
             <option value="EFECTIVO">Contra entrega</option>
           </Select>
@@ -392,6 +276,7 @@ function CartSummary(props: {
 
         <div className="flex flex-col gap-2">
           <Button className="w-full" disabled={isBusy || !direccionId.trim()} onClick={onCheckout}>
+            <CreditCard className="mr-2 h-4 w-4" />
             {isBusy ? 'Procesando…' : 'Confirmar compra'}
           </Button>
           <Button variant="outline" className="w-full" disabled={isBusy} onClick={onClearCart}>
@@ -425,18 +310,11 @@ function VirtualCartList(props: {
               item={item}
               disabled={isBusy}
               onDecrease={() => {
-                if (item.cantidad <= 1) {
-                  onRemove(item.carritoDetalleId)
-                  return
-                }
+                if (item.cantidad <= 1) { onRemove(item.carritoDetalleId); return }
                 onUpdateQuantity(item.carritoDetalleId, item.cantidad - 1)
               }}
-              onIncrease={() => {
-                onUpdateQuantity(item.carritoDetalleId, item.cantidad + 1)
-              }}
-              onQuantityChange={(value) => {
-                onUpdateQuantity(item.carritoDetalleId, value)
-              }}
+              onIncrease={() => onUpdateQuantity(item.carritoDetalleId, item.cantidad + 1)}
+              onQuantityChange={(value) => onUpdateQuantity(item.carritoDetalleId, value)}
               onRemove={() => onRemove(item.carritoDetalleId)}
             />
           </div>
@@ -448,16 +326,12 @@ function VirtualCartList(props: {
 
 export function MyCartPage() {
   const queryClient = useQueryClient()
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchText, setSearchText] = useState('')
+  const [checkoutStockIssue, setCheckoutStockIssue] = useState<CheckoutStockInsufficientResponse | null>(null)
   const [direccionId, setDireccionId] = useState('')
   const [metodoPago, setMetodoPago] = useState<'EFECTIVO' | 'TRANSFERENCIA'>('TRANSFERENCIA')
   const [showNewAddressForm, setShowNewAddressForm] = useState(false)
-  const [newDireccion, setNewDireccion] = useState<CreateDireccionInput>({
-    lineaDir: '',
-    barrio: '',
-    codigoPostal: '',
-    infoAdiccional: '',
-  })
+  const [newDireccion, setNewDireccion] = useState<CreateDireccionInput>({ lineaDir: '', barrio: '', codigoPostal: '', infoAdiccional: '' })
 
   const cartQuery = useQuery({
     queryKey: cartQueryKey,
@@ -469,169 +343,155 @@ export function MyCartPage() {
     queryFn: getMyDirecciones,
   })
 
-  const allItems = useMemo(() => {
-    const rawItems = cartQuery.data?.items ?? []
-    return [...rawItems].sort((a, b) => a.carritoDetalleId - b.carritoDetalleId)
-  }, [cartQuery.data?.items])
+  const rawItems = cartQuery.data?.items ?? []
 
   const items = useMemo(() => {
-    if (!searchQuery.trim()) return allItems
-    const query = searchQuery.toLowerCase().trim()
-    return allItems.filter(item => 
-      item.productoNombre.toLowerCase().includes(query)
-    )
-  }, [allItems, searchQuery])
+    const sorted = [...rawItems].sort((a, b) => a.carritoDetalleId - b.carritoDetalleId)
+    if (!searchText.trim()) return sorted
+    return sorted.filter((item) => item.productoNombre.toLowerCase().includes(searchText.toLowerCase()))
+  }, [rawItems, searchText])
 
   const subtotal = cartQuery.data?.total ?? 0
-  const impuestos = 0
-  const total = subtotal + impuestos
+  const total = subtotal
 
   useEffect(() => {
-    const firstAddress = direccionesQuery.data?.[0]
-    if (!direccionId && firstAddress) {
-      setDireccionId(String(firstAddress.direccionId))
-    }
-  }, [direccionId, direccionesQuery.data])
+    const first = direccionesQuery.data?.[0]
+    if (!direccionId && first) setDireccionId(String(first.direccionId))
+  }, [direccionesQuery.data])
 
-  const refreshCart = useCallback(
-    (next: Awaited<ReturnType<typeof getMyCart>>) => {
-      queryClient.setQueryData(cartQueryKey, next)
-    },
-    [queryClient],
-  )
-
-  const refreshDirecciones = useCallback(
-    (next: Awaited<ReturnType<typeof getMyDirecciones>>) => {
-      queryClient.setQueryData(direccionesQueryKey, next)
-    },
-    [queryClient],
-  )
+  const refreshCart = useCallback((next: Awaited<ReturnType<typeof getMyCart>>) => {
+    queryClient.setQueryData(cartQueryKey, next)
+  }, [queryClient])
 
   const updateQuantityMutation = useMutation({
-    mutationFn: ({ carritoDetalleId, cantidad }: { carritoDetalleId: number; cantidad: number }) =>
-      updateCartItemQuantity(carritoDetalleId, cantidad),
-    onSuccess: (data) => {
-      refreshCart(data)
-      toast.success('Cantidad actualizada')
-    },
-    onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'No se pudo actualizar la cantidad'))
-    },
+    mutationFn: ({ carritoDetalleId, cantidad }: { carritoDetalleId: number; cantidad: number }) => updateCartItemQuantity(carritoDetalleId, cantidad),
+    onSuccess: (data) => { refreshCart(data); setCheckoutStockIssue(null); toast.success('Cantidad actualizada') },
+    onError: (error) => { toast.error(getApiErrorMessage(error, 'No se pudo actualizar la cantidad')) },
   })
 
   const removeItemMutation = useMutation({
     mutationFn: (carritoDetalleId: number) => removeFromCart(carritoDetalleId),
-    onSuccess: (data) => {
-      refreshCart(data)
-      toast.success('Producto eliminado del carrito')
-    },
-    onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'No se pudo eliminar el producto'))
-    },
+    onSuccess: (data) => { refreshCart(data); setCheckoutStockIssue(null); toast.success('Producto eliminado del carrito') },
+    onError: (error) => { toast.error(getApiErrorMessage(error, 'No se pudo eliminar el producto')) },
   })
 
   const clearCartMutation = useMutation({
     mutationFn: clearCart,
-    onSuccess: (data) => {
-      refreshCart(data)
-      toast.success('Carrito vaciado')
-    },
-    onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'No se pudo vaciar el carrito'))
-    },
+    onSuccess: (data) => { refreshCart(data); setCheckoutStockIssue(null); toast.success('Carrito vaciado') },
+    onError: (error) => { toast.error(getApiErrorMessage(error, 'No se pudo vaciar el carrito')) },
   })
 
   const checkoutMutation = useMutation({
     mutationFn: async () => {
-      // Validar stock antes de proceder
-      const stockErrors: string[] = []
-      for (const item of allItems) {
-        if (item.cantidad > item.stockDisponible) {
-          stockErrors.push(`${item.productoNombre}: necesitas ${item.cantidad} pero solo hay ${item.stockDisponible} disponibles`)
-        }
-      }
-      
-      if (stockErrors.length > 0) {
-        const message = stockErrors.length === 1 
-          ? `⚠️ ${stockErrors[0]}`
-          : `⚠️ Stock insuficiente:\n${stockErrors.map((e, i) => `${i + 1}. ${e}`).join('\n')}`
-        toast.error(message, { duration: 5000 })
-        throw new Error('Stock insuficiente')
-      }
-
       const parsedDireccionId = Number(direccionId)
-      return checkoutCart({
-        direccionId: parsedDireccionId,
-        metodoPago,
-      })
+      return checkoutCart({ direccionId: parsedDireccionId, metodoPago })
     },
     onSuccess: async (result) => {
+      setCheckoutStockIssue(null)
       await queryClient.invalidateQueries({ queryKey: cartQueryKey })
-      toast.success(`✅ Compra confirmada. Pedido #${result.pedidoId} por ${formatPrice(result.total)}`)
+      toast.success(`Compra confirmada. Pedido #${result.numeroPedidoUsuario} por ${formatPrice(result.total)}`)
     },
-    onError: (error) => {
-      if ((error as Error).message === 'Stock insuficiente') return
-      toast.error(getApiErrorMessage(error, 'No se pudo confirmar la compra'))
+    onError: (err) => {
+      if (err instanceof AxiosError) {
+        const data = err.response?.data as CheckoutStockInsufficientResponse | undefined
+        if (data?.error === 'STOCK_INSUFFICIENT' && Array.isArray(data.productos)) {
+          setCheckoutStockIssue(data)
+          toast.error('No se pudo completar tu compra')
+          return
+        }
+      }
+
+      setCheckoutStockIssue(null)
+      toast.error('No se pudo completar tu compra')
     },
   })
 
   const createAddressMutation = useMutation({
-    mutationFn: () =>
-      createMyDireccion({
-        lineaDir: newDireccion.lineaDir.trim(),
-        barrio: newDireccion.barrio.trim(),
-        codigoPostal: newDireccion.codigoPostal?.trim() || null,
-        infoAdiccional: newDireccion.infoAdiccional?.trim() || null,
-      }),
+    mutationFn: () => createMyDireccion({
+      lineaDir: newDireccion.lineaDir.trim(),
+      barrio: newDireccion.barrio.trim(),
+      codigoPostal: newDireccion.codigoPostal?.trim() || null,
+      infoAdiccional: newDireccion.infoAdiccional?.trim() || null,
+    }),
     onSuccess: (data) => {
-      const next = [...(direccionesQuery.data ?? []), data]
-      refreshDirecciones(next)
+      queryClient.setQueryData(direccionesQueryKey, [...(direccionesQuery.data ?? []), data])
       setDireccionId(String(data.direccionId))
       setShowNewAddressForm(false)
       setNewDireccion({ lineaDir: '', barrio: '', codigoPostal: '', infoAdiccional: '' })
       toast.success('Dirección guardada')
     },
-    onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'No se pudo guardar la dirección'))
-    },
+    onError: (err) => { toast.error(getApiErrorMessage(err, 'No se pudo guardar la dirección')) },
   })
 
-  const isBusy =
-    cartQuery.isLoading ||
-    direccionesQuery.isLoading ||
-    updateQuantityMutation.isPending ||
-    removeItemMutation.isPending ||
-    clearCartMutation.isPending ||
-    checkoutMutation.isPending ||
-    createAddressMutation.isPending
-
+  const isBusy = cartQuery.isLoading || direccionesQuery.isLoading || updateQuantityMutation.isPending || removeItemMutation.isPending || clearCartMutation.isPending || checkoutMutation.isPending || createAddressMutation.isPending
   const hasItems = items.length > 0
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Mi carrito</h1>
-        <p className="text-sm text-muted-foreground">
-          Revisa productos, cantidades y confirma la compra sin salir de la vista.
-        </p>
+      {/* Sticky header con búsqueda */}
+      <div className="sticky top-0 z-10 -mx-4 bg-[#0f172a]/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-[#0f172a]/80">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">Mi carrito</h1>
+          <div className="flex items-center gap-3">
+            <div className="relative w-48 sm:w-72">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+              <Input
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Buscar en carrito..."
+                className="h-9 w-full rounded-lg border-white/10 bg-white/10 pl-9 text-sm text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+            </div>
+            <Button asChild variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+              <Link to="/" className="flex items-center gap-1">
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Seguir comprando</span>
+              </Link>
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {items.length > 0 && (
-        <div className="sticky top-0 z-10">
-          <Input
-            type="text"
-            placeholder="🔍 Buscar por nombre de producto..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full"
-          />
-          {searchQuery && items.length === 0 && (
-            <div className="mt-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-sm text-amber-700">
-              No encontramos productos que coincidan con "{searchQuery}"
+      {checkoutStockIssue ? (
+        <Card className="overflow-hidden border-amber-500/25 bg-gradient-to-br from-amber-500/10 via-background to-background shadow-[0_18px_60px_rgba(245,158,11,0.12)]">
+          <div className="h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500" />
+          <CardContent className="space-y-5 p-5 sm:p-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/20">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-300">
+                  <PackageX className="h-3.5 w-3.5" />
+                  Revisión requerida
+                </div>
+                <h2 className="mt-3 text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+                  No pudimos completar tu compra
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-[0.95rem]">
+                  Revisa los productos indicados abajo, ajusta las cantidades y vuelve a intentar sin perder lo que ya agregaste al carrito.
+                </p>
+              </div>
             </div>
-          )}
-        </div>
-      )}
+
+            <div className="space-y-3 rounded-2xl border border-amber-500/15 bg-background/80 p-4">
+              {checkoutStockIssue.productos.map((producto) => (
+                <div key={producto.nombre} className="flex items-start gap-3 rounded-xl border border-border/60 bg-card/70 px-4 py-3">
+                  <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted/70 text-muted-foreground">
+                    <RotateCcw className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-medium text-foreground">{producto.nombre}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Ajusta la cantidad de este producto antes de continuar.
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {cartQuery.isLoading ? (
         <Card>
@@ -644,29 +504,23 @@ export function MyCartPage() {
         <Card className="border-destructive/30">
           <CardHeader>
             <CardTitle className="text-destructive">No se pudo cargar el carrito</CardTitle>
-            <CardDescription>
-              {getApiErrorMessage(cartQuery.error, 'Ocurrió un error al cargar tu carrito')}
-            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" onClick={() => void cartQuery.refetch()}>
-              Reintentar
-            </Button>
+            <Button variant="outline" onClick={() => void cartQuery.refetch()}>Reintentar</Button>
           </CardContent>
         </Card>
       ) : !hasItems ? (
         <EmptyState />
       ) : (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
+          {/* Lista de productos */}
           <div className="space-y-4">
             {items.length > 10 ? (
               <VirtualCartList
                 items={items}
                 isBusy={isBusy}
-                onUpdateQuantity={(carritoDetalleId, cantidad) =>
-                  updateQuantityMutation.mutate({ carritoDetalleId, cantidad })
-                }
-                onRemove={(carritoDetalleId) => removeItemMutation.mutate(carritoDetalleId)}
+                onUpdateQuantity={(id, cantidad) => updateQuantityMutation.mutate({ carritoDetalleId: id, cantidad })}
+                onRemove={(id) => removeItemMutation.mutate(id)}
               />
             ) : (
               <div className="space-y-4">
@@ -675,28 +529,9 @@ export function MyCartPage() {
                     key={item.carritoDetalleId}
                     item={item}
                     disabled={isBusy}
-                    onDecrease={() => {
-                      if (item.cantidad <= 1) {
-                        removeItemMutation.mutate(item.carritoDetalleId)
-                        return
-                      }
-                      updateQuantityMutation.mutate({
-                        carritoDetalleId: item.carritoDetalleId,
-                        cantidad: item.cantidad - 1,
-                      })
-                    }}
-                    onIncrease={() => {
-                      updateQuantityMutation.mutate({
-                        carritoDetalleId: item.carritoDetalleId,
-                        cantidad: item.cantidad + 1,
-                      })
-                    }}
-                    onQuantityChange={(value) => {
-                      updateQuantityMutation.mutate({
-                        carritoDetalleId: item.carritoDetalleId,
-                        cantidad: value,
-                      })
-                    }}
+                    onDecrease={() => { if (item.cantidad <= 1) { removeItemMutation.mutate(item.carritoDetalleId); return } updateQuantityMutation.mutate({ carritoDetalleId: item.carritoDetalleId, cantidad: item.cantidad - 1 }) }}
+                    onIncrease={() => updateQuantityMutation.mutate({ carritoDetalleId: item.carritoDetalleId, cantidad: item.cantidad + 1 })}
+                    onQuantityChange={(value) => updateQuantityMutation.mutate({ carritoDetalleId: item.carritoDetalleId, cantidad: value })}
                     onRemove={() => removeItemMutation.mutate(item.carritoDetalleId)}
                   />
                 ))}
@@ -704,10 +539,10 @@ export function MyCartPage() {
             )}
           </div>
 
+          {/* Resumen sticky */}
           <div className="lg:sticky lg:top-6 lg:self-start">
             <CartSummary
               subtotal={subtotal}
-              impuestos={impuestos}
               total={total}
               direcciones={direccionesQuery.data ?? []}
               direccionId={direccionId}
@@ -719,37 +554,21 @@ export function MyCartPage() {
               newDireccion={newDireccion}
               onDireccionIdChange={setDireccionId}
               onMetodoPagoChange={setMetodoPago}
-              onToggleNewAddressForm={() => setShowNewAddressForm((current) => !current)}
-              onNewDireccionChange={(field, value) =>
-                setNewDireccion((current) => ({ ...current, [field]: value }))
-              }
+              onToggleNewAddressForm={() => setShowNewAddressForm((c) => !c)}
+              onNewDireccionChange={(field, value) => setNewDireccion((prev) => ({ ...prev, [field]: value }))}
               onCreateAddress={() => {
-                if (!newDireccion.lineaDir.trim() || !newDireccion.barrio.trim()) {
-                  toast.error('Completa la línea de dirección y el barrio')
-                  return
-                }
+                if (!newDireccion.lineaDir.trim() || !newDireccion.barrio.trim()) { toast.error('Completa la línea de dirección y el barrio'); return }
                 createAddressMutation.mutate()
               }}
               onCheckout={() => {
-                if (!direccionId.trim()) {
-                  toast.error('Debes seleccionar una dirección')
-                  return
-                }
+                if (!direccionId.trim()) { toast.error('Debes seleccionar una dirección'); return }
                 checkoutMutation.mutate()
               }}
-              onAddDireccion={() => navigate('/me/direcciones')}
               onClearCart={() => clearCartMutation.mutate()}
             />
           </div>
         </div>
       )}
-
-      {cartQuery.isLoading ? (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_24rem]">
-          <Skeleton className="h-44 rounded-xl" />
-          <Skeleton className="h-80 rounded-xl" />
-        </div>
-      ) : null}
     </div>
   )
 }

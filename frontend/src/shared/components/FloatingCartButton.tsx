@@ -5,13 +5,10 @@ import { Link } from 'react-router-dom'
 
 export function FloatingCartButton() {
   const status = useAuthStore((s) => s.status)
-  const user = useAuthStore((s) => s.user)
-  const roles = (user?.roles ?? []).map((r) => r.toUpperCase())
-  const isCustomer = status === 'authenticated' && roles.includes('CUSTOMER')
-  const items = useCartStore((s) => s.items)
-  const itemCount = Object.keys(items).length
+  const itemCount = useCartStore((s) => Object.keys(s.items).length)
 
-  if (!isCustomer || itemCount === 0) {
+  // Solo mostrar si el usuario está autenticado y hay items en el carrito
+  if (status !== 'authenticated' || itemCount === 0) {
     return null
   }
 

@@ -19,9 +19,11 @@ import { PagoModule } from '../pago/pago.module';
 import { GetOpenCartByUsuarioUseCase } from './application/use-cases/get-open-cart-by-usuario.use-case';
 import { AddItemToCartUseCase } from './application/use-cases/add-item-to-cart.use-case';
 import { CheckoutCartUseCase } from './application/use-cases/checkout-cart.use-case';
+import { CreateOrderUseCase } from './application/use-cases/create-order.use-case';
 import { UpdateCartItemQuantityUseCase } from './application/use-cases/update-cart-item-quantity.use-case';
 import { RemoveProductFromCartUseCase } from './application/use-cases/remove-product-from-cart.use-case';
 import { ClearCartUseCase } from './application/use-cases/clear-cart.use-case';
+import { ValidateCartStockUseCase } from './application/use-cases/validate-cart-stock.use-case';
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { ClearCartUseCase } from './application/use-cases/clear-cart.use-case';
     GetAllCarritosUseCase,
     GetCarritoByIdUseCase,
     GetOpenCartByUsuarioUseCase,
+    ValidateCartStockUseCase,
+    CreateOrderUseCase,
     AddItemToCartUseCase,
     CheckoutCartUseCase,
     UpdateCartItemQuantityUseCase,

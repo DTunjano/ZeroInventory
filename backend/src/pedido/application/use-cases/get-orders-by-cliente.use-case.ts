@@ -25,6 +25,7 @@ export type OrderItemView = {
 
 export type OrderView = {
   pedidoId: number;
+  numeroPedidoUsuario: number;
   clienteId: number;
   direccionId: number;
   estado: 'CONFIRMADO' | 'COMPLETADO' | 'ENVIADO' | 'CANCELADO' | 'DEVUELTO';
@@ -54,6 +55,7 @@ export class GetOrdersByClienteUseCase {
 
       return {
         pedidoId: pedido.pedidoId,
+        numeroPedidoUsuario: pedido.numeroPedidoUsuario,
         clienteId: pedido.clienteId,
         direccionId: pedido.direccionId,
         estado: pedido.estado,

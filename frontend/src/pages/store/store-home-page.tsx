@@ -1,17 +1,23 @@
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/modules/auth/application/auth.store'
-import { addToCart } from '@/modules/cart/application/cart.use-cases'
+import { addToCart, getMyCart } from '@/modules/cart/application/cart.use-cases'
+import { useCartStore } from '@/modules/cart/application/cart.store'
 import { listProducts } from '@/modules/products/application/products.use-cases'
 import { listImagesByProduct } from '@/modules/products/application/product-images.use-cases'
 import type { Product } from '@/modules/products/domain/product.models'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent, CardTitle } from '@/shared/ui/card'
 import { Skeleton } from '@/shared/ui/skeleton'
-import { useNavigate, Link } from 'react-router-dom'
-import { Package, ShoppingCart, Sparkles, Tag } from 'lucide-react'
+import { Input } from '@/shared/ui/input'
+import { FloatingCartButton } from '@/shared/components/FloatingCartButton'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { Package, ShoppingCart, Sparkles, Tag, Search, CheckCircle, AlertTriangle, XCircle, ArrowLeft } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+
+const STOCK_THRESHOLD = 150
 
 function formatPrice(value: number): string {
   return new Intl.NumberFormat('es-CO', {
@@ -19,6 +25,45 @@ function formatPrice(value: number): string {
     currency: 'COP',
     maximumFractionDigits: 0,
   }).format(value)
+}
+
+type StockStatus = 'available' | 'low' | 'out'
+
+function getStockStatus(quantity: number): StockStatus {
+  if (quantity <= 0) return 'out'
+  if (quantity <= STOCK_THRESHOLD) return 'low'
+  return 'available'
+}
+
+function StockBadge({ quantity }: { quantity: number }) {
+  const status = getStockStatus(quantity)
+
+  const config = {
+    available: {
+      label: 'Disponible',
+      className: 'border-green-500/30 bg-green-500/10 text-green-400',
+      icon: CheckCircle,
+    },
+    low: {
+      label: 'Últimas unidades',
+      className: 'border-amber-500/30 bg-amber-500/10 text-amber-400',
+      icon: AlertTriangle,
+    },
+    out: {
+      label: 'Sin stock',
+      className: 'border-red-500/30 bg-red-500/10 text-red-400',
+      icon: XCircle,
+    },
+  }
+
+  const { label, className, icon: Icon } = config[status]
+
+  return (
+    <div className={cn('inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]', className)}>
+      <Icon className="h-3.5 w-3.5" />
+      {label}
+    </div>
+  )
 }
 
 function ProductCard({ product }: { product: Product }) {
@@ -30,15 +75,9 @@ function ProductCard({ product }: { product: Product }) {
   })
 
   const imageUrl = imageQuery.data?.data?.[0]?.url ?? null
-  const isOutOfStock = product.cantidad <= 0
-  const isLowStock = product.cantidad > 0 && product.cantidad <= 10
+  const stockStatus = getStockStatus(product.cantidad)
+  const isOutOfStock = stockStatus === 'out'
   const formattedPrice = formatPrice(product.precio)
-
-  const stockStatus = isOutOfStock 
-    ? 'Sin stock' 
-    : isLowStock 
-      ? 'Pocas unidades disponibles'
-      : 'Disponible'
 
   return (
     <div
@@ -80,18 +119,7 @@ function ProductCard({ product }: { product: Product }) {
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-4 sm:px-5 sm:pb-5">
         <div className="space-y-2">
-          <div className={cn(
-            'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]',
-            isOutOfStock 
-              ? 'border-red-500/30 bg-red-500/10 text-red-400' 
-              : isLowStock
-                ? 'border-amber-500/30 bg-amber-500/10 text-amber-400'
-                : 'border-green-500/30 bg-green-500/10 text-green-400'
-          )}>
-            <Tag className="h-3.5 w-3.5" />
-            {stockStatus}
-          </div>
-
+          <StockBadge quantity={product.cantidad} />
           <div className="line-clamp-2 text-base font-semibold leading-snug tracking-tight text-foreground sm:text-[1.05rem]">
             {product.nombre}
           </div>
@@ -140,11 +168,54 @@ function ProductCard({ product }: { product: Product }) {
 
 export function StoreHomePage() {
   const status = useAuthStore((s) => s.status)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const productsQuery = useQuery({
     queryKey: ['store-products'],
     queryFn: () => listProducts({ page: 1, limit: 24 }),
   })
+
+  // Cargar los items del carrito cuando la página se monta o cuando el usuario se autentica
+  useEffect(() => {
+    if (status === 'authenticated') {
+      getMyCart()
+        .then((cart) => {
+          // Actualizar el store local con los items del servidor
+          if (cart.items && Array.isArray(cart.items)) {
+            const items: Record<number, any> = {}
+            cart.items.forEach((item) => {
+              items[item.productoId] = {
+                producto: {
+                  productoId: item.productoId,
+                  nombre: item.productoNombre,
+                  precio: item.precioUnitario,
+                },
+                quantity: item.cantidad,
+              }
+            })
+            useCartStore.setState({ items })
+          }
+        })
+        .catch(() => {
+          // Si hay error, el carrito sigue vacío
+        })
+    }
+  }, [status])
+
+  const products = productsQuery.data?.data ?? []
+
+  const sortedProducts = useMemo(() => {
+    return [...products].sort((a, b) => {
+      const statusA = getStockStatus(a.cantidad)
+      const statusB = getStockStatus(b.cantidad)
+      const priority = { available: 0, low: 1, out: 2 }
+      const diff = priority[statusA] - priority[statusB]
+      if (diff !== 0) return diff
+      return a.nombre.localeCompare(b.nombre)
+    }).filter((p) =>
+      searchQuery.trim() === '' || p.nombre.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [products, searchQuery])
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -163,105 +234,71 @@ export function StoreHomePage() {
                 Tienda
               </h1>
               <p className="max-w-2xl text-sm leading-6 text-white/70 sm:text-base">
-                Explora el catálogo, agrega productos al carrito y finaliza tu compra en la misma sesión.
+                Explora el catálogo, agrega productos al carrito y finaliza tu compra.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/75 backdrop-blur-sm">
-              Descubre lo que necesitas, al instante.
+          <div className="w-full max-w-md">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/50" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar productos..."
+                className="h-12 w-full rounded-xl border-white/10 bg-white/10 pl-10 text-white placeholder:text-white/50 focus-visible:border-blue-400/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
             </div>
-            <Button asChild variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-100 hover:border-blue-400 hover:bg-blue-500/15 hover:text-white">
-              <Link to="/me/cart" className="inline-flex items-center gap-2">
-                Ver carrito
-                <ShoppingCart className="h-4 w-4" />
-              </Link>
-            </Button>
           </div>
         </div>
       </div>
 
       {status !== 'authenticated' ? (
         <Card className="border-dashed border-blue-500/20 bg-blue-500/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">Inicia sesión</CardTitle>
-            <CardDescription>
+          <CardContent className="flex flex-col gap-4 py-8 text-center">
+            <CardTitle className="flex items-center justify-center gap-2">Inicia sesión para comprar</CardTitle>
+            <p className="text-muted-foreground">
               Para ver tu carrito y tus pedidos necesitas autenticarte.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild>
-              <Link to="/login">Ir a login</Link>
+            </p>
+            <Button asChild className="w-fit mx-auto">
+              <a href="/login">Ir a login</a>
             </Button>
           </CardContent>
         </Card>
-      ) : (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-200">
-                <Sparkles className="h-3.5 w-3.5" />
-                Explora productos seleccionados
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Navegación ágil, tarjetas limpias y carga optimizada para catálogos grandes.
-              </p>
-            </div>
-          </div>
+      ) : null}
 
-          {productsQuery.isLoading ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="overflow-hidden rounded-3xl border border-border/70 bg-card/50 p-4">
-                  <Skeleton className="aspect-square w-full rounded-2xl" />
-                  <Skeleton className="mt-4 h-5 w-2/3 rounded-full" />
-                  <Skeleton className="mt-2 h-4 w-5/6 rounded-full" />
-                  <div className="mt-4 flex gap-3">
-                    <Skeleton className="h-16 flex-1 rounded-2xl" />
-                    <Skeleton className="h-16 flex-1 rounded-2xl" />
-                  </div>
-                  <Skeleton className="mt-4 h-11 w-full rounded-xl" />
+      <div className="space-y-4">
+        {productsQuery.isLoading ? (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="overflow-hidden rounded-3xl border border-border/70 bg-card/50 p-4">
+                <Skeleton className="aspect-square w-full rounded-2xl" />
+                <Skeleton className="mt-4 h-5 w-2/3 rounded-full" />
+                <Skeleton className="mt-2 h-4 w-5/6 rounded-full" />
+                <div className="mt-4 flex gap-3">
+                  <Skeleton className="h-16 flex-1 rounded-2xl" />
+                  <Skeleton className="h-16 flex-1 rounded-2xl" />
                 </div>
-              ))}
-            </div>
-          ) : productsQuery.isError ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Error</CardTitle>
-                <CardDescription>
-                  {getApiErrorMessage(productsQuery.error, 'Error al cargar productos')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    void productsQuery.refetch().then((r) => {
-                      if (r.isError) toast.error('Error al cargar productos')
-                    })
-                  }}
-                >
-                  Reintentar
-                </Button>
-              </CardContent>
-            </Card>
-          ) : productsQuery.data?.data?.length ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {productsQuery.data.data.map((p) => (
-                <ProductCard key={p.productoId} product={p} />
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>Sin productos</CardTitle>
-                <CardDescription>No hay productos disponibles.</CardDescription>
-              </CardHeader>
-            </Card>
-          )}
-        </div>
-      )}
+                <Skeleton className="mt-4 h-11 w-full rounded-xl" />
+              </div>
+            ))}
+          </div>
+        ) : sortedProducts.length ? (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {sortedProducts.map((p) => (
+              <ProductCard key={p.productoId} product={p} />
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="py-16 text-center">
+              <CardTitle>No se encontraron productos</CardTitle>
+              <p className="text-muted-foreground mt-2">Intenta con otro término de búsqueda.</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+      <FloatingCartButton />
     </div>
   )
 }

@@ -10,7 +10,6 @@ export type OpenCartItemView = {
   precioUnitario: number;
   subtotal: number;
   productoNombre: string;
-  stockDisponible: number;
 };
 
 export type OpenCartView = {
@@ -66,7 +65,6 @@ export class GetOpenCartByUsuarioUseCase {
         precioUnitario,
         subtotal,
         productoNombre: producto.nombre,
-        stockDisponible: producto.cantidad,
       });
     }
 

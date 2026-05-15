@@ -9,6 +9,7 @@ export class PedidoMapper {
       entity.direccionId,
       entity.estado,
       entity.total,
+      entity.numeroPedidoUsuario,
       entity.fecha,
     );
   }
@@ -20,6 +21,7 @@ export class PedidoMapper {
     entity.direccionId = domain.direccionId;
     entity.estado = domain.estado;
     entity.total = domain.total;
+    entity.numeroPedidoUsuario = domain.numeroPedidoUsuario;
     entity.fecha = domain.fecha;
     return entity;
   }
