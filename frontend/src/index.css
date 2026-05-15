@@ -106,6 +106,21 @@
 
 /* Component utility classes using CSS variables directly */
 @layer components {
+  @keyframes floating-cart-levitate {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-7px);
+    }
+  }
+
+  .floating-cart-levitate {
+    animation: floating-cart-levitate 3.2s ease-in-out infinite;
+    will-change: transform;
+  }
+
   .card-base {
     background-color: hsl(var(--card));
     color: hsl(var(--card-foreground));

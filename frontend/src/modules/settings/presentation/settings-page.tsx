@@ -17,6 +17,7 @@ import {
   Lock,
   CheckCircle2,
   BadgeCheck,
+  Wrench,
 } from 'lucide-react'
 
 import { settingsService } from '../infrastructure/settings.service'
@@ -442,6 +443,7 @@ export function SettingsPage() {
             title="Claro"
             description="Azul y blanco con contraste profesional."
             onClick={() => appearanceForm.setValue('theme', 'light', { shouldDirty: true, shouldValidate: true })}
+            disabled={true}
           />
           <ThemeOption
             active={appearanceForm.watch('theme') === 'dark'}
@@ -591,29 +593,53 @@ function ThemeOption(props: {
   title: string
   description: string
   onClick: () => void
+  disabled?: boolean
 }) {
-  const { active, icon, title, description, onClick } = props
+  const { active, icon, title, description, onClick, disabled = false } = props
 
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={cn(
-        'group flex min-h-32 flex-col justify-between rounded-3xl border p-5 text-left transition-all duration-200',
-        active
-          ? 'border-blue-500/40 bg-blue-500/10 shadow-lg shadow-blue-500/10'
-          : 'border-white/10 bg-white/[0.03] hover:border-blue-500/20 hover:bg-white/[0.05]',
+        'group relative flex min-h-32 flex-col justify-between rounded-3xl border p-5 text-left transition-all duration-200',
+        disabled
+          ? 'cursor-not-allowed border-white/5 bg-white/[0.01] opacity-60'
+          : active
+            ? 'border-blue-500/40 bg-blue-500/10 shadow-lg shadow-blue-500/10 hover:border-blue-500/50 hover:shadow-blue-500/20 cursor-pointer'
+            : 'border-white/10 bg-white/[0.03] hover:border-blue-500/20 hover:bg-white/[0.05] cursor-pointer',
       )}
     >
+      {disabled && (
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/[0.05] via-transparent to-transparent flex items-center justify-center pointer-events-none">
+          <div className="text-center space-y-2">
+            <div className="flex justify-center">
+              <Wrench className="h-8 w-8 text-yellow-400/70 animate-bounce" />
+            </div>
+            <div className="text-xs font-medium text-yellow-300/80">En construccion</div>
+          </div>
+        </div>
+      )}
+      
       <div className="flex items-center justify-between gap-3">
-        <div className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-black/10">
+        <div className={cn(
+          'grid h-11 w-11 place-items-center rounded-2xl border bg-black/10',
+          disabled ? 'border-white/5' : 'border-white/10'
+        )}>
           {icon}
         </div>
-        {active ? <CheckCircle2 className="h-5 w-5 text-blue-400" /> : null}
+        {active && !disabled ? <CheckCircle2 className="h-5 w-5 text-blue-400" /> : null}
       </div>
       <div className="space-y-1">
-        <div className="text-base font-semibold text-white">{title}</div>
-        <div className="text-sm text-white/65">{description}</div>
+        <div className={cn(
+          'text-base font-semibold',
+          disabled ? 'text-white/50' : 'text-white'
+        )}>{title}</div>
+        <div className={cn(
+          'text-sm',
+          disabled ? 'text-white/30' : 'text-white/65'
+        )}>{disabled ? 'Proxima mente disponible' : description}</div>
       </div>
     </button>
   )
