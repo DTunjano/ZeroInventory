@@ -148,6 +148,7 @@ export function AdminProductsPage() {
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false)
   const [categorySearch, setCategorySearch] = useState('')
   const providerPickerRef = useRef<HTMLDivElement | null>(null)
+  const categoryPickerRef = useRef<HTMLDivElement | null>(null)
 
   const pageSize = 15 // Máximo 15 productos por página
   const queryKey = useMemo(() => ['products', currentPage, pageSize, debouncedSearch, categoryFilter.join(','), sortBy, order], [currentPage, pageSize, debouncedSearch, categoryFilter, sortBy, order])
@@ -444,7 +445,7 @@ export function AdminProductsPage() {
   function clearFilters() {
     setSearch('')
     setCategoryFilter([])
-    setCategoryFilterSearch('')
+    setCategorySearch('')
     setSortBy(undefined)
     setOrder('desc')
     setCurrentPage(1)

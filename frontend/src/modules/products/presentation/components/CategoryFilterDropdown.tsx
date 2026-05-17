@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown, Search } from 'lucide-react'
 import { Input } from '@/shared/ui/input'
 import { cn } from '@/shared/lib/utils'
@@ -31,6 +31,20 @@ export function CategoryFilterDropdown({
 }: CategoryFilterDropdownProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const ref = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    function onPointerDown(event: PointerEvent) {
+      const container = ref.current
+      if (event.target instanceof Node && container && !container.contains(event.target)) {
+        onOpenChange(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [isOpen, onOpenChange])
 
   const filteredCategories = categories.filter((c) =>
     c.nombre.toLowerCase().includes(searchQuery.toLowerCase()),

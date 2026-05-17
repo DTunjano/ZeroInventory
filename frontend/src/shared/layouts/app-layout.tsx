@@ -17,6 +17,7 @@ import {
   Bell,
   Sparkles,
   HelpCircle,
+  Film,
 } from 'lucide-react'
 import type { ComponentType } from 'react'
 
@@ -47,6 +48,7 @@ const adminOnlyNav: AppLayoutNavItem[] = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutGrid },
   { to: '/admin/employees', label: 'Empleados', icon: Briefcase },
   { to: '/admin/reports', label: 'Reportes', icon: BarChart3 },
+  { to: '/admin/media', label: 'Contenido', icon: Film },
 ]
 
 /** Navegación compartida entre ADMIN y EMPLOYEE */

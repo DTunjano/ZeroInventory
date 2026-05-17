@@ -11,6 +11,7 @@ import { SuppliersPage as AdminSuppliersPage } from '@/modules/suppliers/present
 import { AdminUsersPage } from '@/pages/admin/admin-users-page'
 import { AdminEmployeesPage } from '@/modules/employee/presentation/admin-employees-page'
 import { AdminReportsPage } from '@/pages/admin/admin-reports-page'
+import { MediaPage } from '@/modules/media/presentation/MediaPage'
 import { HomeRoute } from '@/pages/home-route'
 import { LoginPage } from '@/pages/login-page'
 import { MyCartPage } from '@/pages/me/my-cart-page'
@@ -59,6 +60,7 @@ export function App() {
               <Route path="admin/users" element={<AdminUsersPage />} />
               <Route path="admin/employees" element={<AdminEmployeesPage />} />
               <Route path="admin/reports" element={<AdminReportsPage />} />
+              <Route path="admin/media" element={<MediaPage />} />
             </Route>
 
             <Route element={<RequireAuth roles={['CUSTOMER']} />}>

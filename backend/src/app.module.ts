@@ -24,6 +24,7 @@ import { AuthModule } from './auth/auth.module';
 import { SettingsModule } from './settings/settings.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { InventoryModule } from './inventory/inventory.module';
     CompraModule,
     DashboardModule,
     SettingsModule,
+    MediaModule,
   ],
 })
 export class AppModule {}

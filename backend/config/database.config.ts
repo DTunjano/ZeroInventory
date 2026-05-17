@@ -19,6 +19,7 @@ import { UsuarioEntityORM } from '../src/usuario/infrastructure/persistence/usua
 import { ProductoEntityORM } from '../src/producto/infrastructure/persistence/producto.orm-entity';
 import { ProductoImagenEntityORM } from '../src/producto-imagen/infrastructure/persistence/producto-imagen.orm-entity';
 import { ClienteEntityORM } from '../src/cliente/infrastructure/persistence/cliente.orm-entity';
+import { MediaOrmEntity } from '../src/media/infrastructure/media.orm-entity';
 import { EmpleadoEntityORM } from '../src/empleado/infrastructure/adapters/persistence/empleado.orm-entity';
 
 export default registerAs('database', (): TypeOrmModuleOptions => {
@@ -45,6 +46,7 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     UsuarioRolEntityORM,
     UsuarioEntityORM,
     EmpleadoEntityORM,
+    MediaOrmEntity,
   ];
 
   // PRODUCCIÓN

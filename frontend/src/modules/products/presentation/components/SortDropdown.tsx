@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 
@@ -27,6 +27,20 @@ export function SortDropdown({
   onOpenChange,
 }: SortDropdownProps) {
   const ref = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    function onPointerDown(event: PointerEvent) {
+      const container = ref.current
+      if (event.target instanceof Node && container && !container.contains(event.target)) {
+        onOpenChange(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [isOpen, onOpenChange])
 
   const currentLabel = SORT_OPTIONS.find((opt) => opt.value === value)?.label || 'Orden por defecto'
 
