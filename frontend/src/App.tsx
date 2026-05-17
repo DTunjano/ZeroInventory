@@ -11,8 +11,6 @@ import { SuppliersPage as AdminSuppliersPage } from '@/modules/suppliers/present
 import { AdminUsersPage } from '@/pages/admin/admin-users-page'
 import { AdminEmployeesPage } from '@/modules/employee/presentation/admin-employees-page'
 import { AdminReportsPage } from '@/pages/admin/admin-reports-page'
-import { EmployeeDashboardPage } from '@/pages/employee/employee-dashboard-page'
-import { EmployeeProductsPage } from '@/pages/employee/employee-products-page'
 import { HomeRoute } from '@/pages/home-route'
 import { LoginPage } from '@/pages/login-page'
 import { MyCartPage } from '@/pages/me/my-cart-page'
@@ -46,20 +44,21 @@ export function App() {
           <Route element={<AppLayout />}>
             <Route index element={<HomeRoute />} />
 
-            <Route element={<RequireAuth roles={['ADMIN']} />}>
-              <Route path="admin" element={<AdminDashboardPage />} />
+            {/* Rutas compartidas entre ADMIN y EMPLOYEE (mismas vistas) */}
+            <Route element={<RequireAuth roles={['ADMIN', 'EMPLOYEE']} />}>
               <Route path="admin/inventory" element={<AdminInventoryPage />} />
               <Route path="admin/inventory-adjustments" element={<AdminInventoryAdjustmentsPage />} />
               <Route path="admin/products" element={<AdminProductsPage />} />
-              <Route path="admin/users" element={<AdminUsersPage />} />
-              <Route path="admin/employees" element={<AdminEmployeesPage />} />
               <Route path="admin/suppliers" element={<AdminSuppliersPage />} />
-              <Route path="admin/reports" element={<AdminReportsPage />} />
             </Route>
 
-            <Route element={<RequireAuth roles={['EMPLOYEE']} />}>
-              <Route path="employee" element={<EmployeeDashboardPage />} />
-              <Route path="employee/products" element={<EmployeeProductsPage />} />
+            {/* Rutas exclusivas de ADMIN */}
+            <Route element={<RequireAuth roles={['ADMIN']} />}>
+              <Route path="admin" element={<AdminDashboardPage />} />
+              <Route path="admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="admin/users" element={<AdminUsersPage />} />
+              <Route path="admin/employees" element={<AdminEmployeesPage />} />
+              <Route path="admin/reports" element={<AdminReportsPage />} />
             </Route>
 
             <Route element={<RequireAuth roles={['CUSTOMER']} />}>

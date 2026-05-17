@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { ConfirmModal } from '@/shared/ui/modals/confirm-modal'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { usePermissions } from '@/shared/hooks/usePermissions'
 import {
   useSuppliers,
   useToggleSupplierStatus,
@@ -15,15 +16,19 @@ import { SupplierFormModal } from '@/modules/suppliers/components/supplier-form-
 import { supplierService } from '../application/supplier.service'
 import type { Proveedor } from '../domain/supplier.entity'
 
+import { useDebounce } from '@/shared/hooks/useDebounce'
+
 type StatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE'
 
 export function SuppliersPage() {
   const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearch = useDebounce(searchTerm, 300)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [editingSupplier, setEditingSupplier] = useState<Proveedor | null>(null)
   const [statusModalSupplier, setStatusModalSupplier] = useState<Proveedor | null>(null)
   const [deleteModalSupplier, setDeleteModalSupplier] = useState<Proveedor | null>(null)
+  const { canCreate, canDelete } = usePermissions()
 
   const isActive =
     statusFilter === 'ALL' ? undefined : statusFilter === 'ACTIVE' ? true : false
@@ -31,7 +36,7 @@ export function SuppliersPage() {
   const listParams = {
     page: 1,
     limit: 60,
-    ...(searchTerm ? { nombre: searchTerm } : {}),
+    ...(debouncedSearch ? { nombre: debouncedSearch } : {}),
     ...(isActive !== undefined ? { isActive } : {}),
   }
 
@@ -41,8 +46,8 @@ export function SuppliersPage() {
 
   const filteredSuppliers =
     data?.data?.filter((prov) => {
-      if (!searchTerm) return true
-      const q = searchTerm.toLowerCase()
+      if (!debouncedSearch) return true
+      const q = debouncedSearch.toLowerCase()
       return (
         prov.nombre.toLowerCase().includes(q) ||
         (prov.nombreTitular?.toLowerCase().includes(q) ?? false) ||
@@ -62,16 +67,18 @@ export function SuppliersPage() {
           </p>
         </div>
 
-        <Button
-          onClick={() => {
-            setEditingSupplier(null)
-            setCreateModalOpen(true)
-          }}
-          className="gap-2 rounded-xl bg-blue-600 px-5 py-2 text-base font-semibold hover:bg-blue-500"
-        >
-          <Plus className="h-5 w-5" />
-          Agregar proveedor
-        </Button>
+        {canCreate && (
+          <Button
+            onClick={() => {
+              setEditingSupplier(null)
+              setCreateModalOpen(true)
+            }}
+            className="gap-2 rounded-xl bg-blue-600 px-5 py-2 text-base font-semibold hover:bg-blue-500"
+          >
+            <Plus className="h-5 w-5" />
+            Agregar proveedor
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">

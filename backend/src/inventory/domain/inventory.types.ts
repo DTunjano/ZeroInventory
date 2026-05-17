@@ -65,6 +65,7 @@ export interface StockAdjustmentListItem extends StockAdjustment {
   productoNombre: string
   productoSku: string
   usuarioNombre: string
+  userRole?: string | null
   userFirstName: string | null
   userLastName: string | null
 }
@@ -84,4 +85,7 @@ export interface StockAdjustmentPageFilters {
   usuarioId?: number
   tipoCambio?: TipoCambioAjuste
   search?: string
+  // Fecha inicio (inclusive) y fin (inclusive)
+  startDate?: string
+  endDate?: string
 }

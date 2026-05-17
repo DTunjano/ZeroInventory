@@ -4,8 +4,8 @@ import {
   MapPin,
   MoreVertical,
   Pencil,
-  Phone,
   Power,
+  Phone,
   Trash2,
 } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
+import { usePermissions } from '@/shared/hooks/usePermissions'
 import type { Proveedor } from '../domain/supplier.entity'
 
 export type SupplierCardProps = {
@@ -52,6 +53,7 @@ function StatusBadge({ isActive }: { isActive: boolean }) {
 export function SupplierCard({ proveedor, onEdit, onToggleStatus, onDelete }: SupplierCardProps) {
   const initials = getInitials(proveedor.nombre)
   const direccionPrincipal = proveedor.direcciones?.[0]
+  const { canDelete, canDeactivate } = usePermissions()
 
   return (
     <article className="rounded-2xl border border-white/10 bg-zinc-900/80 p-5 shadow-lg shadow-black/25 backdrop-blur-sm transition-colors hover:border-blue-500/30">
@@ -88,18 +90,24 @@ export function SupplierCard({ proveedor, onEdit, onToggleStatus, onDelete }: Su
               <Pencil className="mr-2 h-4 w-4" />
               Editar
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onToggleStatus(proveedor.proveedorId)}>
-              <Power className="mr-2 h-4 w-4" />
-              {proveedor.isActive ? 'Desactivar' : 'Activar'}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-red-300 focus:bg-red-500/20 focus:text-red-200"
-              onClick={() => onDelete(proveedor.proveedorId)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Eliminar
-            </DropdownMenuItem>
+            {canDeactivate && (
+              <DropdownMenuItem onClick={() => onToggleStatus(proveedor.proveedorId)}>
+                <Power className="mr-2 h-4 w-4" />
+                {proveedor.isActive ? 'Desactivar' : 'Activar'}
+              </DropdownMenuItem>
+            )}
+            {canDelete && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-300 focus:bg-red-500/20 focus:text-red-200"
+                  onClick={() => onDelete(proveedor.proveedorId)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Eliminar
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </header>

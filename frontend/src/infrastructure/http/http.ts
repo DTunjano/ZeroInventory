@@ -14,6 +14,25 @@ type RetriableRequestConfig = AxiosRequestConfig & { _retry?: boolean }
 export const http: AxiosInstance = axios.create({
   baseURL: env.apiUrl,
   withCredentials: true,
+  paramsSerializer: {
+    // Serialize arrays as repeated params: key=1&key=2
+    serialize: (params) => {
+      const parts: string[] = []
+      const encode = (v: any) => encodeURIComponent(String(v))
+      for (const key of Object.keys(params || {})) {
+        const value = (params as any)[key]
+        if (value === undefined || value === null) continue
+        if (Array.isArray(value)) {
+          for (const v of value) {
+            parts.push(`${encode(key)}=${encode(v)}`)
+          }
+        } else {
+          parts.push(`${encode(key)}=${encode(value)}`)
+        }
+      }
+      return parts.join('&')
+    },
+  },
 })
 
 http.interceptors.request.use((config) => {

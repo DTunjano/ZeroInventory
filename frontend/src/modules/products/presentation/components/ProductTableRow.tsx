@@ -7,7 +7,7 @@ import { ProductActionsDropdown } from './ProductActionsDropdown'
 export interface ProductTableRowProps {
   product: Product
   imageUrl?: string
-  categoryName?: string
+  categoryNames?: string[]
   providerName?: string
   onEdit: () => void
   onToggleActive: () => void
@@ -24,7 +24,7 @@ export interface ProductTableRowProps {
 export function ProductTableRow({
   product,
   imageUrl,
-  categoryName,
+  categoryNames,
   providerName,
   onEdit,
   onToggleActive,
@@ -61,9 +61,9 @@ export function ProductTableRow({
         </div>
       </TableCell>
 
-      {/* Categoría */}
+      {/* Categoría(s) */}
       <TableCell className="text-sm text-white/80">
-        {categoryName || '—'}
+        {categoryNames && categoryNames.length ? categoryNames.join(', ') : '—'}
       </TableCell>
 
       {/* Precio */}

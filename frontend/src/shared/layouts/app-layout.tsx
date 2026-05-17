@@ -42,35 +42,44 @@ export type AppLayoutNavItem = {
 
 type RoleKey = 'ADMIN' | 'EMPLOYEE' | 'CUSTOMER'
 
-const navByRole: Record<RoleKey, AppLayoutNavItem[]> = {
-  ADMIN: [
-    { to: '/admin', label: 'Dashboard', icon: LayoutGrid },
-    { to: '/admin/inventory', label: 'Inventario', icon: Archive },
-    { to: '/admin/inventory-adjustments', label: 'Ajustes de inventario', icon: SlidersHorizontal },
-    { to: '/admin/products', label: 'Productos', icon: Package },
-    { to: '/admin/employees', label: 'Empleados', icon: Briefcase },
-    { to: '/admin/suppliers', label: 'Proveedores', icon: Truck },
-    { to: '/admin/reports', label: 'Reportes', icon: BarChart3 },
-    { to: '/settings', label: 'Configuración', icon: Settings },
-  ],
-  EMPLOYEE: [
-    { to: '/employee', label: 'Dashboard', icon: LayoutGrid },
-    { to: '/employee/products', label: 'Productos', icon: Package },
-    { to: '/settings', label: 'Configuración', icon: Settings },
-  ],
-  CUSTOMER: [
-    { to: '/', label: 'Tienda', icon: LayoutGrid },
-    { to: '/me/cart', label: 'Carrito', icon: ShoppingCart },
-    { to: '/me/orders', label: 'Mis pedidos', icon: Package },
-    { to: '/me/direcciones', label: 'Direcciones', icon: Building },
-    { to: '/settings', label: 'Configuración', icon: Settings },
-  ],
-}
+/** Navegación exclusiva para ADMIN */
+const adminOnlyNav: AppLayoutNavItem[] = [
+  { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutGrid },
+  { to: '/admin/employees', label: 'Empleados', icon: Briefcase },
+  { to: '/admin/reports', label: 'Reportes', icon: BarChart3 },
+]
+
+/** Navegación compartida entre ADMIN y EMPLOYEE */
+const sharedNav: AppLayoutNavItem[] = [
+  { to: '/admin/inventory', label: 'Inventario', icon: Archive },
+  { to: '/admin/inventory-adjustments', label: 'Ajustes de inventario', icon: SlidersHorizontal },
+  { to: '/admin/products', label: 'Productos', icon: Package },
+  { to: '/admin/suppliers', label: 'Proveedores', icon: Truck },
+  { to: '/settings', label: 'Configuración', icon: Settings },
+]
+
+/** Navegación para CUSTOMER */
+const customerNav: AppLayoutNavItem[] = [
+  { to: '/', label: 'Tienda', icon: LayoutGrid },
+  { to: '/me/cart', label: 'Carrito', icon: ShoppingCart },
+  { to: '/me/orders', label: 'Mis pedidos', icon: Package },
+  { to: '/me/direcciones', label: 'Direcciones', icon: Building },
+  { to: '/settings', label: 'Configuración', icon: Settings },
+]
 
 function pickNav(roles: string[]): AppLayoutNavItem[] {
-  if (roles.includes('ADMIN')) return navByRole.ADMIN
-  if (roles.includes('EMPLOYEE')) return navByRole.EMPLOYEE
-  return navByRole.CUSTOMER
+  const isAdmin = roles.includes('ADMIN')
+  const isEmployee = roles.includes('EMPLOYEE')
+
+  if (isAdmin) {
+    return [...adminOnlyNav, ...sharedNav]
+  }
+
+  if (isEmployee) {
+    return [...sharedNav]
+  }
+
+  return customerNav
 }
 
 const sidebarLabelByRole: Record<RoleKey, string> = {

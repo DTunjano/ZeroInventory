@@ -10,6 +10,7 @@ import {
   Put,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -28,6 +29,11 @@ import { UpdateProductoImagenSwagger } from '../documentation/update-producto-im
 import { DeleteProductoImagenSwagger } from '../documentation/delete-producto-imagen.swagger';
 import { FileInterceptor } from '@nestjs/platform-express/multer/interceptors/file.interceptor';
 
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard'
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard'
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator'
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity'
+
 @ApiTags('Imágenes de Producto')
 @Controller('producto-imagenes')
 export class ProductoImagenController {
@@ -40,6 +46,8 @@ export class ProductoImagenController {
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UseInterceptors(FileInterceptor('imagen'))
   @ApiConsumes('multipart/form-data')
   @CreateProductoImagenSwagger()
@@ -83,6 +91,8 @@ export class ProductoImagenController {
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UpdateProductoImagenSwagger()
   @UseInterceptors(FileInterceptor('imagen'))
   @ApiConsumes('multipart/form-data')
@@ -103,6 +113,8 @@ export class ProductoImagenController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN)
   @DeleteProductoImagenSwagger()
   async remove(
     @Param('id', ParseIntPipe) imagenProductoId: number,

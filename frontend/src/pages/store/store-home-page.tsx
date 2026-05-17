@@ -5,6 +5,11 @@ import { addToCart, getMyCart } from '@/modules/cart/application/cart.use-cases'
 import { useCartStore } from '@/modules/cart/application/cart.store'
 import { listProducts } from '@/modules/products/application/products.use-cases'
 import { listImagesByProduct } from '@/modules/products/application/product-images.use-cases'
+import { listCategories } from '@/modules/products/application/list-categories.use-case'
+import { CategoryFilterDropdown } from '@/modules/products/presentation/components/CategoryFilterDropdown'
+import { SortDropdown } from '@/modules/products/presentation/components/SortDropdown'
+import { OrderToggleButton } from '@/modules/products/presentation/components/OrderToggleButton'
+import { ClearFiltersButton } from '@/modules/products/presentation/components/ClearFiltersButton'
 import type { Product } from '@/modules/products/domain/product.models'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/utils'
@@ -15,7 +20,8 @@ import { Input } from '@/shared/ui/input'
 import { FloatingCartButton } from '@/shared/components/FloatingCartButton'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Package, ShoppingCart, Sparkles, Tag, Search, CheckCircle, AlertTriangle, XCircle, ArrowLeft } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useDebounce } from '@/shared/hooks/useDebounce'
+import { useState, useEffect, useMemo, useRef } from 'react'
 
 const STOCK_THRESHOLD = 150
 
@@ -169,11 +175,42 @@ function ProductCard({ product }: { product: Product }) {
 export function StoreHomePage() {
   const status = useAuthStore((s) => s.status)
   const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearch = useDebounce(searchQuery, 300)
+  const [categoryFilter, setCategoryFilter] = useState<number[]>([])
+  const [categoryFilterOpen, setCategoryFilterOpen] = useState(false)
+  const [sortBy, setSortBy] = useState<'stock' | 'nombre' | undefined>(undefined)
+  const [sortOpen, setSortOpen] = useState(false)
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc')
+  const categoryPickerRef = useRef<HTMLDivElement | null>(null)
+  const sortRef = useRef<HTMLDivElement | null>(null)
 
   const productsQuery = useQuery({
     queryKey: ['store-products'],
     queryFn: () => listProducts({ page: 1, limit: 24 }),
   })
+
+  const categoriesQuery = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => listCategories({ page: 1, limit: 100 }),
+    staleTime: 60_000,
+  })
+
+  // Handle outside click to close dropdowns
+  useEffect(() => {
+    if (!categoryFilterOpen && !sortOpen) return
+
+    function onPointerDown(e: PointerEvent) {
+      const catEl = categoryPickerRef.current
+      const sEl = sortRef.current
+      if (e.target instanceof Node) {
+        if (categoryFilterOpen && catEl && !catEl.contains(e.target)) setCategoryFilterOpen(false)
+        if (sortOpen && sEl && !sEl.contains(e.target)) setSortOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [categoryFilterOpen, sortOpen])
 
   // Cargar los items del carrito cuando la página se monta o cuando el usuario se autentica
   useEffect(() => {
@@ -205,17 +242,47 @@ export function StoreHomePage() {
   const products = productsQuery.data?.data ?? []
 
   const sortedProducts = useMemo(() => {
-    return [...products].sort((a, b) => {
-      const statusA = getStockStatus(a.cantidad)
-      const statusB = getStockStatus(b.cantidad)
-      const priority = { available: 0, low: 1, out: 2 }
-      const diff = priority[statusA] - priority[statusB]
-      if (diff !== 0) return diff
-      return a.nombre.localeCompare(b.nombre)
-    }).filter((p) =>
-      searchQuery.trim() === '' || p.nombre.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  }, [products, searchQuery])
+    let result = [...products]
+
+    // Aplicar filtro de categoría
+    if (categoryFilter.length > 0) {
+      // Para filtrar por categoría, necesitaríamos un mapa de productos a categorías
+      // Por ahora, mostrar todos (el backend debería hacer este filtro)
+      // TODO: Implementar mapa de producto a categorías
+    }
+
+    // Aplicar búsqueda
+    if (debouncedSearch.trim() !== '') {
+      result = result.filter((p) =>
+        p.nombre.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        (p.sku && p.sku.toLowerCase().includes(debouncedSearch.toLowerCase()))
+      )
+    }
+
+    // Aplicar ordenamiento
+    result.sort((a, b) => {
+      let compareResult = 0
+
+      if (sortBy === 'stock') {
+        compareResult = a.cantidad - b.cantidad
+      } else if (sortBy === 'nombre') {
+        compareResult = a.nombre.localeCompare(b.nombre)
+      } else {
+        // Por defecto: ordenar por stock status, luego por nombre
+        const statusA = getStockStatus(a.cantidad)
+        const statusB = getStockStatus(b.cantidad)
+        const priority = { available: 0, low: 1, out: 2 }
+        compareResult = priority[statusA] - priority[statusB]
+        if (compareResult === 0) {
+          compareResult = a.nombre.localeCompare(b.nombre)
+        }
+      }
+
+      return order === 'asc' ? compareResult : -compareResult
+    })
+
+    return result
+  }, [products, debouncedSearch, categoryFilter, sortBy, order])
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -251,6 +318,44 @@ export function StoreHomePage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Filters Bar */}
+      <div className="relative z-10 flex items-center gap-3 p-4 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm">
+        <ClearFiltersButton
+          onClick={() => {
+            setSearchQuery('')
+            setCategoryFilter([])
+            setSortBy(undefined)
+            setOrder('desc')
+            setCategoryFilterOpen(false)
+            setSortOpen(false)
+          }}
+          hasActiveFilters={!!debouncedSearch || categoryFilter.length > 0 || !!sortBy}
+        />
+
+        {categoriesQuery.data && (
+          <div className="relative" ref={categoryPickerRef}>
+            <CategoryFilterDropdown
+              categories={categoriesQuery.data}
+              selectedIds={categoryFilter}
+              onSelectionChange={setCategoryFilter}
+              isOpen={categoryFilterOpen}
+              onOpenChange={setCategoryFilterOpen}
+            />
+          </div>
+        )}
+
+        <div className="relative" ref={sortRef}>
+          <SortDropdown
+            value={sortBy}
+            onChange={setSortBy}
+            isOpen={sortOpen}
+            onOpenChange={setSortOpen}
+          />
+        </div>
+
+        <OrderToggleButton order={order} onChange={setOrder} />
       </div>
 
       {status !== 'authenticated' ? (

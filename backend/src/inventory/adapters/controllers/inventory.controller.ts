@@ -68,6 +68,7 @@ export class InventoryController {
    * Verifica si hay suficiente cantidad disponible
    */
   @Get('stock/validate/:productoId/:cantidad')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @ApiOperation({
     summary: 'Validar stock disponible',
     description: 'Verifica si hay suficiente cantidad de un producto disponible',

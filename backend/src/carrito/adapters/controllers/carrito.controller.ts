@@ -28,10 +28,7 @@ import { UpdateCarritoSwagger } from '../documentation/update-carrito.swagger';
 import { DeleteCarritoSwagger } from '../documentation/delete-carrito.swagger';
 import { GetCarritoByIdSwagger } from '../documentation/get-carrito-by-id.swagger';
 import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
-import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
-import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
-import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
-import { JwtAccessPayload } from '../../../auth/infrastructure/strategies/jwt.strategy';
+import { CurrentUser } from '../../../auth/adapters/decorators/current-user.decorator';
 import { AddItemToCartDTO } from '../../application/dto/add-item-to-cart.dto';
 import { CheckoutCartDTO } from '../../application/dto/checkout-cart.dto';
 import { UpdateCartItemQuantityDTO } from '../../application/dto/update-cart-item-quantity.dto';
@@ -63,73 +60,67 @@ export class CarritoController {
   ) {}
 
   @Get('me')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolNombreEnum.CUSTOMER)
-  async getMyOpenCart(@Req() req: { user: JwtAccessPayload }): Promise<OpenCartView> {
-    return this.getOpenCartByUsuarioUseCase.ejecutar(req.user.sub);
+  @UseGuards(JwtAuthGuard)
+  async getMyOpenCart(@CurrentUser() usuarioId: number): Promise<OpenCartView> {
+    return this.getOpenCartByUsuarioUseCase.ejecutar(usuarioId);
   }
 
   @Post('me/items')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolNombreEnum.CUSTOMER)
+  @UseGuards(JwtAuthGuard)
   async addItem(
-    @Req() req: { user: JwtAccessPayload },
+    @CurrentUser() usuarioId: number,
     @Body() body: AddItemToCartDTO,
   ): Promise<OpenCartView> {
     return this.addItemToCartUseCase.ejecutar({
-      usuarioId: req.user.sub,
+      usuarioId,
       productoId: body.productoId,
       cantidad: body.cantidad,
     });
   }
 
   @Post('me/checkout')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolNombreEnum.CUSTOMER)
+  @UseGuards(JwtAuthGuard)
   async checkout(
-    @Req() req: { user: JwtAccessPayload },
+    @CurrentUser() usuarioId: number,
     @Body() body: CheckoutCartDTO,
   ): Promise<{ pedidoId: number; total: number; numeroPedidoUsuario: number }> {
     return this.checkoutCartUseCase.ejecutar({
-      usuarioId: req.user.sub,
+      usuarioId,
       direccionId: body.direccionId,
       metodoPago: body.metodoPago,
     });
   }
 
   @Put('me/items/:carritoDetalleId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolNombreEnum.CUSTOMER)
+  @UseGuards(JwtAuthGuard)
   async updateItemQuantity(
-    @Req() req: { user: JwtAccessPayload },
+    @CurrentUser() usuarioId: number,
     @Param('carritoDetalleId', ParseIntPipe) carritoDetalleId: number,
     @Body() body: UpdateCartItemQuantityDTO,
   ): Promise<OpenCartView> {
     return this.updateCartItemQuantityUseCase.ejecutar({
-      usuarioId: req.user.sub,
+      usuarioId,
       carritoDetalleId,
       cantidad: body.cantidad,
     });
   }
 
   @Delete('me/items/:carritoDetalleId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolNombreEnum.CUSTOMER)
+  @UseGuards(JwtAuthGuard)
   async removeItem(
-    @Req() req: { user: JwtAccessPayload },
+    @CurrentUser() usuarioId: number,
     @Param('carritoDetalleId', ParseIntPipe) carritoDetalleId: number,
   ): Promise<OpenCartView> {
     return this.removeProductFromCartUseCase.ejecutar({
-      usuarioId: req.user.sub,
+      usuarioId,
       carritoDetalleId,
     });
   }
 
   @Delete('me')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RolNombreEnum.CUSTOMER)
-  async clearCart(@Req() req: { user: JwtAccessPayload }): Promise<OpenCartView> {
-    return this.clearCartUseCase.ejecutar(req.user.sub);
+  @UseGuards(JwtAuthGuard)
+  async clearCart(@CurrentUser() usuarioId: number): Promise<OpenCartView> {
+    return this.clearCartUseCase.ejecutar(usuarioId);
   }
 
   @Post()

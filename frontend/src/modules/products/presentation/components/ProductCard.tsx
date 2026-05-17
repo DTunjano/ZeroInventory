@@ -7,7 +7,7 @@ import { ProductActionsDropdown } from './ProductActionsDropdown'
 export interface ProductCardProps {
   product: Product
   imageUrl?: string
-  categoryName?: string
+  categoryNames?: string[]
   onEdit: () => void
   onToggleActive: () => void
   onSoftDelete: () => void
@@ -23,7 +23,7 @@ export interface ProductCardProps {
 export function ProductCard({
   product,
   imageUrl,
-  categoryName,
+  categoryNames,
   onEdit,
   onToggleActive,
   onSoftDelete,
@@ -104,9 +104,9 @@ export function ProductCard({
           </div>
         </div>
 
-        {/* Categoría */}
-        {categoryName && (
-          <p className="text-xs text-white/50 line-clamp-1">{categoryName}</p>
+        {/* Categoría(s) */}
+        {categoryNames && categoryNames.length > 0 && (
+          <p className="text-xs text-white/50 line-clamp-1">{categoryNames.join(', ')}</p>
         )}
 
         {/* Precio y Stock */}

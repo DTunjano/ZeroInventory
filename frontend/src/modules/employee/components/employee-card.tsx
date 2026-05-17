@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
+import { usePermissions } from '@/shared/hooks/usePermissions'
 import type { Empleado as Employee } from '../services/employee.service'
 
 export type EmployeeCardProps = {
@@ -69,6 +70,7 @@ export function EmployeeCard({
   onToggleStatus,
   onDelete,
 }: EmployeeCardProps) {
+  const { canDelete, canDeactivate } = usePermissions()
   const displayName = empleado.nombreCompleto?.trim() || empleado.nombre
   const initials = getInitials(displayName)
 
@@ -104,18 +106,24 @@ export function EmployeeCard({
               <Pencil className="mr-2 h-4 w-4" />
               Editar
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onToggleStatus(empleado.empleadoId)}>
-              <Power className="mr-2 h-4 w-4" />
-              {empleado.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-red-300 focus:bg-red-500/20 focus:text-red-200"
-              onClick={() => onDelete(empleado.empleadoId)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Eliminar
-            </DropdownMenuItem>
+            {canDeactivate && (
+              <DropdownMenuItem onClick={() => onToggleStatus(empleado.empleadoId)}>
+                <Power className="mr-2 h-4 w-4" />
+                {empleado.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}
+              </DropdownMenuItem>
+            )}
+            {canDelete && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-300 focus:bg-red-500/20 focus:text-red-200"
+                  onClick={() => onDelete(empleado.empleadoId)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Eliminar
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </header>

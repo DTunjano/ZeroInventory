@@ -8,6 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
+import { usePermissions } from '@/shared/hooks/usePermissions'
 import type { Product } from '../../domain/product.models'
 
 export interface ProductActionsDropdownProps {
@@ -20,9 +21,10 @@ export interface ProductActionsDropdownProps {
 
 /**
  * ProductActionsDropdown - Menú de 3 puntos para acciones de producto
- * 
+ *
  * Domain: Presentation Component
  * Responsabilidad: Mostrar menú de acciones (Edit, Activate/Deactivate, Delete soft)
+ * Controlado por permisos: ADMIN puede todo, EMPLOYEE puede editar/desactivar pero NO eliminar.
  */
 export function ProductActionsDropdown({
   product,
@@ -32,6 +34,7 @@ export function ProductActionsDropdown({
   isLoading = false,
 }: ProductActionsDropdownProps) {
   const [open, setOpen] = useState(false)
+  const { canDelete, canDeactivate } = usePermissions()
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -64,29 +67,34 @@ export function ProductActionsDropdown({
           <span>Editar</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem
-          onSelect={() => {
-            onToggleActive()
-          }}
-          disabled={isLoading}
-          className="gap-3"
-        >
-          <Archive className="w-4 h-4" />
-          <span>{product.isActive ? 'Desactivar' : 'Activar'}</span>
-        </DropdownMenuItem>
+        {canDeactivate && (
+          <DropdownMenuItem
+            onSelect={() => {
+              onToggleActive()
+            }}
+            disabled={isLoading}
+            className="gap-3"
+          >
+            <Archive className="w-4 h-4" />
+            <span>{product.isActive ? 'Desactivar' : 'Activar'}</span>
+          </DropdownMenuItem>
+        )}
 
-        <DropdownMenuSeparator />
-
-        <DropdownMenuItem
-          onSelect={() => {
-            onSoftDelete()
-          }}
-          disabled={isLoading}
-          className="gap-3 text-red-300 focus:text-red-200 focus:bg-red-500/15"
-        >
-          <Trash2 className="w-4 h-4" />
-          <span>Eliminar</span>
-        </DropdownMenuItem>
+        {canDelete && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => {
+                onSoftDelete()
+              }}
+              disabled={isLoading}
+              className="gap-3 text-red-300 focus:text-red-200 focus:bg-red-500/15"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Eliminar</span>
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

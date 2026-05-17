@@ -3,8 +3,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Check, ChevronDown, Image as ImageIcon, Package2, Search, Sparkles, Tags } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, Image as ImageIcon, Package2, Search, Sparkles, Tags, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+
+import { CategoryFilterDropdown } from './components/CategoryFilterDropdown'
+import { SortDropdown } from './components/SortDropdown'
+import { OrderToggleButton } from './components/OrderToggleButton'
+import { ClearFiltersButton } from './components/ClearFiltersButton'
 
 import {
   createProduct,
@@ -27,11 +32,12 @@ import { generateSkuPreview } from '../domain/sku-preview'
 
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/utils'
+import { useDebounce } from '@/shared/hooks/useDebounce'
+import { usePermissions } from '@/shared/hooks/usePermissions'
 
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { Select } from '@/shared/ui/select'
 import { ConfirmModal } from '@/shared/ui/modals/confirm-modal'
 import { FormModal } from '@/shared/ui/modals/form-modal'
 import { Badge } from '@/shared/ui/badge'
@@ -122,6 +128,14 @@ function toDefaults(p?: Product | null): FormInput {
 
 export function AdminProductsPage() {
   const qc = useQueryClient()
+  const { canCreate, canDelete } = usePermissions()
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
+  const [categoryFilter, setCategoryFilter] = useState<number[]>([])
+  const [categoryFilterOpen, setCategoryFilterOpen] = useState(false)
+  const [sortOpen, setSortOpen] = useState(false)
+  const [sortBy, setSortBy] = useState<'stock' | 'nombre' | undefined>(undefined)
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [currentPage, setCurrentPage] = useState(1)
   const [open, setOpen] = useState(false)
@@ -130,17 +144,24 @@ export function AdminProductsPage() {
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<Product | null>(null)
   const [confirmToggleActive, setConfirmToggleActive] = useState<Product | null>(null)
+  const [providerPickerOpen, setProviderPickerOpen] = useState(false)
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false)
   const [categorySearch, setCategorySearch] = useState('')
-  const categoryPickerRef = useRef<HTMLDivElement | null>(null)
+  const providerPickerRef = useRef<HTMLDivElement | null>(null)
 
   const pageSize = 15 // Máximo 15 productos por página
-  const queryKey = useMemo(() => ['products', currentPage, pageSize], [currentPage, pageSize])
+  const queryKey = useMemo(() => ['products', currentPage, pageSize, debouncedSearch, categoryFilter.join(','), sortBy, order], [currentPage, pageSize, debouncedSearch, categoryFilter, sortBy, order])
 
   const productsQuery = useQuery({
     queryKey,
     queryFn: async () => {
-      const result = await listProducts({ page: currentPage, limit: pageSize })
+      const filters: any = { page: currentPage, limit: pageSize }
+      if (debouncedSearch) filters.search = debouncedSearch
+      if (categoryFilter && categoryFilter.length) filters.categoriaIds = categoryFilter
+      if (sortBy) filters.sortBy = sortBy
+      if (order) filters.order = order
+
+      const result = await listProducts(filters)
       console.log('📦 Productos recibidos:', {
         total: result.total,
         page: result.page,
@@ -241,19 +262,18 @@ export function AdminProductsPage() {
   }, [imageFile])
 
   useEffect(() => {
-    if (!categoryPickerOpen) return
+    if (!providerPickerOpen) return
 
     function onPointerDown(e: PointerEvent) {
-      const el = categoryPickerRef.current
-      if (!el) return
-      if (e.target instanceof Node && !el.contains(e.target)) {
-        setCategoryPickerOpen(false)
+      const providerEl = providerPickerRef.current
+      if (e.target instanceof Node) {
+        if (providerPickerOpen && providerEl && !providerEl.contains(e.target)) setProviderPickerOpen(false)
       }
     }
 
     document.addEventListener('pointerdown', onPointerDown)
     return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [categoryPickerOpen])
+  }, [providerPickerOpen])
 
   const form = useForm<FormInput, unknown, FormValues>({
     resolver: zodResolver(formSchema),
@@ -385,6 +405,10 @@ export function AdminProductsPage() {
 
   const selectedCategoriaIds = new Set(form.watch('categoriaIds'))
   const categoriaIdsReg = form.register('categoriaIds')
+  const selectedProveedorId = form.watch('proveedorId')
+  const selectedProveedorName = selectedProveedorId
+    ? providersById[Number(selectedProveedorId)] ?? 'Selecciona un proveedor…'
+    : 'Selecciona un proveedor…'
 
   const selectedCategoryNames = Array.from(selectedCategoriaIds)
     .map((id) => categoriesById[Number(id)])
@@ -412,6 +436,24 @@ export function AdminProductsPage() {
     setCategoriaIds(next)
   }
 
+  function setProveedorId(next: string) {
+    form.setValue('proveedorId', next, { shouldValidate: true, shouldDirty: true })
+    setProviderPickerOpen(false)
+  }
+
+  function clearFilters() {
+    setSearch('')
+    setCategoryFilter([])
+    setCategoryFilterSearch('')
+    setSortBy(undefined)
+    setOrder('desc')
+    setCurrentPage(1)
+    setCategoryFilterOpen(false)
+    setSortOpen(false)
+    setProviderPickerOpen(false)
+    setCategoryPickerOpen(false)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -423,27 +465,64 @@ export function AdminProductsPage() {
           </p>
         </div>
 
-        <Button
-          onClick={() => {
-            setEditing(null)
-            setImageFile(null)
-            form.reset(toDefaults(null))
-            setOpen(true)
-          }}
-          className="gap-2"
-        >
-          + Agregar Producto
-        </Button>
+        {canCreate && (
+          <Button
+            onClick={() => {
+              setEditing(null)
+              setImageFile(null)
+              form.reset(toDefaults(null))
+              setOpen(true)
+            }}
+            className="gap-2"
+          >
+            + Agregar Producto
+          </Button>
+        )}
       </div>
 
       {/* Search & View Controls */}
-      <div className="flex items-center justify-between gap-4 p-4 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm">
+      <div className="relative z-10 flex items-center justify-between gap-4 p-4 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
           <Input
             placeholder="Buscar productos..."
+            value={search}
+            onChange={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setSearch(e.target.value)
+            }}
             className="pl-9 border-white/10 bg-white/5"
           />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <ClearFiltersButton
+            onClick={clearFilters}
+            hasActiveFilters={!!debouncedSearch || categoryFilter.length > 0 || !!sortBy}
+          />
+
+          {categoriesQuery.data && (
+            <CategoryFilterDropdown
+              categories={categoriesQuery.data}
+              selectedIds={categoryFilter}
+              onSelectionChange={(ids) => {
+                setCurrentPage(1)
+                setCategoryFilter(ids)
+              }}
+              isOpen={categoryFilterOpen}
+              onOpenChange={setCategoryFilterOpen}
+            />
+          )}
+
+          <SortDropdown
+            value={sortBy}
+            onChange={setSortBy}
+            isOpen={sortOpen}
+            onOpenChange={setSortOpen}
+          />
+
+          <OrderToggleButton order={order} onChange={setOrder} />
         </div>
 
         <ViewToggle value={viewMode} onChange={setViewMode} />
@@ -518,24 +597,61 @@ export function AdminProductsPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
+            <div className="relative grid gap-2" ref={providerPickerRef}>
               <Label htmlFor="proveedorId">Proveedor</Label>
-              <Select id="proveedorId" {...form.register('proveedorId')}>
-                <option value="">Selecciona un proveedor…</option>
-                {(providersQuery.data ?? []).map((p) => {
-                  const isInactive = !p.isActive
-                  const productProveedorId = editing?.proveedorId
-                  const isCurrentProductProvider = productProveedorId === p.proveedorId
-                  const shouldShow = !isInactive || isCurrentProductProvider
+              <button
+                type="button"
+                className="flex min-h-10 w-full items-center justify-between rounded-md border border-white/10 bg-white/5 px-3 py-2 text-left text-sm text-white transition-colors hover:border-blue-400 hover:bg-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onClick={() => setProviderPickerOpen((v) => !v)}
+              >
+                <span className={selectedProveedorId ? 'text-white' : 'text-white/45'}>{selectedProveedorName}</span>
+                <ChevronDown className="h-4 w-4 text-blue-300" />
+              </button>
 
-                  return shouldShow ? (
-                    <option key={p.proveedorId} value={String(p.proveedorId)}>
-                      {p.nombre}
-                      {isInactive && isCurrentProductProvider ? ' (Inactivo)' : ''}
-                    </option>
-                  ) : null
-                })}
-              </Select>
+              {providerPickerOpen ? (
+                <div className="absolute left-0 top-[calc(100%+0.5rem)] z-[60] w-full rounded-md border border-white/10 bg-gray-950/95 p-2 text-white shadow-2xl shadow-black/50 backdrop-blur-xl">
+                  <div className="max-h-56 overflow-auto">
+                    <button
+                      type="button"
+                      className={cn(
+                        'flex w-full items-center justify-between rounded-md px-2 py-2 text-left text-sm text-white transition-colors hover:bg-blue-500/15',
+                        !selectedProveedorId ? 'bg-blue-500/20' : '',
+                      )}
+                      onClick={() => setProveedorId('')}
+                    >
+                      <span>Selecciona un proveedor…</span>
+                      {!selectedProveedorId ? <Check className="h-4 w-4 text-blue-300" /> : <span className="h-4 w-4" />}
+                    </button>
+                    {(providersQuery.data ?? []).map((p) => {
+                      const isInactive = !p.isActive
+                      const productProveedorId = editing?.proveedorId
+                      const isCurrentProductProvider = productProveedorId === p.proveedorId
+                      const shouldShow = !isInactive || isCurrentProductProvider
+                      if (!shouldShow) return null
+
+                      const id = String(p.proveedorId)
+                      const selected = selectedProveedorId === id
+
+                      return (
+                        <button
+                          key={p.proveedorId}
+                          type="button"
+                          className={cn(
+                            'flex w-full items-center justify-between rounded-md px-2 py-2 text-left text-sm text-white transition-colors hover:bg-blue-500/15',
+                            selected ? 'bg-blue-500/20' : '',
+                          )}
+                          onClick={() => setProveedorId(id)}
+                        >
+                          <span>{p.nombre}{isInactive && isCurrentProductProvider ? ' (Inactivo)' : ''}</span>
+                          {selected ? <Check className="h-4 w-4 text-blue-300" /> : <span className="h-4 w-4" />}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
+              <input type="hidden" {...form.register('proveedorId')} />
               {form.formState.errors.proveedorId?.message ? (
                 <p className="text-xs text-destructive">
                   {String(form.formState.errors.proveedorId.message)}
@@ -768,15 +884,14 @@ export function AdminProductsPage() {
             productsQuery.data.data.map((p) => {
               const imageUrl = allProductImagesQueries.data?.[p.productoId]
               const categoriaIds = productsCategoryIdsMapQuery.data?.[p.productoId] ?? []
-              const categoryId = categoriaIds[0]
-              const categoryName = categoryId ? categoriesById[categoryId] : undefined
+              const categoryNames = categoriaIds.map((id: number) => categoriesById[id]).filter(Boolean) as string[]
 
               return (
                 <ProductCard
                   key={p.productoId}
                   product={p}
                   {...(imageUrl && { imageUrl })}
-                  {...(categoryName && { categoryName })}
+                  {...(categoryNames?.length ? { categoryNames } : {})}
                   onEdit={() => {
                     setEditing(p)
                     setImageFile(null)
@@ -808,13 +923,13 @@ export function AdminProductsPage() {
               ?.reduce(
                 (acc, p) => {
                   const categoriaIds = productsCategoryIdsMapQuery.data?.[p.productoId] ?? []
-                  const categoryId = categoriaIds[0]
-                  if (categoryId) {
-                    acc[p.productoId] = categoriesById[categoryId] ?? ''
+                  const names = categoriaIds.map((id: number) => categoriesById[id]).filter(Boolean) as string[]
+                  if (names.length) {
+                    acc[p.productoId] = names
                   }
                   return acc
                 },
-                {} as Record<number, string>,
+                {} as Record<number, string[]>,
               ) ?? {}
           }
           providersByProductId={providersById}

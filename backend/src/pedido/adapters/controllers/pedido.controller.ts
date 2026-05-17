@@ -34,7 +34,9 @@ import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
 import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 import { JwtAccessPayload } from '../../../auth/infrastructure/strategies/jwt.strategy';
 import { ClienteRepository } from '../../../cliente/domain/repository/cliente.repository';
+
 @ApiTags('Pedidos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('pedidos')
 export class PedidoController {
   constructor(
@@ -48,7 +50,6 @@ export class PedidoController {
   ) {}
 
   @Get('me')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolNombreEnum.CUSTOMER)
   async getMyOrders(@Req() req: { user: JwtAccessPayload }): Promise<OrderView[]> {
     const cliente = await this.clienteRepo.getByUsuarioId(req.user.sub);
@@ -59,6 +60,7 @@ export class PedidoController {
   }
 
   @Post()
+  @Roles(RolNombreEnum.CUSTOMER)
   @CreatePedidoSwagger()
   async create(@Body() body: CreatePedidoDTO): Promise<Pedido> {
     const pedido = await this.createPedidoUseCase.ejecutar(body);
@@ -69,6 +71,7 @@ export class PedidoController {
   }
 
   @Get()
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetAllPedidoSwagger()
   async getAll(@Query() filters?: FiltersPedidoDTO): Promise<{
     data: Pedido[];
@@ -81,6 +84,7 @@ export class PedidoController {
   }
 
   @Get(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetPedidoByIdSwagger()
   async getById(@Param('id', ParseIntPipe) pedidoId: number): Promise<Pedido> {
     const pedido = await this.getPedidoByIdUseCase.ejecutar(pedidoId);
@@ -91,6 +95,7 @@ export class PedidoController {
   }
 
   @Put(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UpdatePedidoSwagger()
   async update(
     @Param('id', ParseIntPipe) pedidoId: number,
@@ -104,6 +109,7 @@ export class PedidoController {
   }
 
   @Delete(':id')
+  @Roles(RolNombreEnum.ADMIN)
   @DeletePedidoSwagger()
   async remove(@Param('id', ParseIntPipe) pedidoId: number): Promise<void> {
     return this.deletePedidoUseCase.ejecutar(pedidoId);

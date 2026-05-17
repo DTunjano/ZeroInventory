@@ -55,6 +55,7 @@ export interface InventoryAdjustmentPoint {
   productoSku: string
   usuarioId: number
   usuarioNombre: string
+  userRole?: string | null
   stockAnterior: number
   stockNuevo: number
   cantidad: number

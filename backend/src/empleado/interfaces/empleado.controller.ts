@@ -23,11 +23,12 @@ import { ToggleEmpleadoUseCase } from '../application/use-case/toggle-empleado.u
 import { JwtAuthGuard } from '../../auth/adapters/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/adapters/guards/roles.guard';
 import { Roles } from '../../auth/adapters/decorators/roles.decorator';
+import { RolNombreEnum } from '../../rol/domain/entity/rol.entity';
 
 @ApiTags('Empleados')
 @ApiBearerAuth()
-@Controller('empleados')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Controller('empleados')
 export class EmpleadoController {
   constructor(
     private readonly crearEmpleadoUseCase: CrearEmpleadoUseCase,
@@ -38,7 +39,7 @@ export class EmpleadoController {
   ) {}
 
   @Post()
-  @Roles('ADMIN')
+  @Roles(RolNombreEnum.ADMIN)
   async crear(@Body() body: CrearEmpleadoDTO): Promise<EmpleadoConRoles> {
     const empleado = await this.crearEmpleadoUseCase.ejecutar(body);
     if (!empleado) {
@@ -48,7 +49,7 @@ export class EmpleadoController {
   }
 
   @Get()
-  @Roles('ADMIN')
+  @Roles(RolNombreEnum.ADMIN)
   async listar(
     @Query('nombre') nombre?: string,
     @Query('email') email?: string,
@@ -72,7 +73,7 @@ export class EmpleadoController {
   }
 
   @Get(':id')
-  @Roles('ADMIN')
+  @Roles(RolNombreEnum.ADMIN)
   async obtenerPorId(
     @Param('id', ParseIntPipe) empleadoId: number,
   ): Promise<EmpleadoConRoles> {
@@ -80,7 +81,7 @@ export class EmpleadoController {
   }
 
   @Put(':id')
-  @Roles('ADMIN')
+  @Roles(RolNombreEnum.ADMIN)
   async actualizar(
     @Param('id', ParseIntPipe) empleadoId: number,
     @Body() body: ActualizarEmpleadoDTO,
@@ -89,7 +90,7 @@ export class EmpleadoController {
   }
 
   @Patch(':id/estado')
-  @Roles('ADMIN')
+  @Roles(RolNombreEnum.ADMIN)
   async toggleEstado(
     @Param('id', ParseIntPipe) empleadoId: number,
   ): Promise<EmpleadoConRoles> {

@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateCategoriaUseCase } from '../../application/use-cases/create-categoria.use-case';
@@ -25,8 +26,13 @@ import { GetAllCategoriaSwagger } from '../documentation/get-all-categoria.swagg
 import { UpdateCategoriaSwagger } from '../documentation/update-categoria.swagger';
 import { DeleteCategoriaSwagger } from '../documentation/delete-categoria.swagger';
 import { GetCategoriaByIdSwagger } from '../documentation/get-categoria-by-id.swagger';
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 
 @ApiTags('Categorías')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('categorias')
 export class CategoriaController {
   constructor(
@@ -38,6 +44,7 @@ export class CategoriaController {
   ) {}
 
   @Post()
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @CreateCategoriaSwagger()
   async create(@Body() body: CreateCategoriaDTO): Promise<Categoria> {
     const categoria = await this.createCategoriaUseCase.ejecutar(body);
@@ -48,6 +55,7 @@ export class CategoriaController {
   }
 
   @Get()
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetAllCategoriaSwagger()
   async getAll(@Query() filters?: FiltersCategoriaDTO): Promise<{
     data: Categoria[];
@@ -60,6 +68,7 @@ export class CategoriaController {
   }
 
   @Get(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetCategoriaByIdSwagger()
   async getById(
     @Param('id', ParseIntPipe) categoriaId: number,
@@ -72,6 +81,7 @@ export class CategoriaController {
   }
 
   @Put(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UpdateCategoriaSwagger()
   async update(
     @Param('id', ParseIntPipe) categoriaId: number,
@@ -88,6 +98,7 @@ export class CategoriaController {
   }
 
   @Delete(':id')
+  @Roles(RolNombreEnum.ADMIN)
   @DeleteCategoriaSwagger()
   async remove(@Param('id', ParseIntPipe) categoriaId: number): Promise<void> {
     return this.deleteCategoriaUseCase.ejecutar(categoriaId);

@@ -8,7 +8,7 @@ import { ProductTableRow } from './ProductTableRow'
 export interface ProductTableProps {
   products: Product[]
   imagesByProductId?: Record<number, string>
-  categoriesByProductId?: Record<number, string>
+  categoriesByProductId?: Record<number, string[]>
   providersByProductId?: Record<number, string>
   onEdit: (product: Product) => void
   onToggleActive: (product: Product) => void
@@ -92,7 +92,7 @@ export function ProductTable({
           <TableBody>
             {products.map((product) => {
               const imageUrl = imagesByProductId[product.productoId]
-              const categoryName = categoriesByProductId[product.productoId]
+              const categoryNames = categoriesByProductId[product.productoId]
               const providerName = providersByProductId[product.productoId]
 
               return (
@@ -100,7 +100,7 @@ export function ProductTable({
                   key={product.productoId}
                   product={product}
                   {...(imageUrl ? { imageUrl } : {})}
-                  {...(categoryName ? { categoryName } : {})}
+                  {...(categoryNames?.length ? { categoryNames } : {})}
                   {...(providerName ? { providerName } : {})}
                   onEdit={() => onEdit(product)}
                   onToggleActive={() => onToggleActive(product)}

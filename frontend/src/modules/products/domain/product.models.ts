@@ -48,6 +48,12 @@ export interface ProductFilters {
   precioMax?: number
   page?: number
   limit?: number
+  // Búsqueda general enviada al backend (aplica a nombre y SKU)
+  search?: string
+  categoriaId?: number
+  categoriaIds?: number[]
+  sortBy?: 'stock' | 'categoria' | 'nombre'
+  order?: 'asc' | 'desc'
 }
 
 export interface CreateProductInput {

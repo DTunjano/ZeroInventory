@@ -10,6 +10,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateProveedorUseCase } from '../../application/use-cases/create-proveedor.use-case';
@@ -28,6 +29,10 @@ import { GetAllProveedoresSwagger } from '../documentation/get-all-proveedor.swa
 import { GetProveedorByIdSwagger } from '../documentation/get-proveedor-by-id.swagger';
 import { UpdateProveedorSwagger } from '../documentation/update-proveedor.swagger';
 import { DeleteProveedorSwagger } from '../documentation/delete-proveedor.swagger';
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 
 @ApiTags('Proveedores')
 @Controller('proveedores')
@@ -43,6 +48,8 @@ export class ProveedorController {
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @CreateProveedorSwagger()
   async create(@Body() body: CreateProveedorDTO): Promise<Proveedor> {
     const proveedor = await this.createProveedorUseCase.ejecutar(body);
@@ -53,6 +60,8 @@ export class ProveedorController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetAllProveedoresSwagger()
   async getAll(@Query() filters?: FilterProveedorDTO): Promise<{
     data: Proveedor[];
@@ -65,6 +74,8 @@ export class ProveedorController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetProveedorByIdSwagger()
   async getById(
     @Param('id', ParseIntPipe) proveedorId: number,
@@ -77,6 +88,8 @@ export class ProveedorController {
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UpdateProveedorSwagger()
   async update(
     @Param('id', ParseIntPipe) proveedorId: number,
@@ -93,6 +106,8 @@ export class ProveedorController {
   }
 
   @Patch(':id/estado')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   async toggleStatus(
     @Param('id', ParseIntPipe) proveedorId: number,
   ): Promise<Proveedor> {
@@ -112,6 +127,8 @@ export class ProveedorController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN)
   @DeleteProveedorSwagger()
   async remove(@Param('id', ParseIntPipe) proveedorId: number): Promise<void> {
     return this.deleteProveedorUseCase.ejecutar(proveedorId);

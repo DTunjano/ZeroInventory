@@ -25,7 +25,7 @@ export function HomeRoute() {
 
   if (status === 'authenticated') {
     if (isAdmin) return <Navigate to="/admin" replace />
-    if (isEmployee) return <Navigate to="/employee" replace />
+    if (isEmployee) return <Navigate to="/admin/inventory" replace />
   }
 
   return <StoreHomePage />

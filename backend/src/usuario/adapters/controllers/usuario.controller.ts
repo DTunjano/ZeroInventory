@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateUsuarioUseCase } from '../../application/use-cases/create-usuario.use-case';
@@ -26,7 +27,13 @@ import { UpdateUsuarioSwagger } from '../documentation/update-usuario.swagger';
 import { DeleteUsuarioSwagger } from '../documentation/delete-usuario.swagger';
 import { GetUsuarioByIdSwagger } from '../documentation/get-usuario-by-id.swagger';
 
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard'
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard'
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator'
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity'
+
 @ApiTags('Usuarios')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('usuarios')
 export class UsuarioController {
   constructor(

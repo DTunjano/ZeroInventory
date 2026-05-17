@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreatePagoUseCase } from '../../application/use-cases/create-pago.use-case';
@@ -26,8 +27,13 @@ import { GetAllPagoSwagger } from '../documentation/get-all-pago.swagger';
 import { UpdatePagoSwagger } from '../documentation/update-pago.swagger';
 import { DeletePagoSwagger } from '../documentation/delete-pago.swagger';
 import { GetPagoByIdSwagger } from '../documentation/get-pago-by-id.swagger';
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 
 @ApiTags('Pagos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('pagos')
 export class PagoController {
   constructor(
@@ -40,12 +46,14 @@ export class PagoController {
   ) {}
 
   @Post()
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @CreatePagoSwagger()
   async create(@Body() dto: CreatePagoDTO): Promise<Pago> {
     return this.createPagoUseCase.ejecutar(dto);
   }
 
   @Get()
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetAllPagoSwagger()
   async getAll(@Query() filters: FiltersPagoDTO): Promise<{
     data: Pago[];
@@ -58,6 +66,7 @@ export class PagoController {
   }
 
   @Get(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetPagoByIdSwagger()
   async getById(@Param('id', ParseIntPipe) pagoId: number): Promise<Pago> {
     const pago = await this.getPagoByIdUseCase.ejecutar(pagoId);
@@ -68,6 +77,7 @@ export class PagoController {
   }
 
   @Put(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UpdatePagoSwagger()
   async update(
     @Param('id', ParseIntPipe) pagoId: number,
@@ -81,6 +91,7 @@ export class PagoController {
   }
 
   @Delete(':id')
+  @Roles(RolNombreEnum.ADMIN)
   @DeletePagoSwagger()
   async delete(
     @Param('id', ParseIntPipe) pagoId: number,
@@ -93,6 +104,7 @@ export class PagoController {
   }
 
   @Post(':id/confirm')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   async confirm(@Param('id', ParseIntPipe) pagoId: number): Promise<{ success: boolean }> {
     await this.confirmPagoUseCase.ejecutar(pagoId);
     return { success: true };

@@ -1,18 +1,16 @@
-import { BadRequestException, Controller, DefaultValuePipe, Get, Query, UseGuards, ParseIntPipe } from '@nestjs/common'
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { BadRequestException, Controller, DefaultValuePipe, Get, Query, ParseIntPipe, UseGuards } from '@nestjs/common'
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 
-import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard'
-import { Roles } from '../../../auth/adapters/decorators/roles.decorator'
-import { RolesGuard } from '../../../auth/adapters/guards/roles.guard'
-import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity'
 import { TipoCambioEnum } from '../../../entities/ajuste-inventario.orm-entity'
 import { GetInventoryAdjustmentsUseCase } from '../../application/use-cases/get-inventory-adjustments.use-case'
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard'
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard'
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator'
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity'
 
 @ApiTags('Inventario / Ajustes')
-@ApiBearerAuth()
-@Controller('inventory/adjustments')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
+@Controller('inventory/adjustments')
 export class InventoryAdjustmentsController {
   constructor(private readonly getInventoryAdjustmentsUseCase: GetInventoryAdjustmentsUseCase) {}
 
@@ -27,6 +25,8 @@ export class InventoryAdjustmentsController {
   @ApiQuery({ name: 'usuarioId', required: false, example: 5 })
   @ApiQuery({ name: 'tipoCambio', required: false, enum: TipoCambioEnum })
   @ApiQuery({ name: 'search', required: false, example: 'almacén' })
+  @ApiQuery({ name: 'startDate', required: false, example: '2026-01-01' })
+  @ApiQuery({ name: 'endDate', required: false, example: '2026-12-31' })
   async getAdjustments(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(15), ParseIntPipe) limit: number,
@@ -34,6 +34,8 @@ export class InventoryAdjustmentsController {
     @Query('usuarioId') usuarioId?: string,
     @Query('tipoCambio') tipoCambio?: TipoCambioEnum,
     @Query('search') search?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
     const normalizedProductoId = productoId !== undefined ? Number(productoId) : undefined
     const normalizedUsuarioId = usuarioId !== undefined ? Number(usuarioId) : undefined
@@ -57,6 +59,8 @@ export class InventoryAdjustmentsController {
       usuarioId: normalizedUsuarioId,
       tipoCambio,
       search,
+      startDate,
+      endDate,
     })
   }
 }

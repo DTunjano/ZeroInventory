@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, BadRequestException } from '@nestjs/common'
 import { DataSource } from 'typeorm'
 
 import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity'
@@ -71,6 +71,38 @@ export class GetInventoryAdjustmentsUseCase {
       )
     }
 
+    // Fecha range filters
+    if (filters.startDate) {
+      const sd = new Date(filters.startDate)
+      if (!isNaN(sd.getTime())) {
+        // ensure start is at beginning of day (local)
+        sd.setHours(0, 0, 0, 0)
+        query.andWhere('ajuste.fecha >= :startDate', { startDate: sd.toISOString() })
+      }
+    }
+
+    if (filters.endDate) {
+      const ed = new Date(filters.endDate)
+      if (!isNaN(ed.getTime())) {
+        // include the entire day by setting time to end of day
+        ed.setHours(23, 59, 59, 999)
+        query.andWhere('ajuste.fecha <= :endDate', { endDate: ed.toISOString() })
+      }
+    }
+
+    // Validate range if both provided
+    if (filters.startDate && filters.endDate) {
+      const sd = new Date(filters.startDate)
+      const ed = new Date(filters.endDate)
+      if (!isNaN(sd.getTime()) && !isNaN(ed.getTime())) {
+        sd.setHours(0, 0, 0, 0)
+        ed.setHours(23, 59, 59, 999)
+        if (ed.getTime() < sd.getTime()) {
+          throw new BadRequestException('endDate must be greater than or equal to startDate')
+        }
+      }
+    }
+
     const total = await query.clone().getCount()
 
     const rows = await query
@@ -88,6 +120,11 @@ export class GetInventoryAdjustmentsUseCase {
       .addSelect('ajuste.tipoCambio', 'tipoCambio')
       .addSelect('ajuste.motivo', 'motivo')
       .addSelect('ajuste.fecha', 'fecha')
+      // obtener rol del usuario (primer rol encontrado)
+      .addSelect(
+        `(SELECT r.nombre FROM usuario_rol ur JOIN rol r ON ur.rol_id = r.rol_id WHERE ur.usuario_id = usuario.usuario_id LIMIT 1)`,
+        'userRole',
+      )
       .orderBy('ajuste.fecha', 'DESC')
       .skip((page - 1) * limit)
       .take(limit)
@@ -106,6 +143,7 @@ export class GetInventoryAdjustmentsUseCase {
       productoNombre: row.productName,
       productoSku: row.productSku,
       usuarioNombre: buildUserDisplayName(row.userFirstName, row.userLastName, row.userUsername),
+      userRole: (row as any).userRole ?? null,
       userFirstName: row.userFirstName,
       userLastName: row.userLastName,
     }))

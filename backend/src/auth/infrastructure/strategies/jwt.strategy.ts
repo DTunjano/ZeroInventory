@@ -11,6 +11,10 @@ export type JwtAccessPayload = {
   roles: RolNombreEnum[]
 }
 
+/**
+ * Estrategia JWT para NestJS.
+ * Se asegura de que el payload incluya los roles del usuario para la autorización.
+ */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(configService: ConfigService) {
@@ -28,6 +32,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: JwtAccessPayload) {
-    return payload
+    return {
+      sub: payload.sub,
+      usuarioId: payload.sub,
+      username: payload.username,
+      roles: payload.roles,
+    }
   }
 }

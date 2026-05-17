@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsOptional, Max, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsArray, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class FiltersProductDTO {
   @ApiPropertyOptional({
@@ -20,12 +20,63 @@ export class FiltersProductDTO {
   nombre?: string;
 
   @ApiPropertyOptional({
+    description: 'Búsqueda general (aplica a nombre y SKU)',
+    type: String,
+    example: 'destapador',
+  })
+  @IsOptional()
+  search?: string;
+
+  @ApiPropertyOptional({
     description: 'Filtrar productos por marca',
     type: String,
     example: 'Cristal',
   })
   @IsOptional()
   marca?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por ID de categoría',
+    type: Number,
+    example: 3,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  categoriaId?: number;
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por múltiples IDs de categoría',
+    type: [Number],
+    example: [1, 3],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return value
+    const values = Array.isArray(value) ? value : [value]
+    return values
+      .map((item) => Number(item))
+      .filter((item) => Number.isFinite(item))
+  })
+  @Type(() => Number)
+  categoriaIds?: number[];
+
+  @ApiPropertyOptional({
+    description: 'Campo para ordenar. Valores: stock | categoria | nombre',
+    type: String,
+    example: 'stock',
+  })
+  @IsOptional()
+  sortBy?: 'stock' | 'categoria' | 'nombre';
+
+  @ApiPropertyOptional({
+    description: 'Orden para ordenamiento: asc | desc',
+    type: String,
+    example: 'desc',
+  })
+  @IsOptional()
+  order?: 'asc' | 'desc';
 
   @ApiPropertyOptional({
     description: 'Precio mínimo del producto',

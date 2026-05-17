@@ -27,7 +27,10 @@ import { UpdateProductSwagger } from '../documentation/update-product.swagger';
 import { DeleteProductSwagger } from '../documentation/delete-product.swagger';
 import { GetProductByIdSwagger } from '../documentation/get-product-by-id.swagger';
 import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
 import { CurrentUser } from '../../../auth/adapters/decorators/current-user.decorator';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 
 @ApiTags('Productos')
 @Controller('productos')
@@ -41,6 +44,8 @@ export class ProductoController {
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @CreateProductSwagger()
   async create(@Body() body: CreateProductDTO): Promise<Producto> {
     const producto = await this.createProductUseCase.ejecutar(body);
@@ -59,6 +64,7 @@ export class ProductoController {
     limit: number;
     totalPages: number;
   }> {
+    console.debug('[ProductoController] GET /productos filters ->', filters)
     return this.getAllProductosUseCase.ejecutar(filters);
   }
 
@@ -75,7 +81,8 @@ export class ProductoController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UpdateProductSwagger()
   async update(
     @Param('id', ParseIntPipe) productoId: number,
@@ -90,6 +97,8 @@ export class ProductoController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN)
   @DeleteProductSwagger()
   async remove(@Param('id', ParseIntPipe) productoId: number): Promise<void> {
     return this.deleteProductUseCase.ejecutar(productoId);

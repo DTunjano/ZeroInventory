@@ -9,6 +9,8 @@ export type InventoryAdjustmentFilters = {
   usuarioId?: number
   tipoCambio?: 'AUMENTO' | 'REDUCCION'
   search?: string
+  startDate?: string
+  endDate?: string
 }
 
 export class InventoryAdjustmentsApi {

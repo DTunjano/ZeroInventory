@@ -11,6 +11,8 @@ import type {
 
 export class ProductHttpRepository implements ProductRepository {
   async list(filters?: ProductFilters): Promise<PaginatedResult<Product>> {
+    // Log outgoing filters to help debug category filtering issues
+    console.debug('[ProductHttpRepository] list - filters ->', filters)
     const { data } = await http.get<PaginatedResult<Product>>('/productos', {
       params: filters,
     })

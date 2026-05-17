@@ -55,10 +55,23 @@ export class ProductoRepositoryImpl implements ProductoRepository {
   }> {
     const query = this.repo.createQueryBuilder('producto');
 
+    // General search that applies to nombre and sku
+    if (filters?.search) {
+      query.andWhere('(producto.nombre ILIKE :search OR producto.sku ILIKE :search)', {
+        search: `%${filters.search}%`,
+      });
+    }
+
+    // Specific nombre filter (keeps backward compatibility)
     if (filters?.nombre) {
       query.andWhere('producto.nombre ILIKE :nombre', {
         nombre: `%${filters.nombre}%`,
       });
+    }
+
+    // SKU filter
+    if (filters?.sku) {
+      query.andWhere('producto.sku ILIKE :sku', { sku: `%${filters.sku}%` });
     }
 
     if (filters?.marca) {
@@ -75,6 +88,39 @@ export class ProductoRepositoryImpl implements ProductoRepository {
       query.andWhere('producto.precio <= :precioMax', {
         precioMax: filters.precioMax,
       });
+    }
+
+    // Filter by category using a safe EXISTS subquery to avoid duplicate rows
+    if (filters?.categoriaId) {
+      query.andWhere(
+        'EXISTS (SELECT 1 FROM categoria_producto cp WHERE cp.producto_id = producto.producto_id AND cp.categoria_id = :categoriaId)',
+        { categoriaId: filters.categoriaId },
+      );
+    }
+
+    // Support filtering by multiple category ids
+    if (filters?.categoriaIds && Array.isArray(filters.categoriaIds) && filters.categoriaIds.length) {
+      query.andWhere(
+        'EXISTS (SELECT 1 FROM categoria_producto cp WHERE cp.producto_id = producto.producto_id AND cp.categoria_id IN (:...categoriaIds))',
+        { categoriaIds: filters.categoriaIds },
+      );
+    }
+
+    // Sorting
+    const order: 'ASC' | 'DESC' = (filters?.order ?? 'desc').toUpperCase() as 'ASC' | 'DESC';
+    if (filters?.sortBy === 'stock') {
+      query.orderBy('producto.cantidad', order);
+    } else if (filters?.sortBy === 'categoria') {
+      // Order by first category name (subquery)
+      query.addOrderBy(
+        `(SELECT c.nombre FROM categoria_producto cp JOIN categoria c ON cp.categoria_id = c.categoria_id WHERE cp.producto_id = producto.producto_id LIMIT 1)`,
+        order,
+      );
+    } else if (filters?.sortBy === 'nombre') {
+      query.orderBy('producto.nombre', order);
+    } else {
+      // Default ordering
+      query.orderBy('producto.created_at', 'DESC');
     }
     const page = filters?.page || 1;
     const limit = filters?.limit || 10;
