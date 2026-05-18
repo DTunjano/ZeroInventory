@@ -63,7 +63,7 @@ export function RegisterPage() {
         ...(primerApellido ? { primerApellido } : {}),
       })
       toast.success('Cuenta creada correctamente')
-      navigate('/', { replace: true })
+      navigate('/home', { replace: true })
     } catch {
       toast.error('No se pudo crear la cuenta')
     }

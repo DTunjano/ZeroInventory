@@ -62,7 +62,7 @@ export function MediaCard({
             className={cn(
               'text-[10px] font-medium',
               media.estado === 'activo'
-                ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                ? 'border-sky-500/25 bg-sky-500/15 text-sky-200'
                 : 'bg-slate-500/20 text-slate-300 border-slate-500/30',
             )}
           >
@@ -92,7 +92,7 @@ export function MediaCard({
         {isAdmin && (
           <div className="flex items-center justify-between gap-2 border-t border-border/50 pt-3">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {media.estado === 'activo' ? <Eye className="h-4 w-4 text-green-400" /> : <EyeOff className="h-4 w-4 text-slate-400" />}
+              {media.estado === 'activo' ? <Eye className="h-4 w-4 text-sky-400" /> : <EyeOff className="h-4 w-4 text-slate-400" />}
               {media.estado === 'activo' ? 'Visible' : 'Oculto'}
             </div>
             <MediaActionsDropdown

@@ -5,6 +5,7 @@ import {
   Truck,
   Briefcase,
   BarChart3,
+  House,
   LayoutGrid,
   Package,
   ShoppingCart,
@@ -53,6 +54,7 @@ const adminOnlyNav: AppLayoutNavItem[] = [
 
 /** Navegación compartida entre ADMIN y EMPLOYEE */
 const sharedNav: AppLayoutNavItem[] = [
+  { to: '/home', label: 'Home', icon: House },
   { to: '/admin/inventory', label: 'Inventario', icon: Archive },
   { to: '/admin/inventory-adjustments', label: 'Ajustes de inventario', icon: SlidersHorizontal },
   { to: '/admin/products', label: 'Productos', icon: Package },
@@ -62,6 +64,7 @@ const sharedNav: AppLayoutNavItem[] = [
 
 /** Navegación para CUSTOMER */
 const customerNav: AppLayoutNavItem[] = [
+  { to: '/home', label: 'Home', icon: House },
   { to: '/', label: 'Tienda', icon: LayoutGrid },
   { to: '/me/cart', label: 'Carrito', icon: ShoppingCart },
   { to: '/me/orders', label: 'Mis pedidos', icon: Package },
@@ -96,7 +99,10 @@ function pickSidebarLabel(roles: string[]): string {
   return sidebarLabelByRole.CUSTOMER
 }
 
-const guestNav: AppLayoutNavItem[] = [{ to: '/', label: 'Tienda', icon: LayoutGrid }]
+const guestNav: AppLayoutNavItem[] = [
+  { to: '/home', label: 'Home', icon: House },
+  { to: '/', label: 'Tienda', icon: LayoutGrid },
+]
 
 export function AppLayout(props: { title?: string }) {
   const { title } = props

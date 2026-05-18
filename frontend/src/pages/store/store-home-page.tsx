@@ -291,12 +291,6 @@ export function StoreHomePage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      {heroMedia && (
-        <div className="w-full">
-          <MediaHero media={heroMedia} className="w-full" />
-        </div>
-      )}
-
       <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-card via-card to-slate-950/70 p-6 shadow-[0_20px_80px_rgba(59,130,246,0.08)] sm:p-8">
         <div className="absolute right-0 top-0 h-40 w-40 -translate-y-1/2 translate-x-1/3 rounded-full bg-blue-500/10 blur-3xl" />
         <div className="absolute left-20 top-1/2 h-28 w-28 -translate-y-1/2 rounded-full bg-cyan-400/10 blur-3xl" />

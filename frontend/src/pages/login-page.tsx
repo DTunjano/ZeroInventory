@@ -39,7 +39,7 @@ export function LoginPage() {
     try {
       await login(values)
       const from = (location.state as { from?: string } | null)?.from
-      navigate(from ?? '/', { replace: true })
+      navigate(from ?? '/home', { replace: true })
     } catch {
       toast.error('Credenciales inválidas')
     }

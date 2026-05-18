@@ -12,6 +12,7 @@ import { AdminUsersPage } from '@/pages/admin/admin-users-page'
 import { AdminEmployeesPage } from '@/modules/employee/presentation/admin-employees-page'
 import { AdminReportsPage } from '@/pages/admin/admin-reports-page'
 import { MediaPage } from '@/modules/media/presentation/MediaPage'
+import { HomePage } from '@/modules/home'
 import { HomeRoute } from '@/pages/home-route'
 import { LoginPage } from '@/pages/login-page'
 import { MyCartPage } from '@/pages/me/my-cart-page'
@@ -41,6 +42,7 @@ export function App() {
         <Routes>
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
+          <Route path="home" element={<HomePage />} />
 
           <Route element={<AppLayout />}>
             <Route index element={<HomeRoute />} />
