@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import type { JwtSignOptions } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
@@ -20,12 +20,12 @@ export class RefreshUseCase {
     private readonly configService: ConfigService,
   ) {}
 
-  async ejecutar(refreshToken: string): Promise<{ result: AuthResponseDTO; refreshToken: string }> {
+  async ejecutar(refreshToken: string): Promise<{ result: AuthResponseDTO; refreshToken: string } | null> {
     const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET')
     const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET')
 
     if (!accessSecret || !refreshSecret) {
-      throw new UnauthorizedException('Auth no configurado (JWT secrets faltantes)')
+      return null
     }
 
     let payload: RefreshTokenPayload
@@ -35,12 +35,12 @@ export class RefreshUseCase {
         secret: refreshSecret,
       })
     } catch {
-      throw new UnauthorizedException('Refresh token inválido')
+      return null
     }
 
     const user = await this.authUserRepo.findById(payload.sub)
     if (!user || !user.isActive) {
-      throw new UnauthorizedException('Usuario inválido')
+      return null
     }
 
     const accessExpiresIn =

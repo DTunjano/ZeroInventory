@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { cn } from '@/shared/lib/utils'
-import barMasterLogo from '@/assets/bar_master.jpg'
+import barMasterLogo from '@/assets/zeroInventrory.jpeg'
 
 interface LogoDisplayProps {
   src?: string

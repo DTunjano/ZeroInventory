@@ -22,7 +22,7 @@ export class GetMyDireccionesUseCase {
 
     // Order: predeterminada primero, luego por id ascendente
     const entities = await this.direccionRepo.find({
-      where: { clienteId: cliente.clienteId },
+      where: { clienteId: cliente.clienteId, estado: true },
       order: { esPredeterminada: 'DESC', direccionId: 'ASC' },
     });
 

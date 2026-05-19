@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 import { login, logout, refresh, register } from './auth.use-cases'
 import type { AuthResponseDTO, AuthUserDTO, LoginDTO, RegisterDTO } from './auth.types'
+import { useCartStore } from '@/modules/cart/application/cart.store'
 
 export type AuthStatus =
   | 'unknown'
@@ -38,6 +39,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   clearSession: () => {
     set({ status: 'unauthenticated', accessToken: null, user: null })
+    useCartStore.setState({ items: {} })
   },
 
   login: async (dto) => {
@@ -68,6 +70,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ status: 'loading' })
     try {
       const data = await refresh()
+      if (!data) {
+        get().clearSession()
+        return null
+      }
       get().setSession(data)
       return data.accessToken
     } catch {

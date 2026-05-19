@@ -1,14 +1,23 @@
 import { useAuthStore } from '@/modules/auth/application/auth.store'
 import { useCartStore } from '@/modules/cart/application/cart.store'
 import { ShoppingCart } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 export function FloatingCartButton() {
   const status = useAuthStore((s) => s.status)
-  const itemCount = useCartStore((s) => Object.keys(s.items).length)
+  const user = useAuthStore((s) => s.user)
+  const itemCount = useCartStore((s) =>
+    Object.values(s.items).filter((it) => it && it.quantity > 0).length,
+  )
+  const location = useLocation()
 
-  // Solo mostrar si el usuario está autenticado y hay items en el carrito
-  if (status !== 'authenticated' || itemCount === 0) {
+  const isCustomer =
+    status === 'authenticated' &&
+    (user?.roles ?? []).some((role) => role.toUpperCase() === 'CUSTOMER')
+
+  const isStoreRoute = location.pathname === '/tienda' || location.pathname.startsWith('/tienda/')
+
+  if (!isCustomer || itemCount === 0 || !isStoreRoute || location.pathname.startsWith('/me/cart')) {
     return null
   }
 

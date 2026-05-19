@@ -4,8 +4,13 @@ import type { Order } from '../domain/orders.models'
 export const ordersQueryKey = ['orders', 'me'] as const
 
 export class OrdersHttpApi {
-  async getMyOrders(): Promise<Order[]> {
-    const { data } = await http.get<Order[]>('/pedidos/me')
+  async getMyOrders(params?: {
+    estado?: string | string[]
+    dateFrom?: string
+    dateTo?: string
+    sortBy?: string
+  }): Promise<Order[]> {
+    const { data } = await http.get<Order[]>('/pedidos/me', { params })
     return data
   }
 

@@ -17,9 +17,8 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardTitle } from '@/shared/ui/card'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { Input } from '@/shared/ui/input'
-import { FloatingCartButton } from '@/shared/components/FloatingCartButton'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { Package, ShoppingCart, Sparkles, Tag, Search, CheckCircle, AlertTriangle, XCircle, ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Package, ShoppingCart, Sparkles, Search, CheckCircle, AlertTriangle, XCircle, ArrowLeft } from 'lucide-react'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { useState, useEffect, useMemo, useRef } from 'react'
 
@@ -188,8 +187,17 @@ export function StoreHomePage() {
   const sortRef = useRef<HTMLDivElement | null>(null)
 
   const productsQuery = useQuery({
-    queryKey: ['store-products'],
-    queryFn: () => listProducts({ page: 1, limit: 24 }),
+    queryKey: ['store-products', debouncedSearch, categoryFilter.join(','), sortBy ?? 'default', order],
+    queryFn: () =>
+      listProducts({
+        page: 1,
+        limit: 24,
+        search: debouncedSearch || undefined,
+        categoriaIds: categoryFilter.length ? categoryFilter : undefined,
+        sortBy,
+        order,
+        isActive: true,
+      }),
   })
 
   const categoriesQuery = useQuery({
@@ -244,50 +252,37 @@ export function StoreHomePage() {
 
   const products = productsQuery.data?.data ?? []
 
-  const sortedProducts = useMemo(() => {
-    let result = [...products]
+  const { data: heroMedia } = useStoreHeroVideo()
 
-    // Aplicar filtro de categoría
-    if (categoryFilter.length > 0) {
-      // Para filtrar por categoría, necesitaríamos un mapa de productos a categorías
-      // Por ahora, mostrar todos (el backend debería hacer este filtro)
-      // TODO: Implementar mapa de producto a categorías
+  const displayedProducts = useMemo(() => {
+    const priority = (p: Product) => {
+      const s = getStockStatus(p.cantidad)
+      return s === 'available' ? 0 : s === 'low' ? 1 : 2
     }
 
-    // Aplicar búsqueda
-    if (debouncedSearch.trim() !== '') {
-      result = result.filter((p) =>
-        p.nombre.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        (p.sku && p.sku.toLowerCase().includes(debouncedSearch.toLowerCase()))
-      )
-    }
+    const copy = [...products]
 
-    // Aplicar ordenamiento
-    result.sort((a, b) => {
-      let compareResult = 0
+    copy.sort((a, b) => {
+      const pa = priority(a)
+      const pb = priority(b)
+      if (pa !== pb) return pa - pb
 
+      // same priority, apply sortBy
       if (sortBy === 'stock') {
-        compareResult = a.cantidad - b.cantidad
-      } else if (sortBy === 'nombre') {
-        compareResult = a.nombre.localeCompare(b.nombre)
-      } else {
-        // Por defecto: ordenar por stock status, luego por nombre
-        const statusA = getStockStatus(a.cantidad)
-        const statusB = getStockStatus(b.cantidad)
-        const priority = { available: 0, low: 1, out: 2 }
-        compareResult = priority[statusA] - priority[statusB]
-        if (compareResult === 0) {
-          compareResult = a.nombre.localeCompare(b.nombre)
-        }
+        return order === 'asc' ? a.cantidad - b.cantidad : b.cantidad - a.cantidad
       }
 
-      return order === 'asc' ? compareResult : -compareResult
+      if (sortBy === 'nombre') {
+        return order === 'asc'
+          ? a.nombre.localeCompare(b.nombre)
+          : b.nombre.localeCompare(a.nombre)
+      }
+
+      return 0
     })
 
-    return result
-  }, [products, debouncedSearch, categoryFilter, sortBy, order])
-
-  const { data: heroMedia } = useStoreHeroVideo()
+    return copy
+  }, [products, sortBy, order])
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -310,23 +305,21 @@ export function StoreHomePage() {
               </p>
             </div>
           </div>
-
-          <div className="w-full max-w-md">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/50" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar productos..."
-                className="h-12 w-full rounded-xl border-white/10 bg-white/10 pl-10 text-white placeholder:text-white/50 focus-visible:border-blue-400/50 focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
-            </div>
-          </div>
         </div>
       </div>
 
       {/* Filters Bar */}
-      <div className="relative z-10 flex items-center gap-3 p-4 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm">
+      <div className="relative z-10 grid gap-3 rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-sm lg:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] lg:items-center">
+        <div className="relative w-full">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/50" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar productos..."
+            className="h-12 w-full rounded-xl border-white/10 bg-white/10 pl-10 text-white placeholder:text-white/50 focus-visible:border-blue-400/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+          />
+        </div>
+
         <ClearFiltersButton
           onClick={() => {
             setSearchQuery('')
@@ -393,11 +386,11 @@ export function StoreHomePage() {
               </div>
             ))}
           </div>
-        ) : sortedProducts.length ? (
+        ) : products.length ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {sortedProducts.map((p) => (
-              <ProductCard key={p.productoId} product={p} />
-            ))}
+            {displayedProducts.map((p) => (
+                <ProductCard key={p.productoId} product={p} />
+              ))}
           </div>
         ) : (
           <Card>
@@ -408,7 +401,6 @@ export function StoreHomePage() {
           </Card>
         )}
       </div>
-      <FloatingCartButton />
     </div>
   )
 }

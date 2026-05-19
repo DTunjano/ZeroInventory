@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class FiltersProductDTO {
   @ApiPropertyOptional({
@@ -34,6 +34,21 @@ export class FiltersProductDTO {
   })
   @IsOptional()
   marca?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por estado activo del producto',
+    type: Boolean,
+    example: true,
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return value;
+    if (value === true || value === 'true') return true;
+    if (value === false || value === 'false') return false;
+    return value;
+  })
+  @IsBoolean()
+  isActive?: boolean;
 
   @ApiPropertyOptional({
     description: 'Filtrar por ID de categoría',

@@ -11,7 +11,7 @@ export function NotFoundPage() {
       </p>
       <div>
         <Button asChild>
-          <Link to="/">Volver al inicio</Link>
+          <Link to="/tienda">Volver a la tienda</Link>
         </Button>
       </div>
     </div>

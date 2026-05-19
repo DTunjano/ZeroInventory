@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClienteModule } from '../cliente/cliente.module';
+import { PedidoEntityORM } from '../pedido/infrastructure/persistence/pedido.orm-entity';
 import { DireccionEntityORM } from './infrastructure/persistence/direccion.orm-entity';
 import { DireccionController } from './adapters/controllers/direccion.controller';
 import { DireccionRepositoryImpl } from './infrastructure/persistence/direccion.repository-impl';
@@ -15,7 +16,7 @@ import { GetMyDireccionesUseCase } from './application/use-cases/get-my-direccio
 import { SetPredeterminadaDireccionUseCase } from './application/use-cases/set-predeterminada-direccion.use-case';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DireccionEntityORM]), ClienteModule],
+  imports: [TypeOrmModule.forFeature([DireccionEntityORM, PedidoEntityORM]), ClienteModule],
   controllers: [DireccionController],
   providers: [
     CreateDireccionUseCase,

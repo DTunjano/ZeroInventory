@@ -4,7 +4,6 @@ import {
   Pencil,
   Phone,
   Power,
-  Trash2,
   UserCircle2,
 } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
@@ -13,7 +12,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
 import { usePermissions } from '@/shared/hooks/usePermissions'
@@ -23,7 +21,6 @@ export type EmployeeCardProps = {
   empleado: Employee
   onEdit: (id: number) => void
   onToggleStatus: (id: number) => void
-  onDelete: (id: number) => void
 }
 
 function getInitials(name: string): string {
@@ -68,9 +65,8 @@ export function EmployeeCard({
   empleado,
   onEdit,
   onToggleStatus,
-  onDelete,
 }: EmployeeCardProps) {
-  const { canDelete, canDeactivate } = usePermissions()
+  const { canDeactivate } = usePermissions()
   const displayName = empleado.nombreCompleto?.trim() || empleado.nombre
   const initials = getInitials(displayName)
 
@@ -111,18 +107,6 @@ export function EmployeeCard({
                 <Power className="mr-2 h-4 w-4" />
                 {empleado.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}
               </DropdownMenuItem>
-            )}
-            {canDelete && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-300 focus:bg-red-500/20 focus:text-red-200"
-                  onClick={() => onDelete(empleado.empleadoId)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Eliminar
-                </DropdownMenuItem>
-              </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>

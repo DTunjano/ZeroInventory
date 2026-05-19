@@ -1,3 +1,5 @@
+import { AxiosError } from 'axios'
+
 import { http } from '@/infrastructure/http/http'
 
 import type {
@@ -42,9 +44,17 @@ export class CartHttpApi {
     return data
   }
 
-  async checkout(input: CheckoutCartInput): Promise<CheckoutCartResult> {
-    const { data } = await http.post<CheckoutCartResult>('/carritos/me/checkout', input)
-    return data
+  async checkout(input: CheckoutCartInput): Promise<CheckoutCartResult | CheckoutStockInsufficientResponse> {
+    try {
+      const { data } = await http.post<CheckoutCartResult>('/carritos/me/checkout', input)
+      return data
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.status === 409) {
+        return error.response.data as CheckoutStockInsufficientResponse
+      }
+
+      throw error
+    }
   }
 }
 

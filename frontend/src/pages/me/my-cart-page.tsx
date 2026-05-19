@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2, Minus, Plus, ShoppingBag, Trash2, ArrowLeft, Search, CreditCard, MapPin, AlertTriangle, PackageX, RotateCcw } from 'lucide-react'
-import { AxiosError } from 'axios'
 import { toast } from 'sonner'
 
 import { clearCart, checkoutCart, getMyCart, removeFromCart, updateCartItemQuantity } from '@/modules/cart/application/cart.use-cases'
@@ -328,6 +327,7 @@ export function MyCartPage() {
   const queryClient = useQueryClient()
   const [searchText, setSearchText] = useState('')
   const [checkoutStockIssue, setCheckoutStockIssue] = useState<CheckoutStockInsufficientResponse | null>(null)
+  const stockErrorRef = useRef<HTMLDivElement | null>(null)
   const [direccionId, setDireccionId] = useState('')
   const [metodoPago, setMetodoPago] = useState<'EFECTIVO' | 'TRANSFERENCIA'>('TRANSFERENCIA')
   const [showNewAddressForm, setShowNewAddressForm] = useState(false)
@@ -387,21 +387,22 @@ export function MyCartPage() {
       return checkoutCart({ direccionId: parsedDireccionId, metodoPago })
     },
     onSuccess: async (result) => {
+      if ('error' in result && result.error === 'STOCK_INSUFFICIENT' && Array.isArray(result.productos)) {
+        setCheckoutStockIssue(result)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        toast.error('No se pudo completar tu compra')
+        return
+      }
+
       setCheckoutStockIssue(null)
+      const nextCart = await getMyCart()
+      refreshCart(nextCart)
       await queryClient.invalidateQueries({ queryKey: cartQueryKey })
       toast.success(`Compra confirmada. Pedido #${result.numeroPedidoUsuario} por ${formatPrice(result.total)}`)
     },
     onError: (err) => {
-      if (err instanceof AxiosError) {
-        const data = err.response?.data as CheckoutStockInsufficientResponse | undefined
-        if (data?.error === 'STOCK_INSUFFICIENT' && Array.isArray(data.productos)) {
-          setCheckoutStockIssue(data)
-          toast.error('No se pudo completar tu compra')
-          return
-        }
-      }
-
       setCheckoutStockIssue(null)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       toast.error('No se pudo completar tu compra')
     },
   })
@@ -426,6 +427,15 @@ export function MyCartPage() {
   const isBusy = cartQuery.isLoading || direccionesQuery.isLoading || updateQuantityMutation.isPending || removeItemMutation.isPending || clearCartMutation.isPending || checkoutMutation.isPending || createAddressMutation.isPending
   const hasItems = items.length > 0
 
+  useEffect(() => {
+    if (checkoutStockIssue && stockErrorRef.current) {
+      setTimeout(() => {
+        stockErrorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        window.scrollBy(0, -80)
+      }, 100)
+    }
+  }, [checkoutStockIssue])
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       {/* Sticky header con búsqueda */}
@@ -443,7 +453,7 @@ export function MyCartPage() {
               />
             </div>
             <Button asChild variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">
-              <Link to="/" className="flex items-center gap-1">
+              <Link to="/tienda" className="flex items-center gap-1">
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">Seguir comprando</span>
               </Link>
@@ -453,7 +463,7 @@ export function MyCartPage() {
       </div>
 
       {checkoutStockIssue ? (
-        <Card className="overflow-hidden border-amber-500/25 bg-gradient-to-br from-amber-500/10 via-background to-background shadow-[0_18px_60px_rgba(245,158,11,0.12)]">
+        <Card ref={stockErrorRef} className="overflow-hidden border-amber-500/25 bg-gradient-to-br from-amber-500/10 via-background to-background shadow-[0_18px_60px_rgba(245,158,11,0.12)]">
           <div className="h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500" />
           <CardContent className="space-y-5 p-5 sm:p-6">
             <div className="flex items-start gap-4">

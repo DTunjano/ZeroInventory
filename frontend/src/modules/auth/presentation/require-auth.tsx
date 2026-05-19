@@ -36,7 +36,7 @@ export function RequireAuth(props: { roles?: AuthRole[] }) {
     const requiredRoles = roles.map((r) => r.toUpperCase())
     const allowed = requiredRoles.some((r) => userRoles.includes(r))
     if (!allowed) {
-      return <Navigate to="/" replace />
+      return <Navigate to="/tienda" replace />
     }
   }
 

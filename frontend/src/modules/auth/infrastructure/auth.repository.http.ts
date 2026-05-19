@@ -14,8 +14,8 @@ export class AuthHttpRepository implements AuthRepository {
     return data
   }
 
-  async refresh(): Promise<AuthSession> {
-    const { data } = await refreshHttp.post<AuthSession>('/auth/refresh')
+  async refresh(): Promise<AuthSession | null> {
+    const { data } = await refreshHttp.post<AuthSession | null>('/auth/refresh')
     return data
   }
 

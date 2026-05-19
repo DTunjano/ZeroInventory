@@ -2,7 +2,6 @@ import { Navigate } from 'react-router-dom'
 
 import { useAuthStore } from '@/modules/auth/application/auth.store'
 import { Skeleton } from '@/shared/ui/skeleton'
-import { StoreHomePage } from '@/pages/store/store-home-page'
 
 export function HomeRoute() {
   const status = useAuthStore((s) => s.status)
@@ -28,5 +27,5 @@ export function HomeRoute() {
     if (isEmployee) return <Navigate to="/admin/inventory" replace />
   }
 
-  return <StoreHomePage />
+  return <Navigate to="/tienda" replace />
 }

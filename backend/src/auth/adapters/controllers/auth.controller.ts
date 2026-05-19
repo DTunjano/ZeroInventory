@@ -4,7 +4,6 @@ import {
   Post,
   Req,
   Res,
-  UnauthorizedException,
 } from '@nestjs/common'
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import type { Request, Response } from 'express'
@@ -54,13 +53,17 @@ export class AuthController {
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<AuthResponseDTO> {
+  ): Promise<AuthResponseDTO | null> {
     const token = req.cookies?.[REFRESH_COOKIE_NAME] as string | undefined
     if (!token) {
-      throw new UnauthorizedException('Refresh token requerido')
+      return null
     }
 
-    const { result, refreshToken } = await this.refreshUseCase.ejecutar(token)
+    const refreshed = await this.refreshUseCase.ejecutar(token)
+    if (!refreshed) {
+      return null
+    }
+    const { result, refreshToken } = refreshed
     this.setRefreshCookie(res, refreshToken)
     return result
   }

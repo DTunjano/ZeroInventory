@@ -14,6 +14,7 @@ import { AdminReportsPage } from '@/pages/admin/admin-reports-page'
 import { MediaPage } from '@/modules/media/presentation/MediaPage'
 import { HomePage } from '@/modules/home'
 import { HomeRoute } from '@/pages/home-route'
+import { StoreHomePage } from '@/pages/store/store-home-page'
 import { LoginPage } from '@/pages/login-page'
 import { MyCartPage } from '@/pages/me/my-cart-page'
 import { MyOrdersPage } from '@/pages/me/my-orders-page'
@@ -46,6 +47,7 @@ export function App() {
 
           <Route element={<AppLayout />}>
             <Route index element={<HomeRoute />} />
+            <Route path="tienda" element={<StoreHomePage />} />
 
             {/* Rutas compartidas entre ADMIN y EMPLOYEE (mismas vistas) */}
             <Route element={<RequireAuth roles={['ADMIN', 'EMPLOYEE']} />}>

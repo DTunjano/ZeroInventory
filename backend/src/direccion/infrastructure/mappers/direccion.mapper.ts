@@ -12,6 +12,7 @@ export class DireccionMapper {
       entity.codigoPostal,
       entity.infoAdiccional,
       entity.esPredeterminada,
+      entity.estado,
     );
   }
 
@@ -25,6 +26,7 @@ export class DireccionMapper {
     entity.codigoPostal = domain.codigoPostal;
     entity.infoAdiccional = domain.infoAdiccional;
     entity.esPredeterminada = domain.esPredeterminada;
+    entity.estado = domain.estado;
     return entity;
   }
 }

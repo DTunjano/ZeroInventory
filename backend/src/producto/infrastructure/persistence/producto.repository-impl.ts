@@ -55,6 +55,12 @@ export class ProductoRepositoryImpl implements ProductoRepository {
   }> {
     const query = this.repo.createQueryBuilder('producto');
 
+    if (filters?.isActive !== undefined) {
+      query.andWhere('producto.is_active = :isActive', {
+        isActive: filters.isActive,
+      });
+    }
+
     // General search that applies to nombre and sku
     if (filters?.search) {
       query.andWhere('(producto.nombre ILIKE :search OR producto.sku ILIKE :search)', {

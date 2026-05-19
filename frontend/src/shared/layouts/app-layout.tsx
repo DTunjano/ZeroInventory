@@ -65,7 +65,7 @@ const sharedNav: AppLayoutNavItem[] = [
 /** Navegación para CUSTOMER */
 const customerNav: AppLayoutNavItem[] = [
   { to: '/home', label: 'Home', icon: House },
-  { to: '/', label: 'Tienda', icon: LayoutGrid },
+  { to: '/tienda', label: 'Tienda', icon: LayoutGrid },
   { to: '/me/cart', label: 'Carrito', icon: ShoppingCart },
   { to: '/me/orders', label: 'Mis pedidos', icon: Package },
   { to: '/me/direcciones', label: 'Direcciones', icon: Building },
@@ -101,7 +101,7 @@ function pickSidebarLabel(roles: string[]): string {
 
 const guestNav: AppLayoutNavItem[] = [
   { to: '/home', label: 'Home', icon: House },
-  { to: '/', label: 'Tienda', icon: LayoutGrid },
+  { to: '/tienda', label: 'Tienda', icon: LayoutGrid },
 ]
 
 export function AppLayout(props: { title?: string }) {
@@ -239,7 +239,7 @@ export function AppLayout(props: { title?: string }) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/">Ir a inicio</Link>
+                  <Link to="/home">Ir a inicio</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -279,7 +279,7 @@ export function AppLayout(props: { title?: string }) {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-3">
                 <Button asChild variant="ghost" size="icon" className={cn(isDark ? 'text-white/70' : 'text-slate-600')}>
-                  <Link to="/">
+                  <Link to="/tienda">
                     <LayoutGrid className="h-5 w-5" />
                   </Link>
                 </Button>

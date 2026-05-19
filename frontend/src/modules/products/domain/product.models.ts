@@ -52,6 +52,7 @@ export interface ProductFilters {
   search?: string
   categoriaId?: number
   categoriaIds?: number[]
+  isActive?: boolean
   sortBy?: 'stock' | 'categoria' | 'nombre'
   order?: 'asc' | 'desc'
 }

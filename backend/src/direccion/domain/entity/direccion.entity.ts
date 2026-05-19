@@ -7,6 +7,7 @@ export class Direccion {
   codigoPostal: string | null = null;
   infoAdiccional: string | null = null;
   esPredeterminada: boolean = false;
+  estado: boolean = true;
 
   constructor(
     direccionId: number,
@@ -17,6 +18,7 @@ export class Direccion {
     codigoPostal: string | null,
     infoAdiccional: string | null,
     esPredeterminada: boolean = false,
+    estado: boolean = true,
   ) {
     this.direccionId = direccionId;
     this.clienteId = clienteId;
@@ -26,5 +28,6 @@ export class Direccion {
     this.codigoPostal = codigoPostal;
     this.infoAdiccional = infoAdiccional;
     this.esPredeterminada = esPredeterminada;
+    this.estado = estado;
   }
 }

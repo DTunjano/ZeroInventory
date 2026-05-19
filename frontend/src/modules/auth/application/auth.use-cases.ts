@@ -9,7 +9,7 @@ export async function register(credentials: RegisterCredentials): Promise<AuthSe
   return authRepository.register(credentials)
 }
 
-export async function refresh(): Promise<AuthSession> {
+export async function refresh(): Promise<AuthSession | null> {
   return authRepository.refresh()
 }
 

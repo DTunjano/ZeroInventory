@@ -21,9 +21,6 @@ export function AdminEmployeesPage() {
   const [statusModalEmployee, setStatusModalEmployee] = useState<Empleado | null>(
     null,
   )
-  const [deleteModalEmployee, setDeleteModalEmployee] = useState<Empleado | null>(
-    null,
-  )
 
   const qc = useQueryClient()
 
@@ -39,24 +36,16 @@ export function AdminEmployeesPage() {
   })
 
   const toggleMutation = useMutation({
-    mutationFn: (empleadoId: number) =>
-      employeeService.toggleEmployeeStatus(empleadoId),
+    mutationFn: (payload: { empleadoId: number; estado: Empleado['estado'] }) =>
+      payload.estado === 'ACTIVO'
+        ? employeeService.deactivateEmployee(payload.empleadoId)
+        : employeeService.activateEmployee(payload.empleadoId),
     onSuccess: (empleado) => {
       toast.success(
         empleado.estado === 'ACTIVO' ? 'Empleado activado' : 'Empleado desactivado',
       )
       void qc.invalidateQueries({ queryKey: [EMPLOYEES_QUERY_KEY] })
       setStatusModalEmployee(null)
-    },
-    onError: (err) => toast.error(getApiErrorMessage(err, 'Error de red')),
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: (empleadoId: number) => employeeService.deactivateEmployee(empleadoId),
-    onSuccess: () => {
-      toast.success('Empleado desactivado')
-      void qc.invalidateQueries({ queryKey: [EMPLOYEES_QUERY_KEY] })
-      setDeleteModalEmployee(null)
     },
     onError: (err) => toast.error(getApiErrorMessage(err, 'Error de red')),
   })
@@ -164,29 +153,12 @@ export function AdminEmployeesPage() {
         }
         onConfirm={() => {
           if (!statusModalEmployee) return
-          toggleMutation.mutate(statusModalEmployee.empleadoId)
+          toggleMutation.mutate({
+            empleadoId: statusModalEmployee.empleadoId,
+            estado: statusModalEmployee.estado,
+          })
         }}
         isConfirming={toggleMutation.isPending}
-      />
-
-      <ConfirmModal
-        open={!!deleteModalEmployee}
-        onOpenChange={(open) => {
-          if (!open) setDeleteModalEmployee(null)
-        }}
-        title="Eliminar empleado"
-        description={
-          deleteModalEmployee
-            ? `Se desactivará a ${deleteModalEmployee.nombre} (soft delete). ¿Deseas continuar?`
-            : undefined
-        }
-        confirmText="Eliminar"
-        confirmVariant="destructive"
-        onConfirm={() => {
-          if (!deleteModalEmployee) return
-          deleteMutation.mutate(deleteModalEmployee.empleadoId)
-        }}
-        isConfirming={deleteMutation.isPending}
       />
 
       {isLoading ? (
@@ -206,10 +178,6 @@ export function AdminEmployeesPage() {
               onToggleStatus={(id) => {
                 const target = filteredEmployees.find((e) => e.empleadoId === id)
                 if (target) setStatusModalEmployee(target)
-              }}
-              onDelete={(id) => {
-                const target = filteredEmployees.find((e) => e.empleadoId === id)
-                if (target) setDeleteModalEmployee(target)
               }}
             />
           ))}

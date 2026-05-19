@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { MapPin, Plus, Pencil, Trash2, Star, Loader2, Check } from 'lucide-react'
+import { MapPin, Plus, Pencil, Star, Loader2, Check, Power } from 'lucide-react'
 
 import { getMyDirecciones, createMyDireccion, updateMyDireccion, deleteMyDireccion, setPredeterminada } from '@/modules/direcciones/application/direcciones.use-cases'
 import { direccionesQueryKey } from '@/modules/direcciones/infrastructure/direcciones.api'
@@ -11,6 +10,7 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { ConfirmModal } from '@/shared/ui/modals/confirm-modal'
 
 function DireccionForm({
   direccion,
@@ -105,9 +105,9 @@ function DireccionForm({
 
 export function MyDireccionesPage() {
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
   const [editingId, setEditingId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: direccionesQueryKey,
@@ -138,8 +138,9 @@ export function MyDireccionesPage() {
   const deleteMutation = useMutation({
     mutationFn: deleteMyDireccion,
     onSuccess: () => {
-      toast.success('Dirección eliminada')
+      toast.success('Dirección eliminada correctamente')
       void queryClient.invalidateQueries({ queryKey: direccionesQueryKey })
+      setConfirmDeleteId(null)
     },
     onError: (err) => toast.error(getApiErrorMessage(err, 'No se pudo eliminar la dirección')),
   })
@@ -157,6 +158,22 @@ export function MyDireccionesPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      <ConfirmModal
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmDeleteId(null)
+        }}
+        title="Eliminar dirección"
+        description="Si la dirección no tiene pedidos asociados, se eliminará de la base de datos. Si ya fue usada, solo se desactivará para conservar la trazabilidad."
+        confirmText="Eliminar"
+        confirmVariant="destructive"
+        onConfirm={() => {
+          if (confirmDeleteId === null) return
+          deleteMutation.mutate(confirmDeleteId)
+        }}
+        isConfirming={deleteMutation.isPending}
+      />
+
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Mis direcciones</h1>
@@ -260,14 +277,13 @@ export function MyDireccionesPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-destructive hover:text-destructive ml-auto"
+                      className="ml-auto text-destructive hover:text-destructive"
                       onClick={() => {
-                        if (confirm('¿Eliminar esta dirección?')) {
-                          deleteMutation.mutate(d.direccionId)
-                        }
+                        setConfirmDeleteId(d.direccionId)
                       }}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Power className="h-4 w-4 mr-1" />
+                      Eliminar
                     </Button>
                   </div>
                 </CardContent>

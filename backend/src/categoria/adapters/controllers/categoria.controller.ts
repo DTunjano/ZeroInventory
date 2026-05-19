@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Public } from '../../../auth/adapters/decorators/public.decorator';
 import { CreateCategoriaUseCase } from '../../application/use-cases/create-categoria.use-case';
 import { Categoria } from '../../domain/entity/categoria.entity';
 import { CreateCategoriaDTO } from '../../application/dto/create-categoria-dto';
@@ -32,7 +33,6 @@ import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
 import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 
 @ApiTags('Categorías')
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('categorias')
 export class CategoriaController {
   constructor(
@@ -44,6 +44,7 @@ export class CategoriaController {
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @CreateCategoriaSwagger()
   async create(@Body() body: CreateCategoriaDTO): Promise<Categoria> {
@@ -55,7 +56,7 @@ export class CategoriaController {
   }
 
   @Get()
-  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
+  @Public()
   @GetAllCategoriaSwagger()
   async getAll(@Query() filters?: FiltersCategoriaDTO): Promise<{
     data: Categoria[];
@@ -68,6 +69,7 @@ export class CategoriaController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetCategoriaByIdSwagger()
   async getById(
@@ -81,6 +83,7 @@ export class CategoriaController {
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UpdateCategoriaSwagger()
   async update(
@@ -98,6 +101,7 @@ export class CategoriaController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolNombreEnum.ADMIN)
   @DeleteCategoriaSwagger()
   async remove(@Param('id', ParseIntPipe) categoriaId: number): Promise<void> {

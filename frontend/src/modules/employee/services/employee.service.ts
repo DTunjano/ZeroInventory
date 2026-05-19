@@ -72,7 +72,12 @@ export const employeeService = {
   },
 
   async deactivateEmployee(empleadoId: number): Promise<Empleado> {
-    const { data } = await http.delete<Empleado>(`/empleados/${empleadoId}`)
+    const { data } = await http.patch<Empleado>(`/empleados/${empleadoId}/desactivar`)
+    return data
+  },
+
+  async activateEmployee(empleadoId: number): Promise<Empleado> {
+    const { data } = await http.patch<Empleado>(`/empleados/${empleadoId}/activar`)
     return data
   },
 

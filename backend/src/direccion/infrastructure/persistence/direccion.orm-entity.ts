@@ -36,6 +36,9 @@ export class DireccionEntityORM {
   @Column({ name: 'es_predeterminada', type: 'boolean', default: false })
   esPredeterminada!: boolean;
 
+  @Column({ name: 'estado', type: 'boolean', default: true })
+  estado!: boolean;
+
   @ManyToOne(() => ClienteEntityORM, (cliente) => cliente.direcciones)
   @JoinColumn({ name: 'cliente_id' })
   cliente!: ClienteEntityORM;

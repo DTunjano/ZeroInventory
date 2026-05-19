@@ -20,6 +20,8 @@ import { ListarEmpleadosUseCase } from '../application/use-case/listar-empleados
 import { ObtenerEmpleadoUseCase } from '../application/use-case/obtener-empleado.use-case';
 import { ActualizarEmpleadoUseCase } from '../application/use-case/actualizar-empleado.use-case';
 import { ToggleEmpleadoUseCase } from '../application/use-case/toggle-empleado.use-case';
+import { DesactivarEmpleadoUseCase } from '../application/use-case/desactivar-empleado.use-case';
+import { ActivarEmpleadoUseCase } from '../application/use-case/activar-empleado.use-case';
 import { JwtAuthGuard } from '../../auth/adapters/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/adapters/guards/roles.guard';
 import { Roles } from '../../auth/adapters/decorators/roles.decorator';
@@ -36,6 +38,8 @@ export class EmpleadoController {
     private readonly obtenerEmpleadoUseCase: ObtenerEmpleadoUseCase,
     private readonly actualizarEmpleadoUseCase: ActualizarEmpleadoUseCase,
     private readonly toggleEmpleadoUseCase: ToggleEmpleadoUseCase,
+    private readonly desactivarEmpleadoUseCase: DesactivarEmpleadoUseCase,
+    private readonly activarEmpleadoUseCase: ActivarEmpleadoUseCase,
   ) {}
 
   @Post()
@@ -95,5 +99,21 @@ export class EmpleadoController {
     @Param('id', ParseIntPipe) empleadoId: number,
   ): Promise<EmpleadoConRoles> {
     return this.toggleEmpleadoUseCase.ejecutar(empleadoId);
+  }
+
+  @Patch(':id/desactivar')
+  @Roles(RolNombreEnum.ADMIN)
+  async desactivar(
+    @Param('id', ParseIntPipe) empleadoId: number,
+  ): Promise<EmpleadoConRoles> {
+    return this.desactivarEmpleadoUseCase.ejecutar(empleadoId);
+  }
+
+  @Patch(':id/activar')
+  @Roles(RolNombreEnum.ADMIN)
+  async activar(
+    @Param('id', ParseIntPipe) empleadoId: number,
+  ): Promise<EmpleadoConRoles> {
+    return this.activarEmpleadoUseCase.ejecutar(empleadoId);
   }
 }
