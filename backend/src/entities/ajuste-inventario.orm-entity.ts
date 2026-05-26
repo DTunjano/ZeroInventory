@@ -31,20 +31,26 @@ export class AjusteInventarioEntityORM {
   @Column({ name: 'usuario_id', type: 'int' })
   usuarioId!: number;
 
-  @Column({ name: 'tipo_movimiento', type: 'enum', enum: TipoMovimientoEnum })
+  @Column({
+    name: 'tipo_movimiento',
+    type: 'enum',
+    enum: TipoMovimientoEnum,
+    default: TipoMovimientoEnum.AJUSTE,
+    nullable: true,
+  })
   tipoMovimiento!: TipoMovimientoEnum;
 
   @Column({ name: 'cantidad', type: 'int' })
   cantidad!: number;
 
-  @Column({ name: 'stock_anterior', type: 'int' })
-  stockAnterior!: number;
+  @Column({ name: 'stock_anterior', type: 'int', nullable: true })
+  stockAnterior?: number;
 
-  @Column({ name: 'stock_nuevo', type: 'int' })
-  stockNuevo!: number;
+  @Column({ name: 'stock_nuevo', type: 'int', nullable: true })
+  stockNuevo?: number;
 
-  @Column({ name: 'tipo_cambio', type: 'enum', enum: TipoCambioEnum })
-  tipoCambio!: TipoCambioEnum;
+  @Column({ name: 'tipo_cambio', type: 'enum', enum: TipoCambioEnum, nullable: true })
+  tipoCambio?: TipoCambioEnum;
 
   @Column({ name: 'motivo', type: 'text' })
   motivo!: string;

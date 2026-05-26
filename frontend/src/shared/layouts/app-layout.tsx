@@ -77,7 +77,7 @@ function pickNav(roles: string[]): AppLayoutNavItem[] {
   const isEmployee = roles.includes('EMPLOYEE')
 
   if (isAdmin) {
-    return [...adminOnlyNav, ...sharedNav]
+    return [sharedNav[0], ...adminOnlyNav, ...sharedNav.slice(1)]
   }
 
   if (isEmployee) {
