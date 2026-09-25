@@ -1,0 +1,38 @@
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { CategoriaEntityORM } from '../../../categoria/infrastructure/persistence/categoria.orm-entity';
+import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
+
+@Entity({ name: 'categoria_producto' })
+export class CategoriaProductoEntityORM {
+  @PrimaryGeneratedColumn({ name: 'categoria_producto_id' })
+  categoriaProductoId!: number;
+
+  @Column({ name: 'categoria_id', type: 'int' })
+  categoriaId!: number;
+
+  @Column({ name: 'producto_id', type: 'int' })
+  productoId!: number;
+
+  @Column({ name: 'created_at', type: 'timestamp' })
+  createdAt!: Date;
+
+  @Column({ name: 'updated_at', type: 'timestamp' })
+  updatedAt!: Date;
+
+  @ManyToOne(
+    () => CategoriaEntityORM,
+    (categoria) => categoria.categoriasProducto,
+  )
+  @JoinColumn({ name: 'categoria_id' })
+  categoria!: CategoriaEntityORM;
+
+  @ManyToOne(() => ProductoEntityORM, (producto) => producto.categorias)
+  @JoinColumn({ name: 'producto_id' })
+  producto!: ProductoEntityORM;
+}
