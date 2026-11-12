@@ -73,3 +73,23 @@ Los procesos Node iniciados para comprobar el arranque se detuvieron al terminar
 La evidencia de interfaz del 12 de noviembre de 2026 está en [revision-funcional-mvp.md](revision-funcional-mvp.md). Se verificaron recorridos con tres perfiles ficticios en una base independiente y se corrigieron navegación móvil, acceso desde Home por rol, rótulo del método de pago y paginación de medios vacíos. Después del cambio pasaron `pnpm typecheck`, `pnpm lint` y `pnpm build` del frontend. No se repitieron las suites del backend porque sus fuentes y el esquema no cambiaron.
 
 Esta revisión parcial no cierra el MVP: hay decisiones de alcance y casos de interfaz pendientes. Se detuvieron los procesos de revisión y se comprobó la retirada de su DB temporal, conservando los datos habituales. La pasarela de pagos no se ha incorporado.
+
+## Continuación de etapa 1 — usuarios/roles y catálogo aprobados
+
+Se incorporaron la gestión de usuarios/roles y las reglas de catálogo acordadas por el usuario. Los reportes avanzados quedan fuera del MVP. Los contratos y las garantías se describen en [usuarios-y-productos.md](usuarios-y-productos.md).
+
+| Control | Resultado |
+| --- | --- |
+| Backend: tipos, ESLint, unitarias y build | Correctos; 10 pruebas unitarias |
+| Integración HTTP/PostgreSQL | **28 pruebas correctas** sobre base temporal |
+| Actualización de copia de la DB | 21 tablas de negocio conservadas, conciliación correcta y segunda ejecución sin cambios |
+| Diagnóstico de DB habitual | Sin migraciones pendientes, diferencias de stock ni números duplicados |
+| Frontend: tipos, ESLint y build | Correctos; aviso informativo de tiempo de Babel |
+| Interfaz de cuentas | Alta, edición de roles, búsqueda, filtro inactivo, desactivación/reactivación y rechazo de desactivar al último administrador comprobados |
+| Interfaz de productos | Alta/edición sin imagen, precio cero rechazado, categoría persistida y desactivación/reactivación comprobados |
+| Interfaz móvil de usuarios | Documento de 390 px, contenido de aproximadamente 390 px, enlaces de gestión ausentes para empleado |
+| Limpieza | Sesiones cerradas, procesos de revisión detenidos y DB temporal de la sesión retirada |
+
+Las siete pruebas de integración añadidas cubren campos obligatorios e imagen opcional; rollback de producto/stock/auditoría al fallar categorías; protección del último administrador por cuentas y asignaciones históricas; edición de contraseña con bcrypt y respuestas sin hashes; roles inválidos/permisos/rollback de alta incompleta; degradación concurrente de administradores; y atomicidad de estados empleado/cuenta.
+
+El acceso comprueba roles y cuenta activa en cada solicitud; no se añadieron sesiones persistentes ni revocación por dispositivo. No hubo cambios de esquema ni migraciones nuevas. No se cargaron medios al Cloudinary real. La matriz mantiene casos pendientes y no se declara cerrada la etapa 1. Etapa 2 y pasarela de pagos sin iniciar.

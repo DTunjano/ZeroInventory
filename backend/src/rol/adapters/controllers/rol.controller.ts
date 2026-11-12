@@ -73,11 +73,7 @@ export class RolController {
     @Param('id', ParseIntPipe) rolId: number,
     @Body() dto: UpdateRolDTO,
   ): Promise<Rol> {
-    try {
-      return await this.updateRolUseCase.ejecutar(rolId, dto);
-    } catch {
-      throw new NotFoundException('Rol no encontrado');
-    }
+    return this.updateRolUseCase.ejecutar(rolId, dto);
   }
 
   @Delete(':id')

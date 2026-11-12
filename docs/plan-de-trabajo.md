@@ -43,7 +43,7 @@ Documento de referencia: [revisión funcional del MVP](revision-funcional-mvp.md
 - [x] Identificar pantallas provisionales y requisitos contradictorios.
 - [x] Detectar y corregir el bloqueo de navegación móvil.
 - [ ] Completar los casos pendientes de la matriz según el alcance acordado.
-- [ ] Acordar los requisitos de catálogo y el tratamiento de usuarios/reportes en la primera entrega.
+- [x] Acordar los requisitos de catálogo y el tratamiento de usuarios/reportes: usuarios/roles incluidos, reportes avanzados aplazados, imagen opcional, proveedor/categoría/precio positivo obligatorios en altas.
 - [ ] Validar cargas reales de medios en una cuenta y con un archivo de prueba autorizados, si forman parte del alcance.
 - [ ] Obtener aceptación del usuario sobre el resultado de la etapa 1.
 

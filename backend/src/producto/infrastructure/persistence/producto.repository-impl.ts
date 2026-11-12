@@ -1,6 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { EntityManager, In, Not, Repository } from 'typeorm';
+import { CategoriaEntityORM } from '../../../categoria/infrastructure/persistence/categoria.orm-entity';
+import { CategoriaProductoEntityORM } from '../../../categoria-producto/infrastructure/persistence/categoria-producto.orm-entity';
 import { ProductoEntityORM } from './producto.orm-entity';
 import { ProductoRepository } from '../../domain/repository/producto.repository';
 import { ProductoMapper } from '../mappers/producto.mapper';
@@ -17,12 +19,24 @@ export class ProductoRepositoryImpl implements ProductoRepository {
     private readonly repo: Repository<ProductoEntityORM>,
   ) {}
 
-  async create(producto: Producto): Promise<Producto> {
+  private async setCategories(manager: EntityManager, productoId: number, ids: number[]) {
+    const uniqueIds = [...new Set(ids)];
+    if (!uniqueIds.length || await manager.countBy(CategoriaEntityORM, { categoriaId: In(uniqueIds) }) !== uniqueIds.length) {
+      throw new BadRequestException('Selecciona al menos una categoría válida');
+    }
+    await manager.delete(CategoriaProductoEntityORM, { productoId });
+    await manager.insert(CategoriaProductoEntityORM, uniqueIds.map((categoriaId) => ({
+      productoId, categoriaId, createdAt: new Date(), updatedAt: new Date(),
+    })));
+  }
+
+  async create(producto: Producto, categoriaIds: number[]): Promise<Producto> {
     validateStock(producto.cantidad);
     return this.repo.manager.transaction(async (manager) => {
       const saved = await manager.save(ProductoEntityORM, ProductoMapper.toPersistence(producto));
       saved.sku = SkuGeneratorService.generate(saved.nombre, saved.productoId);
       await manager.save(ProductoEntityORM, saved);
+      await this.setCategories(manager, saved.productoId, categoriaIds);
       if (saved.cantidad > 0) {
         await manager.insert(KardexEntityORM, {
           productoId: saved.productoId, tipoMovimiento: TipoMovimientoEnum.ENTRADA,
@@ -35,7 +49,7 @@ export class ProductoRepositoryImpl implements ProductoRepository {
     });
   }
 
-  async update(producto: Producto, stockChange?: { usuarioId: number; expectedStock: number; changeStock: boolean }): Promise<Producto> {
+  async update(producto: Producto, stockChange?: { usuarioId: number; expectedStock: number; changeStock: boolean }, categoriaIds?: number[]): Promise<Producto> {
     return this.repo.manager.transaction(async (manager) => {
       const current = await manager.findOne(ProductoEntityORM, {
         where: { productoId: producto.productoId }, lock: { mode: 'pessimistic_write' },
@@ -51,6 +65,7 @@ export class ProductoRepositoryImpl implements ProductoRepository {
       const entity = ProductoMapper.toPersistence(producto);
       entity.cantidad = current.cantidad;
       const saved = await manager.save(ProductoEntityORM, entity);
+      if (categoriaIds !== undefined) await this.setCategories(manager, saved.productoId, categoriaIds);
       return ProductoMapper.toDomain(saved);
     });
   }

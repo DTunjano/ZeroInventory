@@ -25,7 +25,6 @@ import { listCategories } from '../application/list-categories.use-case'
 import { listProductCategoryIds } from '../application/list-product-categories.use-case'
 import { listProviders } from '../application/list-providers.use-case'
 import { listCategoryIdsByProductIds } from '../application/list-category-products-by-product.use-case'
-import { setProductCategories } from '../application/set-product-categories.use-case'
 import type { Product } from '../domain/product.models'
 import { generateSkuPreview } from '../domain/sku-preview'
 
@@ -294,57 +293,48 @@ export function AdminProductsPage() {
     form.reset(defaults)
   }, [editing, open, form])
 
+  const invalidateProducts = () => Promise.all(['products', 'product-images', 'all-product-images', 'product-category-ids', 'category-ids-by-products', 'store-products', 'inventory-products', 'inventory-summary', 'inventory-adjustments', 'admin-dashboard', 'cart'].map((key) => qc.invalidateQueries({ queryKey: [key] })))
+
   const upsertMutation = useMutation({
     mutationFn: async (values: FormValues) => {
-      let hasExistingImage = !!existingImage?.url
-
-      if (editing && !imageFile && !hasExistingImage) {
-        const current = await listImagesByProduct(editing.productoId)
-        hasExistingImage = !!current.data?.[0]?.url
-      }
-
-      if (!imageFile && !hasExistingImage) {
-        throw new Error('La imagen del producto es obligatoria')
-      }
-
       const basePayload = {
         nombre: values.nombre,
         cantidad: values.cantidad,
         precio: values.precio,
         descripcion: values.descripcion,
         proveedorId: values.proveedorId,
+        categoriaIds: values.categoriaIds,
       }
 
       const saved = editing
         ? await updateProduct(editing.productoId, { sku: editing.sku, ...basePayload })
         : await createProduct(basePayload)
 
-      if (imageFile) {
-        if (editing) {
-          const current = await listImagesByProduct(saved.productoId)
-          const currentImageId = current.data?.[0]?.imagenProductoId
-          if (currentImageId) {
-            await updateProductImage(currentImageId, imageFile)
+      let imageError: string | null = null
+      try {
+        if (imageFile) {
+          if (editing) {
+            const current = await listImagesByProduct(saved.productoId)
+            const currentImageId = current.data?.[0]?.imagenProductoId
+            if (currentImageId) {
+              await updateProductImage(currentImageId, imageFile)
+            } else {
+              await uploadProductImage(saved.productoId, imageFile)
+            }
           } else {
             await uploadProductImage(saved.productoId, imageFile)
           }
-        } else {
-          await uploadProductImage(saved.productoId, imageFile)
         }
+
+      } catch (error) {
+        imageError = getApiErrorMessage(error, 'No se pudo cargar la imagen')
       }
-
-      await setProductCategories({
-        productoId: saved.productoId,
-        categoriaIds: values.categoriaIds,
-      })
-
-      return saved
+      return { saved, imageError }
     },
-    onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey })
-      await qc.invalidateQueries({ queryKey: ['product-images'] })
-      await qc.invalidateQueries({ queryKey: ['product-category-ids'] })
-      toast.success(editing ? 'Producto actualizado' : 'Producto creado')
+    onSuccess: async ({ imageError }) => {
+      await invalidateProducts()
+      if (imageError) toast.warning(`Producto guardado. La imagen no se pudo guardar: ${imageError}. Puedes volver a cargarla al editar.`)
+      else toast.success(editing ? 'Producto actualizado' : 'Producto creado')
       setOpen(false)
       setEditing(null)
       setImageFile(null)
@@ -356,17 +346,9 @@ export function AdminProductsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (product: Product) =>
-      updateProduct(product.productoId, {
-        sku: product.sku,
-        nombre: product.nombre,
-        cantidad: product.cantidad,
-        precio: product.precio,
-        descripcion: product.descripcion,
-        proveedorId: product.proveedorId,
-        isActive: false, // Soft delete
-      }),
+      updateProduct(product.productoId, { isActive: false }),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey })
+      await invalidateProducts()
       toast.success('Producto eliminado')
     },
     onError: (err) => toast.error(getApiErrorMessage(err, 'No se pudo eliminar el producto')),
@@ -374,17 +356,9 @@ export function AdminProductsPage() {
 
   const toggleActiveMutation = useMutation({
     mutationFn: (product: Product) =>
-      updateProduct(product.productoId, {
-        sku: product.sku,
-        nombre: product.nombre,
-        cantidad: product.cantidad,
-        precio: product.precio,
-        descripcion: product.descripcion,
-        proveedorId: product.proveedorId,
-        isActive: !product.isActive,
-      }),
+      updateProduct(product.productoId, { isActive: !product.isActive }),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey })
+      await invalidateProducts()
       toast.success('Producto actualizado')
     },
     onError: (err) =>
@@ -780,7 +754,7 @@ export function AdminProductsPage() {
             <div className="grid gap-2">
               <Label htmlFor="imagen" className="flex items-center gap-2">
                 <ImageIcon className="h-4 w-4 text-blue-400" />
-                Imagen
+                Imagen (opcional)
               </Label>
               <Input
                 id="imagen"

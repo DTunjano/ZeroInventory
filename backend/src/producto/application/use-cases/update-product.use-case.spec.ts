@@ -56,7 +56,7 @@ describe('UpdateProductUseCase', () => {
     const result = await useCase.ejecutar(9, 5, { cantidad: 15 })
 
     expect(result.cantidad).toBe(15)
-    expect(productoRepo.update).toHaveBeenCalledWith(expect.objectContaining({ cantidad: 15 }), { usuarioId: 5, expectedStock: 10, changeStock: true })
+    expect(productoRepo.update).toHaveBeenCalledWith(expect.objectContaining({ cantidad: 15 }), { usuarioId: 5, expectedStock: 10, changeStock: true }, undefined)
   })
 
   it('passes a decrease to atomic persistence', async () => {

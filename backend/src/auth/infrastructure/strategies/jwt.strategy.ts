@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { ConfigService } from '@nestjs/config'
 
 import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity'
+import { AuthUserRepository } from '../../domain/repository/auth-user.repository'
 
 export type JwtAccessPayload = {
   sub: number
@@ -17,7 +18,7 @@ export type JwtAccessPayload = {
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(configService: ConfigService) {
+  constructor(configService: ConfigService, private readonly users: AuthUserRepository) {
     const secret = configService.get<string>('JWT_ACCESS_SECRET')
 
     if (!secret) {
@@ -31,12 +32,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     })
   }
 
-  validate(payload: JwtAccessPayload) {
+  async validate(payload: JwtAccessPayload) {
+    if (!Number.isInteger(payload.sub) || payload.sub <= 0) throw new UnauthorizedException('Sesión inválida')
+    const user = await this.users.findById(payload.sub)
+    if (!user?.isActive) throw new UnauthorizedException('La cuenta no está activa')
     return {
       sub: payload.sub,
       usuarioId: payload.sub,
-      username: payload.username,
-      roles: payload.roles,
+      username: user.username,
+      roles: user.roles,
     }
   }
 }

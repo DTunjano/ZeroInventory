@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsNumber, Max, Min } from 'class-validator';
+import { ArrayMinSize, ArrayUnique, IsArray, IsInt, IsNotEmpty, IsOptional, IsNumber, Max, Min } from 'class-validator';
 
 export class CreateProductDTO {
   @ApiProperty({
@@ -8,10 +8,18 @@ export class CreateProductDTO {
     example: 1,
     type: Number,
   })
-  @IsOptional()
+  @IsNotEmpty({ message: 'El proveedor es obligatorio' })
   @IsInt({ message: 'El proveedor debe ser un entero' })
   @Min(1, { message: 'El proveedor debe ser válido' })
-  proveedorId?: number | null;
+  proveedorId!: number;
+
+  @ApiProperty({ type: [Number], description: 'Al menos una categoría existente' })
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Selecciona al menos una categoría' })
+  @ArrayUnique()
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  categoriaIds!: number[];
 
   @ApiProperty({
     description: 'Nombre del producto',
@@ -39,7 +47,7 @@ export class CreateProductDTO {
     type: Number,
   })
   @IsNotEmpty({ message: 'El precio del producto es obligatorio' })
-  @Min(0, { message: 'El precio del producto no puede ser negativo' })
+  @Min(0.01, { message: 'El precio del producto debe ser mayor que cero' })
   @IsNumber({ maxDecimalPlaces: 2 })
   @Max(999999999999.99)
   precio!: number;

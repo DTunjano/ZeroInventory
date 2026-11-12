@@ -1,6 +1,6 @@
 # Etapa 1 — Revisión funcional y criterios de aceptación
 
-Fecha: 12 de noviembre de 2026. Estado: **en curso; pendiente de acuerdos y aceptación del usuario**.
+Fecha: 12 de noviembre de 2026. Estado: **en curso; alcance de usuarios/reportes y catálogo acordado; aceptación funcional pendiente**.
 
 ## Alcance y evidencia
 
@@ -41,17 +41,17 @@ Estados:
 | DIR-01 | Cliente | Ver direcciones propias y señalar la predeterminada | **Verificado:** dirección ficticia marcada como predeterminada |
 | DIR-02 | Cliente | Crear, editar, predeterminar y retirar direcciones desde las pantallas | **Pendiente** de revisión completa de interfaz; las restricciones de propiedad ya tienen pruebas API |
 | PRO-01 | Empleado | Ver catálogo administrativo y saldo posterior a una venta | **Verificado:** Vaso QA pasó de 10 a 8 |
-| PRO-02 | Empleado | El formulario informa campos obligatorios faltantes | **Verificado:** nombre, precio, stock, proveedor y categoría; la ausencia de imagen se comunica por notificación |
-| PRO-03 | Admin / empleado | Crear y editar un producto completo con su medio y categorías | **Parcial:** se recorrió la validación; la prueba completa requiere resolver requisitos y autorizar una carga externa |
-| PRO-04 | Admin / empleado | Desactivar/reactivar conserva el historial y actualiza la visibilidad de catálogo | **Pendiente** de recorrido de interfaz; eliminación lógica ya cubierta por API |
+| PRO-02 | Admin / empleado | El formulario informa campos obligatorios faltantes | **Verificado:** proveedor, categoría, nombre, stock y precio positivo; imagen opcional tras la decisión del usuario |
+| PRO-03 | Admin / empleado | Crear y editar un producto con proveedor, categorías y sin imagen | **Verificado desde UI admin:** creación con 5 unidades, edición a 3 y precio 18.000, categoría conservada y validación de precio cero. La carga externa opcional sigue pendiente |
+| PRO-04 | Admin / empleado | Desactivar/reactivar conserva el historial y actualiza la visibilidad | **Verificado:** desactivación/reactivación desde UI; conservación de saldo/historial comprobada por API. La visibilidad de tienda tras cada cambio necesita completar el recorrido |
 | INV-01 | Admin / empleado | El inventario muestra el saldo derivado de las operaciones efectuadas | **Verificado:** saldo total 10, con filas 8, 2 y 0 |
-| INV-02 | Admin / empleado | Búsqueda, filtros, ajustes y consulta de auditoría son comprensibles | **Pendiente** de completar el recorrido de interfaz. No se implementó un ciclo nuevo de inventario |
+| INV-02 | Admin / empleado | Búsqueda, filtros, ajustes y consulta de auditoría son comprensibles | **Parcial:** auditoría de la edición visible (5 a 3, reducción de 2 y responsable). Faltan completar filtros y ajuste desde la pantalla de inventario |
 | PRV-01 | Empleado | Listar proveedores sin exponer acciones exclusivas de otros roles | **Verificado:** proveedor ficticio visible |
 | PRV-02 | Admin / empleado | Crear, editar, desactivar y reactivar proveedor con mensajes correctos | **Pendiente** de revisión completa |
 | EMP-01 | Admin | Listar colaboradores y su estado | **Verificado:** empleado ficticio activo |
 | EMP-02 | Admin | Crear, editar y cambiar estado de empleado y su acceso asociado | **Pendiente** de revisión completa |
-| USU-01 | Admin | Administrar usuarios y roles desde una vista operativa | **No implementado:** `/admin/users` muestra una pantalla provisional y no tiene entrada en el menú |
-| REP-01 | Admin | Consultar reportes avanzados funcionales | **No implementado:** `/admin/reports` anuncia disponibilidad futura |
+| USU-01 | Admin | Administrar usuarios y roles desde una vista operativa | **Verificado:** alta, edición de roles, búsqueda, filtro inactivo, desactivación/reactivación y rechazo del último admin desde UI; contraseñas, perfiles y concurrencia mediante integración API |
+| REP-01 | Admin | Consultar reportes avanzados funcionales | **Fuera del MVP por decisión del usuario:** retirados del menú; la ruta antigua explica el aplazamiento y enlaza al dashboard |
 | DAS-01 | Admin | Dashboard carga datos del escenario de prueba | **Verificado:** 1 pedido, 3 productos y 3 usuarios; ingresos aprobados 0 porque el pago sigue pendiente |
 | MED-01 | Admin | Listar medios y comunicar ausencia de registros sin errores | **Verificado:** lista vacía; se corrigió la paginación que mostraba 1 / 0 |
 | MED-02 | Admin | Crear, editar, desactivar y reproducir medios reales en Cloudinary | **Pendiente:** no se enviaron archivos al proveedor |
@@ -76,17 +76,17 @@ Estados:
 
 | ID | Prioridad | Situación comprobada | Decisión o trabajo necesario |
 | --- | --- | --- | --- |
-| D-01 | Alcance | Usuarios/roles y reportes avanzados son vistas provisionales | El usuario debe confirmar si son obligatorios en la primera entrega o si se registran como trabajo posterior |
-| D-02 | Alta | El formulario exige proveedor, categoría e imagen; la API admite producto sin proveedor, categorías o imagen | Acordar requisitos y unificar validación y mensajes sin invalidar registros históricos sin respaldo |
-| D-03 | Alta | El flujo completo de producto depende de una carga externa | Autorizar una cuenta y un archivo ficticio delimitado para probar Cloudinary; las claves no se comparten en el chat |
-| D-04 | Media | La interfaz exige precio mayor que cero; la API admite cero | Confirmar si existen productos gratuitos o registros de precio pendiente |
+| D-01 | Alcance resuelto | Completar usuarios/roles y aplazar reportes avanzados | Aprobado por el usuario; gestión implementada y reportes retirados del menú |
+| D-02 | Regla resuelta | Imagen opcional; proveedor y categoría obligatorios | Aprobado e implementado en altas; categorías/producto se persisten juntos; datos históricos preservados |
+| D-03 | Validación externa | El producto sin imagen ya no depende de Cloudinary | Alta/edición sin imagen verificadas. Cargas opcionales y videos reales pendientes de una cuenta/asset de prueba delimitados |
+| D-04 | Regla resuelta | Precio mayor que cero | Aprobado; API rechaza precio cero en altas y cuando se envía un precio nuevo; UI comprobada |
 | D-05 | Media | Ayuda, Ofertas y Notificaciones aparecen como controles sin acciones implementadas en el layout | Definir si se retiran/deshabilitan para el MVP o se les asigna un comportamiento real |
 | D-06 | Baja | El catálogo administrativo muestra importes con formato distinto a la tienda | Acordar una presentación monetaria uniforme |
 | D-07 | Validación | Registro, CRUD completos y configuración tienen casos de interfaz aún pendientes | Ejecutarlos según la matriz; no clasificarlos como aprobados por tener solo una prueba API |
 
 Las reglas de estados de pedido, fecha efectiva de pago, cancelación y devolución pertenecen a la etapa 3. Esta revisión registra lo observado, sin introducir dichas reglas anticipadamente.
 
-## Validación y limpieza de esta entrega parcial
+## Primera revisión de interfaz — commit af03871
 
 - `frontend: pnpm typecheck`, `pnpm lint` y `pnpm build`: correctos después de las cuatro correcciones.
 - Repetición en navegador: medios vacíos muestra `1 / 1`; el resumen de pedido muestra “Método de pago: Contra entrega” y “1 producto”; el CTA del cliente abre `/tienda`.
@@ -101,10 +101,21 @@ Las reglas de estados de pedido, fecha efectiva de pago, cancelación y devoluci
 
 Para cerrar la etapa 1 se necesita:
 
-1. Acordar el alcance obligatorio y los requisitos del catálogo.
+1. **Cumplido para usuarios/reportes y catálogo:** decisión registrada en [usuarios-y-productos.md](usuarios-y-productos.md).
 2. Completar los casos pendientes que pertenecen a ese alcance.
 3. Probar los medios externos con una cuenta y datos de prueba autorizados, si están incluidos.
 4. Verificar correcciones sin regresiones en los tamaños y roles acordados.
 5. Registrar aceptación del usuario con fecha y observaciones.
 
 Aceptación del usuario: **pendiente**. Inicio de etapa 2: **no autorizado todavía por la condición de secuencia**.
+
+## Continuación con las decisiones aprobadas
+
+- Usuarios/roles implementados en `frontend/src/modules/users`, con adaptador HTTP y casos de uso. Pantalla visible solo a ADMIN; acceso directo del empleado rechazado y menú móvil sin esa opción, comprobados en navegador.
+- Respuestas de usuarios y esquemas Swagger excluyen contraseña. Cambiar contraseña cifra el nuevo valor; se comprobó inicio de sesión con la nueva y rechazo de la anterior mediante API.
+- Cuenta, roles y nuevo perfil cliente se guardan juntos. Acceso vigente consultado por solicitud, último ADMIN protegido con bloqueo compartido y estados empleado/cuenta atómicos.
+- Alta y edición de producto sin imagen comprobadas; el alta requiere proveedor/categorías/precio positivo. Un fallo de categorías revierte también la edición de stock y la auditoría.
+- Capturas locales: `users-roles-implemented.jpg`, `users-roles-mobile.jpg` y `product-optional-image.jpg`, bajo `.local/functional-evidence`. La vista móvil estable tiene documento de 390 px y contenido de aproximadamente 390 px.
+- La imagen externa opcional y el CRUD de medios reales no se probaron contra Cloudinary. Los demás casos marcados pendientes mantienen ese estado: esta continuación no cierra la etapa 1.
+
+Validación de esta continuación: `pnpm typecheck`, `pnpm lint` y `pnpm build` en ambos paquetes; 10 unitarias y 28 de integración PostgreSQL correctas. `pnpm test:upgrade` conservó 21 tablas de negocio y verificó idempotencia. `pnpm db:check` no encontró migraciones pendientes, inconsistencias de stock ni números de pedido duplicados. La sesión ficticia se cerró y su base temporal se retiró; no se publicaron registros de demostración en la base habitual.

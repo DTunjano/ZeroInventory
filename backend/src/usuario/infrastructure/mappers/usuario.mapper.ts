@@ -3,7 +3,7 @@ import { UsuarioEntityORM } from '../persistence/usuario.orm-entity';
 
 export class UsuarioMapper {
   static toDomain(entity: UsuarioEntityORM): Usuario {
-    return new Usuario(
+    const usuario = new Usuario(
       entity.usuarioId,
       entity.username,
       entity.email,
@@ -18,6 +18,8 @@ export class UsuarioMapper {
       entity.createdAt,
       entity.updatedAt,
     );
+    usuario.roles = (entity.usuarioRoles ?? []).map((assignment) => assignment.rol.nombre);
+    return usuario;
   }
 
   static toPersistence(domain: Usuario): UsuarioEntityORM {

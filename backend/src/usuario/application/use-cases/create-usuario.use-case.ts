@@ -2,12 +2,13 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { UsuarioRepository } from '../../domain/repository/usuario.repository';
 import { Usuario } from '../../domain/entity/usuario.entity';
 import * as bcrypt from 'bcrypt';
+import { UsuarioAccess } from '../../domain/entity/usuario-access';
 
 @Injectable()
 export class CreateUsuarioUseCase {
   constructor(private readonly usuarioRepo: UsuarioRepository) {}
 
-  async ejecutar(data: {
+  async ejecutar(data: UsuarioAccess & {
     username: string;
     email?: string | null;
     telefono?: string | null;
@@ -48,6 +49,6 @@ export class CreateUsuarioUseCase {
       new Date(),
       new Date(),
     );
-    return this.usuarioRepo.create(usuario);
+    return this.usuarioRepo.create(usuario, { roles: data.roles, ...(data.documento ? { documento: data.documento } : {}) });
   }
 }

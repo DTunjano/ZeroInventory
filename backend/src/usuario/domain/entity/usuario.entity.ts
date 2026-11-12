@@ -1,4 +1,7 @@
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
+
 export class Usuario {
+  roles: RolNombreEnum[] = [];
   readonly usuarioId: number = 0;
   username: string = '';
   email: string | null = null;

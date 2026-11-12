@@ -59,7 +59,8 @@ export interface ProductFilters {
 
 export interface CreateProductInput {
   nombre: string
-  proveedorId?: number | null
+  proveedorId: number
+  categoriaIds: number[]
   cantidad: number
   precio: number
   descripcion?: string | null
@@ -71,7 +72,8 @@ export interface CreateProductInput {
 
 export interface UpdateProductInput {
   nombre?: string
-  proveedorId?: number | null
+  proveedorId?: number
+  categoriaIds?: number[]
   cantidad?: number
   precio?: number
   descripcion?: string | null

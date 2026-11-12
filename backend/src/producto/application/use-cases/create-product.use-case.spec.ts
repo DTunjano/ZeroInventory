@@ -34,19 +34,20 @@ describe('CreateProductUseCase', () => {
 
     const result = await useCase.ejecutar({
       proveedorId: 1,
+      categoriaIds: [1],
       nombre: 'Producto demo',
       cantidad: 8,
       precio: 1200,
     })
 
     expect(result.productoId).toBe(21)
-    expect(productoRepo.create).toHaveBeenCalledWith(expect.objectContaining({ cantidad: 8, precio: 1200 }))
+    expect(productoRepo.create).toHaveBeenCalledWith(expect.objectContaining({ cantidad: 8, precio: 1200 }), [1])
   })
 
   it('rejects duplicated product names', async () => {
     productoRepo.existsByNombre.mockResolvedValue(true)
     const useCase = new CreateProductUseCase(productoRepo as never, proveedorRepo as never)
 
-    await expect(useCase.ejecutar({ nombre: 'Duplicado', cantidad: 1, precio: 100 })).rejects.toBeInstanceOf(ConflictException)
+    await expect(useCase.ejecutar({ proveedorId: 1, categoriaIds: [1], nombre: 'Duplicado', cantidad: 1, precio: 100 })).rejects.toBeInstanceOf(ConflictException)
   })
 })

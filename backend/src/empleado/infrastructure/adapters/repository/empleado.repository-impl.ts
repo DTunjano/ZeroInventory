@@ -13,6 +13,7 @@ import {
 } from '../../../domain/port/out/empleado.repository.port';
 import { EmpleadoEntityORM } from '../persistence/empleado.orm-entity';
 import { EmpleadoMapper } from '../persistence/empleado.mapper';
+import { lockAccess, preserveAdmin } from '../../../../usuario/infrastructure/persistence/access-policy';
 
 @Injectable()
 export class EmpleadoRepositoryImpl implements EmpleadoRepositoryPort {
@@ -136,11 +137,18 @@ export class EmpleadoRepositoryImpl implements EmpleadoRepositoryPort {
     empleadoId: number,
     estado: string,
   ): Promise<Empleado> {
-    const empleado = await this.repo.findOneOrFail({
-      where: { empleadoId },
+    return this.repo.manager.transaction(async (manager) => {
+      const previousCount = await lockAccess(manager);
+      const empleado = await manager.findOneOrFail(EmpleadoEntityORM, {
+        where: { empleadoId }, lock: { mode: 'pessimistic_write' },
+      });
+      empleado.estado = estado;
+      const saved = await manager.save(EmpleadoEntityORM, empleado);
+      if (empleado.usuarioId != null) {
+        await manager.update(UsuarioEntityORM, empleado.usuarioId, { isActive: estado === 'ACTIVO' });
+      }
+      await preserveAdmin(manager, previousCount);
+      return EmpleadoMapper.toDomain(saved);
     });
-    empleado.estado = estado;
-    const saved = await this.repo.save(empleado);
-    return EmpleadoMapper.toDomain(saved);
   }
 }

@@ -2,7 +2,7 @@
 
 Aplicación web para administrar productos e inventario y permitir a clientes comprar desde un catálogo. Incluye tienda, carrito, direcciones, pedidos, pagos registrados, proveedores, empleados, usuarios, panel administrativo y contenido multimedia.
 
-El trabajo siguiente se organiza por etapas en [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md). Está activa la revisión funcional de la etapa 1; su evidencia y pendientes están en [docs/revision-funcional-mvp.md](docs/revision-funcional-mvp.md). Las vistas de usuarios y reportes avanzados todavía son provisionales. El alcance completo del MVP requiere aceptación del responsable del proyecto.
+El trabajo siguiente se organiza por etapas en [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md). Está activa la revisión funcional de la etapa 1; su evidencia y pendientes están en [docs/revision-funcional-mvp.md](docs/revision-funcional-mvp.md). Usuarios y roles ya tienen gestión funcional; los reportes avanzados están aplazados por decisión del usuario. El alcance completo del MVP requiere aceptación del responsable del proyecto.
 
 ## Requisitos
 
@@ -155,9 +155,17 @@ La arquitectura sigue principios de Clean Architecture: los casos de uso coordin
 
 Los directorios históricos `kardex`, `ajuste-inventario` y `compra-detalle` se conservaron al integrar `dev`. Sus entidades ORM son canónicas y se registran una sola vez. Sus módulos CRUD históricos **no** se importan en `AppModule`: los movimientos y ajustes activos pasan por `InventoryModule` para respetar las transacciones. No habilites esos CRUD sin adaptar sus escrituras y permisos.
 
+## Usuarios y reglas del catálogo del MVP
+
+La pantalla **Usuarios y roles** permite a ADMIN crear/editar cuentas, asignar los tres roles existentes, buscar, filtrar y desactivar/reactivar. Las respuestas no contienen contraseñas ni hashes. Los cambios de roles y de cuenta activa se comprueban en cada solicitud; no se permite dejar el sistema sin administrador activo. Crear un perfil CUSTOMER nuevo necesita documento. La ficha laboral se administra por separado en Empleados.
+
+Las altas de producto exigen proveedor, al menos una categoría y precio mayor que cero; **la imagen es opcional**. Producto, categorías, SKU y movimiento inicial se guardan atómicamente. La edición conserva campos omitidos y los datos históricos existentes. Si falla una carga de imagen posterior, se informa que el producto sí quedó guardado para evitar creaciones duplicadas.
+
+Los contratos HTTP, transacciones y límites están en [docs/usuarios-y-productos.md](docs/usuarios-y-productos.md). No se añadieron servicios de arranque ni migraciones; se conservan las dos consolas habituales. Esta entrega no integra pasarela de pagos.
+
 ## Roles y autenticación
 
-- `ADMIN`: gestión administrativa, usuarios, empleados, reportes y contenido.
+- `ADMIN`: gestión administrativa, usuarios y roles, empleados y contenido; reportes avanzados aplazados.
 - `EMPLOYEE`: productos, proveedores, inventario y sus ajustes; las rutas con roles explícitos pueden restringir más.
 - `CUSTOMER`: carrito, pedidos y direcciones propios, configuración de su cuenta y catálogo.
 - Público: login, registro, renovación de sesión, logout y lecturas de catálogo/medios marcadas con `@Public()`.

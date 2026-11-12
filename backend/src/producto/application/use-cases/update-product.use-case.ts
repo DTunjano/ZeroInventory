@@ -18,7 +18,8 @@ export class UpdateProductUseCase {
     productoId: number,
     usuarioId: number,
     cambios: {
-      proveedorId?: number | null;
+      proveedorId?: number;
+      categoriaIds?: number[];
       nombre?: string;
       sku?: string;
       cantidad?: number;
@@ -73,6 +74,6 @@ export class UpdateProductUseCase {
 
     return this.productoRepo.update(producto, {
       usuarioId, expectedStock: actual.cantidad, changeStock: cambios.cantidad !== undefined,
-    });
+    }, cambios.categoriaIds);
   }
 }

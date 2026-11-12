@@ -76,11 +76,7 @@ export class UsuarioRolController {
     @Param('id', ParseIntPipe) usuarioRolId: number,
     @Body() dto: UpdateUsuarioRolDTO,
   ): Promise<UsuarioRol> {
-    try {
-      return await this.updateUsuarioRolUseCase.ejecutar(usuarioRolId, dto);
-    } catch {
-      throw new NotFoundException('Asignación usuario-rol no encontrada');
-    }
+    return this.updateUsuarioRolUseCase.ejecutar(usuarioRolId, dto);
   }
   @Delete(':id')
   @DeleteUsuarioRolSwagger()

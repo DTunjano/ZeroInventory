@@ -4,13 +4,11 @@ import {
 } from '@nestjs/common';
 import { EmpleadoConRoles, EmpleadoEstadoEnum } from '../../domain/entity/empleado.entity';
 import { EmpleadoRepositoryPort } from '../../domain/port/out/empleado.repository.port';
-import { UsuarioRepository } from '../../../usuario/domain/repository/usuario.repository';
 
 @Injectable()
 export class ActivarEmpleadoUseCase {
   constructor(
     private readonly empleadoRepo: EmpleadoRepositoryPort,
-    private readonly usuarioRepo: UsuarioRepository,
   ) {}
 
   async ejecutar(empleadoId: number): Promise<EmpleadoConRoles> {
@@ -23,14 +21,6 @@ export class ActivarEmpleadoUseCase {
       empleadoId,
       EmpleadoEstadoEnum.ACTIVO,
     );
-
-    if (empleado.usuarioId) {
-      const usuario = await this.usuarioRepo.getById(empleado.usuarioId);
-      if (usuario) {
-        usuario.isActive = true;
-        await this.usuarioRepo.update(usuario);
-      }
-    }
 
     return {
       ...empleadoActualizado,

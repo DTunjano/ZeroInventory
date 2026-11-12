@@ -32,6 +32,13 @@ import { RolesGuard } from '../../../auth/adapters/guards/roles.guard'
 import { Roles } from '../../../auth/adapters/decorators/roles.decorator'
 import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity'
 
+type PublicUsuario = Omit<Usuario, 'password'>;
+function publicUsuario(usuario: Usuario): PublicUsuario {
+  const { password: _password, ...result } = usuario;
+  void _password;
+  return result;
+}
+
 @ApiTags('Usuarios')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('usuarios')
@@ -47,36 +54,37 @@ export class UsuarioController {
 
   @Post()
   @CreateUsuarioSwagger()
-  async create(@Body() body: CreateUsuarioDTO): Promise<Usuario> {
+  async create(@Body() body: CreateUsuarioDTO): Promise<PublicUsuario> {
     const usuario = await this.createUsuarioUseCase.ejecutar(body);
     if (!usuario) {
       throw new NotFoundException('No se pudo crear el usuario');
     }
-    return usuario;
+    return publicUsuario(usuario);
   }
 
   @Get()
   @GetAllUsuariosSwagger()
   async getAll(@Query() filters?: FiltersUsuarioDTO): Promise<{
-    data: Usuario[];
+    data: PublicUsuario[];
     total: number;
     page: number;
     limit: number;
     totalPages: number;
   }> {
-    return this.getAllUsuariosUseCase.ejecutar(filters);
+    const result = await this.getAllUsuariosUseCase.ejecutar(filters);
+    return { ...result, data: result.data.map(publicUsuario) };
   }
 
   @Get(':id')
   @GetUsuarioByIdSwagger()
   async getById(
     @Param('id', ParseIntPipe) usuarioId: number,
-  ): Promise<Usuario> {
+  ): Promise<PublicUsuario> {
     const usuario = await this.getUsuarioByIdUseCase.ejecutar(usuarioId);
     if (!usuario) {
       throw new NotFoundException('Usuario no encontrado');
     }
-    return usuario;
+    return publicUsuario(usuario);
   }
 
   @Put(':id')
@@ -84,12 +92,12 @@ export class UsuarioController {
   async update(
     @Param('id', ParseIntPipe) usuarioId: number,
     @Body() body: UpdateUsuarioDTO,
-  ): Promise<Usuario> {
+  ): Promise<PublicUsuario> {
     const usuario = await this.updateUsuarioUseCase.ejecutar(usuarioId, body);
     if (!usuario) {
       throw new NotFoundException('Usuario no encontrado');
     }
-    return usuario;
+    return publicUsuario(usuario);
   }
 
   @Delete(':id')

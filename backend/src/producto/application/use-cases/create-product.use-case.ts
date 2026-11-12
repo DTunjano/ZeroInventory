@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { ProductoRepository } from '../../domain/repository/producto.repository';
 import { Producto } from '../../domain/entity/producto.entity';
 import { ProveedorRepository } from '../../../proveedor/domain/repository/proveedor.repository';
@@ -11,7 +11,8 @@ export class CreateProductUseCase {
   ) {}
 
   async ejecutar(data: {
-    proveedorId?: number | null;
+    proveedorId: number;
+    categoriaIds: number[];
     nombre: string;
     cantidad: number;
     precio: number;
@@ -21,6 +22,11 @@ export class CreateProductUseCase {
     peso?: string | null;
     medida?: string | null;
   }): Promise<Producto> {
+    if (!Number.isInteger(data.proveedorId) || data.proveedorId <= 0 ||
+        !Number.isFinite(data.precio) || data.precio < 0.01 || !data.categoriaIds?.length ||
+        data.categoriaIds.some((id) => !Number.isInteger(id) || id <= 0)) {
+      throw new BadRequestException('Proveedor, categorías y precio mayor que cero son obligatorios');
+    }
     if (data.proveedorId != null) {
       const proveedor = await this.proveedorRepo.getById(data.proveedorId);
       if (!proveedor) {
@@ -52,6 +58,6 @@ export class CreateProductUseCase {
       new Date(),
     );
 
-    return this.productoRepo.create(producto);
+    return this.productoRepo.create(producto, data.categoriaIds);
   }
 }

@@ -1,8 +1,23 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MinLength } from 'class-validator';
+import { ArrayMinSize, ArrayUnique, IsArray, IsBoolean, IsEnum, IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 
 export class UpdateUsuarioDTO {
+  @ApiPropertyOptional({ enum: RolNombreEnum, isArray: true })
+  @ValidateIf((_object, value: unknown) => value !== undefined)
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayUnique()
+  @IsEnum(RolNombreEnum, { each: true })
+  roles?: RolNombreEnum[];
+
+  @ApiPropertyOptional({ description: 'Solo para crear un perfil CUSTOMER que todavía no existe' })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  documento?: string;
   @ApiPropertyOptional({
     description: 'Nombre de usuario',
     example: 'john_doe',
@@ -10,7 +25,8 @@ export class UpdateUsuarioDTO {
   })
   @IsOptional()
   @IsNotEmpty({ message: 'El nombre de usuario es obligatorio' })
-  @Transform(({ value }: { value: string }) => value?.trim())
+  @IsString()
+  @Transform(({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() : value)
   @MinLength(3, {
     message: 'El nombre de usuario debe tener mínimo 3 caracteres',
   })
@@ -24,6 +40,7 @@ export class UpdateUsuarioDTO {
   @IsOptional()
   @IsNotEmpty({ message: 'La contraseña es obligatoria' })
   @MinLength(6, { message: 'La contraseña debe tener mínimo 6 caracteres' })
+  @MaxLength(72)
   password?: string;
 
   @ApiPropertyOptional({
@@ -32,7 +49,8 @@ export class UpdateUsuarioDTO {
     type: String,
   })
   @IsOptional()
-  @Transform(({ value }: { value: string }) => value?.trim() || null)
+  @IsString()
+  @Transform(({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() || null : value)
   primerNombre?: string | null;
 
   @ApiPropertyOptional({
@@ -41,7 +59,8 @@ export class UpdateUsuarioDTO {
     type: String,
   })
   @IsOptional()
-  @Transform(({ value }: { value: string }) => value?.trim() || null)
+  @IsString()
+  @Transform(({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() || null : value)
   segundoNombre?: string | null;
 
   @ApiPropertyOptional({
@@ -50,7 +69,8 @@ export class UpdateUsuarioDTO {
     type: String,
   })
   @IsOptional()
-  @Transform(({ value }: { value: string }) => value?.trim() || null)
+  @IsString()
+  @Transform(({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() || null : value)
   primerApellido?: string | null;
 
   @ApiPropertyOptional({
@@ -59,7 +79,8 @@ export class UpdateUsuarioDTO {
     type: String,
   })
   @IsOptional()
-  @Transform(({ value }: { value: string }) => value?.trim() || null)
+  @IsString()
+  @Transform(({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() || null : value)
   segundoApellido?: string | null;
 
   @ApiPropertyOptional({
@@ -69,7 +90,7 @@ export class UpdateUsuarioDTO {
   })
   @IsOptional()
   @IsEmail({}, { message: 'El correo electrónico no es válido' })
-  @Transform(({ value }: { value: string }) => value?.trim().toLowerCase() || null)
+  @Transform(({ value }: { value: unknown }) => typeof value === 'string' ? value.trim().toLowerCase() || null : value)
   email?: string | null;
 
   @ApiPropertyOptional({
@@ -82,7 +103,7 @@ export class UpdateUsuarioDTO {
   @Matches(/^[0-9+()\-\s]{7,20}$/, {
     message: 'El teléfono no tiene un formato válido',
   })
-  @Transform(({ value }: { value: string }) => value?.trim() || null)
+  @Transform(({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() || null : value)
   telefono?: string | null;
 
   @ApiPropertyOptional({
@@ -90,6 +111,7 @@ export class UpdateUsuarioDTO {
     example: true,
     type: Boolean,
   })
-  @IsOptional()
+  @ValidateIf((_object, value: unknown) => value !== undefined)
+  @IsBoolean()
   isActive?: boolean;
 }

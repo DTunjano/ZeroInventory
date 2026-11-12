@@ -19,6 +19,8 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
   let db: DataSource;
   let adminToken: string;
   let adminId: number;
+  let supplierId: number;
+  let categoryId: number;
   let sequence = 0;
   const password = 'Integration123!';
   const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
@@ -41,6 +43,10 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
     await db.query(`INSERT INTO usuario_rol(usuario_id,rol_id) SELECT $1,rol_id FROM rol WHERE nombre='ADMIN'`, [adminId]);
     const login = await api().post('/auth/login').send({ username: 'integration_admin', password }).expect(201);
     adminToken = login.body.accessToken;
+    const [supplier] = await db.query(`INSERT INTO proveedor(nombre,is_active) VALUES('Proveedor integración',true) RETURNING proveedor_id`);
+    supplierId = supplier.proveedor_id;
+    const [category] = await db.query(`INSERT INTO categoria(nombre,created_at,updated_at) VALUES('Categoría integración',NOW(),NOW()) RETURNING categoria_id`);
+    categoryId = category.categoria_id;
   });
   afterAll(async () => { if (app) await app.close(); });
 
@@ -53,7 +59,7 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
     return { token, userId: registered.body.user.usuarioId as number, clientId: client.cliente_id as number, addressId: address.body.direccionId as number };
   }
   async function product(stock = 10, price = 100) {
-    const result = await api().post('/productos').set(auth(adminToken)).send({ nombre: `Producto prueba ${++sequence}`, cantidad: stock, precio: price }).expect(201);
+    const result = await api().post('/productos').set(auth(adminToken)).send({ nombre: `Producto prueba ${++sequence}`, cantidad: stock, precio: price, proveedorId: supplierId, categoriaIds: [categoryId] }).expect(201);
     return result.body as { productoId: number; cantidad: number; sku: string };
   }
   async function balance(id: number) {
@@ -88,6 +94,111 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
     for (const payload of [{ cantidad: 1.5, precio: 10 }, { cantidad: 1, precio: -1 }, { cantidad: 1, precio: 10, extra: true }]) {
       await api().post('/productos').set(auth(adminToken)).send({ nombre: 'Inválido', ...payload }).expect(400);
     }
+  });
+  it('requires supplier, categories and positive price while allowing no image', async () => {
+    const valid = { nombre: `Sin imagen ${++sequence}`, cantidad: 3, precio: 1, proveedorId: supplierId, categoriaIds: [categoryId] };
+    for (const invalid of [{ proveedorId: undefined }, { proveedorId: null }, { categoriaIds: undefined }, { categoriaIds: [] }, { categoriaIds: [categoryId, categoryId] }, { categoriaIds: null }, { precio: 0 }]) {
+      await api().post('/productos').set(auth(adminToken)).send({ ...valid, ...invalid }).expect(400);
+    }
+    const response = await api().post('/productos').set(auth(adminToken)).send(valid).expect(201);
+    const [linked] = await db.query('SELECT COUNT(*)::int AS count FROM categoria_producto WHERE producto_id=$1', [response.body.productoId]);
+    const [images] = await db.query('SELECT COUNT(*)::int AS count FROM producto_imagen WHERE producto_id=$1', [response.body.productoId]);
+    expect(linked.count).toBe(1); expect(images.count).toBe(0);
+    expect(await balance(response.body.productoId as number)).toBe(3);
+    await api().put(`/productos/${response.body.productoId}`).set(auth(adminToken)).send({ precio: 0 }).expect(400);
+    await api().put(`/productos/${response.body.productoId}`).set(auth(adminToken)).send({ proveedorId: null }).expect(400);
+  });
+  it('rolls back product, stock and audit when categories are invalid', async () => {
+    const nombre = `Categoría inválida ${++sequence}`;
+    await api().post('/productos').set(auth(adminToken)).send({ nombre, cantidad: 9, precio: 10, proveedorId: supplierId, categoriaIds: [2147483647] }).expect(400);
+    expect((await db.query('SELECT 1 FROM producto WHERE nombre=$1', [nombre])).length).toBe(0);
+    const p = await product(5);
+    await api().put(`/productos/${p.productoId}`).set(auth(adminToken)).send({ cantidad: 2, categoriaIds: [2147483647] }).expect(400);
+    expect(await balance(p.productoId)).toBe(5);
+    expect((await db.query('SELECT 1 FROM ajuste_inventario WHERE producto_id=$1', [p.productoId])).length).toBe(0);
+    expect((await db.query('SELECT categoria_id FROM categoria_producto WHERE producto_id=$1', [p.productoId]))[0].categoria_id).toBe(categoryId);
+  });
+  it('protects the last administrator through account and legacy role endpoints', async () => {
+    await api().put(`/usuarios/${adminId}`).set(auth(adminToken)).send({ roles: ['EMPLOYEE'] }).expect(409);
+    await api().put(`/usuarios/${adminId}`).set(auth(adminToken)).send({ isActive: false }).expect(409);
+    await api().delete(`/usuarios/${adminId}`).set(auth(adminToken)).expect(409);
+    await api().put(`/usuarios/${adminId}`).set(auth(adminToken)).send({ isActive: 'false' }).expect(400);
+    const [assignment] = await db.query(`SELECT ur.usuario_rol_id,r.rol_id FROM usuario_rol ur CROSS JOIN rol r WHERE ur.usuario_id=$1 AND r.nombre='EMPLOYEE'`, [adminId]);
+    await api().put(`/usuario-roles/${assignment.usuario_rol_id}`).set(auth(adminToken)).send({ rolId: assignment.rol_id }).expect(409);
+    await api().delete(`/usuario-roles/${assignment.usuario_rol_id}`).set(auth(adminToken)).expect(409);
+    await api().get('/usuarios').set(auth(adminToken)).expect(200);
+  });
+  it('creates, edits and filters accounts without exposing passwords and applies access changes immediately', async () => {
+    const username = `managed_${++sequence}`;
+    const created = await api().post('/usuarios').set(auth(adminToken)).send({ username, password, roles: ['EMPLOYEE'], email: 'managed@example.test' }).expect(201);
+    const id = created.body.usuarioId;
+    expect(created.body.password).toBeUndefined(); expect(created.body.roles).toEqual(['EMPLOYEE']);
+    let login = await api().post('/auth/login').send({ username, password }).expect(201);
+    const oldToken = login.body.accessToken as string;
+    await api().get('/usuarios').set(auth(oldToken)).expect(403);
+    await api().get('/inventory/adjustments').set(auth(oldToken)).expect(200);
+    const changed = await api().put(`/usuarios/${id}`).set(auth(adminToken)).send({ password: 'ChangedIntegration123!', email: null, primerNombre: 'Editado', roles: ['CUSTOMER'], documento: `MANAGED-${sequence}` }).expect(200);
+    expect(changed.body.password).toBeUndefined(); expect(changed.body.email).toBeNull();
+    const [stored] = await db.query('SELECT password FROM usuario WHERE usuario_id=$1', [id]);
+    expect(await bcrypt.compare('ChangedIntegration123!', stored.password as string)).toBe(true);
+    await api().post('/auth/login').send({ username, password }).expect(401);
+    login = await api().post('/auth/login').send({ username, password: 'ChangedIntegration123!' }).expect(201);
+    await api().get('/inventory/adjustments').set(auth(oldToken)).expect(403);
+    await api().get('/carritos/me').set(auth(login.body.accessToken as string)).expect(200);
+    await api().put(`/usuarios/${id}`).set(auth(adminToken)).send({ isActive: false }).expect(200);
+    await api().get('/carritos/me').set(auth(login.body.accessToken as string)).expect(401);
+    const filtered = await api().get('/usuarios').query({ username, isActive: false }).set(auth(adminToken)).expect(200);
+    expect(filtered.body.data.map((user: { usuarioId: number }) => user.usuarioId)).toEqual([id]);
+    expect(filtered.body.data[0].password).toBeUndefined();
+    await api().get('/usuarios').query({ username, isActive: true }).set(auth(adminToken)).expect(200).expect((result) => expect(result.body.total).toBe(0));
+    await api().put(`/usuarios/${id}`).set(auth(adminToken)).send({ isActive: true }).expect(200);
+    await api().get(`/usuarios/${id}`).set(auth(adminToken)).expect(200).expect((result) => expect(result.body.password).toBeUndefined());
+  });
+  it('rejects invalid account access atomically and denies customer administration', async () => {
+    const username = `invalid_customer_${++sequence}`;
+    await api().post('/usuarios').set(auth(adminToken)).send({ username, password, roles: ['CUSTOMER'] }).expect(400);
+    expect((await db.query('SELECT 1 FROM usuario WHERE username=$1', [username])).length).toBe(0);
+    for (const roles of [[], ['OWNER'], null]) {
+      await api().post('/usuarios').set(auth(adminToken)).send({ username, password, roles }).expect(400);
+    }
+    await api().post('/usuarios').set(auth(adminToken)).send({ username: 123, password, roles: ['ADMIN'] }).expect(400);
+    await api().get('/usuarios').query({ page: 1.5 }).set(auth(adminToken)).expect(400);
+    const c = await customer();
+    for (const path of ['/usuarios', '/roles', '/usuario-roles']) await api().get(path).set(auth(c.token)).expect(403);
+  });
+  it('serializes concurrent demotions so one active administrator always remains', async () => {
+    const accounts: { id: number; token: string }[] = [];
+    for (let index = 0; index < 2; index++) {
+      const username = `parallel_admin_${++sequence}`;
+      const created = await api().post('/usuarios').set(auth(adminToken)).send({ username, password, roles: ['ADMIN'] }).expect(201);
+      const login = await api().post('/auth/login').send({ username, password }).expect(201);
+      accounts.push({ id: created.body.usuarioId, token: login.body.accessToken });
+    }
+    try {
+      await api().put(`/usuarios/${adminId}`).set(auth(accounts[0].token)).send({ isActive: false }).expect(200);
+      const responses = await Promise.all(accounts.map((account) => api().put(`/usuarios/${account.id}`).set(auth(account.token)).send({ roles: ['EMPLOYEE'] })));
+      expect(responses.map((response) => response.status).sort()).toEqual([200, 409]);
+      const survivor = accounts[responses.findIndex((response) => response.status === 409)];
+      await api().put(`/usuarios/${adminId}`).set(auth(survivor.token)).send({ isActive: true }).expect(200);
+    } finally {
+      // Only the isolated test fixture; restores its primary actor even on assertion failure.
+      await db.query('UPDATE usuario SET is_active=true WHERE usuario_id=$1', [adminId]);
+      for (const account of accounts) await api().put(`/usuarios/${account.id}`).set(auth(adminToken)).send({ isActive: false }).expect(200);
+    }
+  });
+  it('changes employee and account state together and rolls back a forbidden administrator deactivation', async () => {
+    const [employee] = await db.query(`INSERT INTO empleado(nombre,email,estado,usuario_id) VALUES('Administrador de prueba','admin-employee@example.test','ACTIVO',$1) RETURNING empleado_id`, [adminId]);
+    for (const path of ['estado', 'desactivar']) {
+      await api().patch(`/empleados/${employee.empleado_id}/${path}`).set(auth(adminToken)).expect(409);
+      expect((await db.query('SELECT estado FROM empleado WHERE empleado_id=$1', [employee.empleado_id]))[0].estado).toBe('ACTIVO');
+      expect((await db.query('SELECT is_active FROM usuario WHERE usuario_id=$1', [adminId]))[0].is_active).toBe(true);
+    }
+    const created = await api().post('/usuarios').set(auth(adminToken)).send({ username: `employee_state_${++sequence}`, password, roles: ['EMPLOYEE'] }).expect(201);
+    const [regular] = await db.query(`INSERT INTO empleado(nombre,email,estado,usuario_id) VALUES('Empleado de prueba','state-employee@example.test','ACTIVO',$1) RETURNING empleado_id`, [created.body.usuarioId]);
+    await api().patch(`/empleados/${regular.empleado_id}/desactivar`).set(auth(adminToken)).expect(200);
+    expect((await db.query('SELECT is_active FROM usuario WHERE usuario_id=$1', [created.body.usuarioId]))[0].is_active).toBe(false);
+    await api().patch(`/empleados/${regular.empleado_id}/activar`).set(auth(adminToken)).expect(200);
+    expect((await db.query('SELECT is_active FROM usuario WHERE usuario_id=$1', [created.body.usuarioId]))[0].is_active).toBe(true);
   });
   it('creates product, permanent SKU and initial stock atomically', async () => {
     const p = await product(8);

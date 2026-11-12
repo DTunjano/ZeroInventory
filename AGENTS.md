@@ -39,7 +39,7 @@ El usuario pidió avanzar en orden por seis etapas. Solo está activa la **etapa
 
 La pasarela de pagos está aplazada explícitamente. Puede documentarse la posibilidad de simulación, pero no deben añadirse integraciones, SDKs, endpoints, webhooks, claves, migraciones ni métodos de pago de un proveedor hasta una autorización posterior específica.
 
-Registra en la matriz qué se probó desde la interfaz, qué solo tiene evidencia API y qué continúa pendiente. No presentes las pantallas provisionales de usuarios/reportes como funcionalidades terminadas ni declares la etapa cerrada con casos del alcance aún sin ejecutar.
+Registra en la matriz qué se probó desde la interfaz, qué solo tiene evidencia API y qué continúa pendiente. Usuarios/roles forman parte del MVP y ya tienen pantalla funcional; los reportes avanzados se aplazaron por decisión del usuario. No declares la etapa cerrada con casos del alcance aún sin ejecutar. Las reglas aprobadas están en `docs/usuarios-y-productos.md`.
 
 ## Arquitectura real
 
@@ -87,6 +87,10 @@ La configuración HTTP común está en `backend/config/http.config.ts`. Las prue
 - Usa `@Public()` solamente en lecturas públicas o endpoints de autenticación definidos. Nunca marques un controlador administrativo entero como público.
 - Declara los roles explícitamente en funcionalidades sensibles. Usuarios, roles y asignaciones requieren `ADMIN`; rutas propias de carrito, pedidos y direcciones requieren `CUSTOMER`.
 - Revisa autorización de propiedad además del rol. El cliente no puede leer, cambiar o borrar direcciones de otro cliente ni usar una dirección ajena al confirmar compra.
+- La estrategia JWT consulta cuenta activa y roles actuales por solicitud; conserva esa comprobación para que los cambios de acceso sean efectivos con tokens ya emitidos. No la confundas con revocación de sesiones individuales.
+- Las respuestas de usuarios excluyen `password`. En altas/ediciones administrativas, cifra contraseñas con bcrypt y conserva el hash cuando se omite el campo. Los DTOs Swagger de respuesta no heredan el campo de contraseña.
+- Cuenta, roles y perfil CUSTOMER nuevo se guardan en una transacción. Un perfil CUSTOMER nuevo necesita documento; no inventes uno ni reemplaces perfiles existentes. Los tipos de rol son fijos.
+- Cuentas, asignaciones históricas y cambios de estado de empleados comparten `pg_advisory_xact_lock(4971, 0)` y conservan al menos un ADMIN activo. No escribas esas operaciones con repositorios fuera de la transacción. Empleado/cuenta cambian de estado juntos desde las acciones de Empleados.
 - Usa el `usuarioId` autenticado para auditoría; no lo aceptes como identidad confiable del cuerpo.
 - JWT de acceso y renovación usan secretos distintos de al menos 32 caracteres. No vuelvas a introducir el nombre genérico `JWT_SECRET`.
 - El token de acceso está en memoria del frontend; la renovación usa cookie HttpOnly. No guardes tokens en localStorage.
@@ -110,7 +114,7 @@ Si una operación modifica varios registros que deben coincidir, usa una transac
 2. Debe coincidir con la suma de `ENTRADA` menos `SALIDA` del Kardex.
 3. `ajuste_inventario` es auditoría; su cantidad no se vuelve a sumar aparte al saldo.
 4. Las cantidades de movimientos y de líneas de carrito/pedido son positivas.
-5. Una creación de producto con stock guarda producto, SKU definitivo y movimiento inicial atómicamente.
+5. Una creación de producto con stock guarda producto, SKU definitivo, categorías y movimiento inicial atómicamente.
 6. Un cambio manual guarda stock, auditoría y entrada/salida de referencia `AJUSTE` en una transacción. Las disminuciones requieren una salida real.
 7. La escritura bloquea el producto `FOR UPDATE` y comprueba el saldo esperado antes de reemplazarlo.
 8. Un cambio de metadatos sin cantidad debe preservar el stock vigente bajo el bloqueo; no sobrescribirlo con una lectura anterior.
@@ -118,6 +122,8 @@ Si una operación modifica varios registros que deben coincidir, usa una transac
 10. No edites ni borres movimientos históricos para cuadrar saldos. Crea un movimiento compensatorio con motivo y referencia verificables.
 
 La implementación compartida de ajustes está en `inventory/infrastructure/stock-transaction.ts`; los repositorios de producto e inventario la usan. Si introduces otra vía de modificar stock, aplica las mismas garantías o utiliza esos componentes.
+
+Las altas de producto requieren proveedor, al menos una categoría y precio mayor que cero; la imagen es opcional. En edición, categorías se reemplazan dentro de la misma transacción que el producto. No vuelvas al flujo de crear primero y asignar categorías después. Preserva registros históricos sin esos datos; no fuerces cambios de datos para permitir desactivarlos. Las mutaciones de estado envían únicamente `isActive` para no sobrescribir cantidades concurrentes. Si falla una imagen opcional después de guardar el producto, informa ese resultado parcial y evita inducir una segunda creación.
 
 `TipoMovimientoEnum.AJUSTE` existe para compatibilidad histórica y documentos de auditoría. Los nuevos movimientos con efecto en el saldo usan `ENTRADA` o `SALIDA`, con `TipoReferenciaEnum.AJUSTE` cuando corresponda.
 

@@ -4,7 +4,7 @@ import {
   Building,
   Truck,
   Briefcase,
-  BarChart3,
+  Users,
   House,
   LayoutGrid,
   Package,
@@ -48,7 +48,7 @@ type RoleKey = 'ADMIN' | 'EMPLOYEE' | 'CUSTOMER'
 const adminOnlyNav: AppLayoutNavItem[] = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutGrid },
   { to: '/admin/employees', label: 'Empleados', icon: Briefcase },
-  { to: '/admin/reports', label: 'Reportes', icon: BarChart3 },
+  { to: '/admin/users', label: 'Usuarios y roles', icon: Users },
   { to: '/admin/media', label: 'Contenido', icon: Film },
 ]
 
