@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   AlertCircle,
@@ -74,11 +74,11 @@ function getStatusLabel(estado: Order['estado']): string {
   }
 }
 
-function getPaymentLabel(metodoPago: Order['pago']['metodoPago']): string {
+function getPaymentLabel(metodoPago: NonNullable<Order['pago']>['metodoPago']): string {
   return metodoPago === 'EFECTIVO' ? 'Contra entrega' : 'Transferencia'
 }
 
-function getPaymentBadgeVariant(estado: Order['pago']['estado']): 'default' | 'secondary' | 'destructive' {
+function getPaymentBadgeVariant(estado: NonNullable<Order['pago']>['estado']): 'default' | 'secondary' | 'destructive' {
   switch (estado) {
     case 'APROBADO':
       return 'default'
@@ -119,7 +119,6 @@ function OrderDetailCard(props: { order: Order }) {
 
   const itemCount = order.detalles?.length ?? 0
   const paymentMethod = order.pago ? getPaymentLabel(order.pago.metodoPago) : 'Sin pago'
-  const paymentStatus = order.pago ? order.pago.estado : 'PENDIENTE'
 
   return (
     <Card className="group overflow-hidden border-border/70 bg-card/95 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-950/10">
@@ -307,15 +306,15 @@ export function MyOrdersPage() {
     queryKey: [...ordersQueryKey, statusFilter, dateFrom ?? '', dateTo ?? '', sortBy],
     queryFn: () =>
       getMyOrders({
-        estado: statusFilter === 'ALL' ? undefined : statusFilter,
-        dateFrom: dateFrom ?? undefined,
-        dateTo: dateTo ?? undefined,
+        ...(statusFilter !== 'ALL' ? { estado: statusFilter } : {}),
+        ...(dateFrom ? { dateFrom } : {}),
+        ...(dateTo ? { dateTo } : {}),
         sortBy,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
 
-  const orders = ordersQuery.data ?? []
+  const orders = useMemo(() => ordersQuery.data ?? [], [ordersQuery.data])
   const hasOrders = orders.length > 0
 
   const summary = useMemo(() => {

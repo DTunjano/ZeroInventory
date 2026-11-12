@@ -1,5 +1,5 @@
-import { TipoMovimientoEnum, TipoReferenciaEnum } from '../../entities/kardex.orm-entity'
-import { TipoCambioEnum } from '../../entities/ajuste-inventario.orm-entity'
+import { TipoMovimientoEnum, TipoReferenciaEnum } from '../../kardex/infrastructure/persistence/kardex.orm-entity'
+import { TipoCambioEnum } from '../../ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity'
 
 // Re-exportar con alias para consistency
 export type TipoMovimientoKardex = TipoMovimientoEnum

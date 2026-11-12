@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { DataSource, Repository } from 'typeorm'
-import { AjusteInventarioEntityORM, TipoCambioEnum } from '../../../entities/ajuste-inventario.orm-entity'
+import { AjusteInventarioEntityORM } from '../../../ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity'
 import type { RegisterStockAdjustmentData, StockAdjustment } from '../../domain/inventory.types'
-import { TipoMovimientoEnum } from '../../../entities/kardex.orm-entity'
 import type { IStockAdjustmentRepository } from '../../domain/stock-adjustment.repository'
+import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity'
+import { recordStockAdjustment } from '../stock-transaction'
 
 /**
  * Implementación del repositorio de ajustes de inventario
@@ -18,22 +19,13 @@ export class StockAdjustmentRepository implements IStockAdjustmentRepository {
   }
 
   async registerAdjustment(data: RegisterStockAdjustmentData): Promise<StockAdjustment> {
-    // Calcular tipo de cambio
-    const diferencia = data.stockNuevo - data.stockAnterior
-    const tipoCambio = diferencia > 0 ? TipoCambioEnum.AUMENTO : TipoCambioEnum.REDUCCION
-
-    const entity = this.repository.create({
-      productoId: data.productoId,
-      usuarioId: data.usuarioId,
-      tipoMovimiento: TipoMovimientoEnum.AJUSTE,
-      cantidad: data.cantidad,
-      stockAnterior: data.stockAnterior,
-      stockNuevo: data.stockNuevo,
-      tipoCambio,
-      motivo: data.motivo,
-    } as Partial<AjusteInventarioEntityORM>) as AjusteInventarioEntityORM
-
-    const saved = await this.repository.save(entity as AjusteInventarioEntityORM)
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const product = await manager.findOne(ProductoEntityORM, {
+        where: { productoId: data.productoId }, lock: { mode: 'pessimistic_write' },
+      })
+      if (!product) throw new NotFoundException('Producto no encontrado')
+      return recordStockAdjustment(manager, product, data.usuarioId, data.stockNuevo, data.stockAnterior, data.motivo)
+    })
 
     return {
       ajusteInventarioId: saved.ajusteInventarioId,

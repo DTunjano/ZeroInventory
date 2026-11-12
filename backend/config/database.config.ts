@@ -1,14 +1,14 @@
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { AjusteInventarioEntityORM } from '../src/entities/ajuste-inventario.orm-entity';
+import { AjusteInventarioEntityORM } from '../src/ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity';
 import { CarritoDetalleEntityORM } from '../src/carrito-detalle/infrastructure/persistence/carrito-detalle.orm-entity';
 import { CarritoEntityORM } from '../src/carrito/infrastructure/persistence/carrito.orm-entity';
 import { CategoriaProductoEntityORM } from '../src/categoria-producto/infrastructure/persistence/categoria-producto.orm-entity';
 import { CategoriaEntityORM } from '../src/categoria/infrastructure/persistence/categoria.orm-entity';
-import { CompraDetalleEntityORM } from '../src/entities/compra-detalle.orm-entity';
+import { CompraDetalleEntityORM } from '../src/compra-detalle/infrastructure/persistence/compra-detalle.orm-entity';
 import { CompraEntityORM } from '../src/compra/infrastructure/persistence/compra.orm-entity';
 import { DireccionEntityORM } from '../src/direccion/infrastructure/persistence/direccion.orm-entity';
-import { KardexEntityORM } from '../src/entities/kardex.orm-entity';
+import { KardexEntityORM } from '../src/kardex/infrastructure/persistence/kardex.orm-entity';
 import { PagoEntityORM } from '../src/pago/infrastructure/persistence/pago.orm-entity';
 import { PedidoDetalleEntityORM } from '../src/pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity';
 import { PedidoEntityORM } from '../src/pedido/infrastructure/persistence/pedido.orm-entity';
@@ -21,8 +21,10 @@ import { ProductoImagenEntityORM } from '../src/producto-imagen/infrastructure/p
 import { ClienteEntityORM } from '../src/cliente/infrastructure/persistence/cliente.orm-entity';
 import { MediaOrmEntity } from '../src/media/infrastructure/media.orm-entity';
 import { EmpleadoEntityORM } from '../src/empleado/infrastructure/adapters/persistence/empleado.orm-entity';
+import { InitialSchema1794441600000 } from '../src/migrations/1794441600000-InitialSchema';
+import { HardenInventory1794441601000 } from '../src/migrations/1794441601000-HardenInventory';
 
-export default registerAs('database', (): TypeOrmModuleOptions => {
+export function getDatabaseOptions(): TypeOrmModuleOptions {
   const databaseUrl = process.env.DATABASE_URL;
 
   const entities = [
@@ -49,28 +51,24 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     MediaOrmEntity,
   ];
 
-  // PRODUCCIÓN
-  if (process.env.NODE_ENV === 'production' && databaseUrl) {
-    return {
-      type: 'postgres',
-      url: databaseUrl,
-      entities,
-      synchronize: false,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    };
-  }
-
-  // DESARROLLO
   return {
     type: 'postgres',
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432'),
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+    ...(databaseUrl ? { url: databaseUrl } : {}),
+    ...(!databaseUrl ? {
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT || 5432),
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+    } : {}),
     entities,
-    synchronize: true,
+    synchronize: false,
+    migrations: [InitialSchema1794441600000, HardenInventory1794441601000],
+    migrationsRun: false,
+    ssl: process.env.DB_SSL === 'true' || (process.env.NODE_ENV === 'production' && process.env.DB_SSL !== 'false')
+      ? { rejectUnauthorized: true, ...(process.env.DB_SSL_CA ? { ca: process.env.DB_SSL_CA.replace(/\\n/g, '\n') } : {}) }
+      : false,
   };
-});
+}
+
+export default registerAs('database', getDatabaseOptions);

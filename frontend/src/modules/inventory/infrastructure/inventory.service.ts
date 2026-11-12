@@ -2,11 +2,7 @@ import type { PaginatedResult } from '@/modules/products/domain/product.models'
 import { listProducts } from '@/modules/products/application/products.use-cases'
 import { listCategories } from '@/modules/products/application/list-categories.use-case'
 import { listCategoryIdsByProductIds } from '@/modules/products/application/list-category-products-by-product.use-case'
-import type {
-  InventoryProduct,
-  InventoryMetrics,
-  InventorySummary,
-} from '../domain/inventory.models'
+import type { InventoryProduct, InventorySummary } from '../domain/inventory.models'
 import {
   calculateInventoryStatus,
   getInventoryMetrics,

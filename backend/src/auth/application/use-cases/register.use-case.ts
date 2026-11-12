@@ -12,6 +12,7 @@ import { UsuarioRolRepository } from '../../../usuario-rol/domain/repository/usu
 
 import { LoginUseCase } from './login.use-case'
 import { RegisterDTO } from '../dto/register.dto'
+import { AuthResponseDTO } from '../dto/auth-response.dto'
 
 @Injectable()
 export class RegisterUseCase {
@@ -23,7 +24,7 @@ export class RegisterUseCase {
     private readonly loginUseCase: LoginUseCase,
   ) {}
 
-  async ejecutar(input: RegisterDTO): Promise<{ result: any; refreshToken: string }> {
+  async ejecutar(input: RegisterDTO): Promise<{ result: AuthResponseDTO; refreshToken: string }> {
     const existingUsuario = await this.usuarioRepo.getByUsername(input.username)
     if (existingUsuario) {
       throw new ConflictException('Ya existe un usuario con ese nombre')

@@ -5,9 +5,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-
-import { ProductoEntityORM } from '../producto/infrastructure/persistence/producto.orm-entity';
-import { CompraEntityORM } from '../compra/infrastructure/persistence/compra.orm-entity';
+import { CompraEntityORM } from '../../../compra/infrastructure/persistence/compra.orm-entity';
+import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
 
 @Entity({ name: 'compra_detalle' })
 export class CompraDetalleEntityORM {
@@ -23,10 +22,10 @@ export class CompraDetalleEntityORM {
   @Column({ name: 'cantidad', type: 'int' })
   cantidad!: number;
 
-  @Column({ name: 'costo_unitario', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'costo_unitario', precision: 14, scale: 2, type: 'numeric' })
   costoUnitario!: number;
 
-  @Column({ name: 'subtotal', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'subtotal', precision: 14, scale: 2, type: 'numeric' })
   subtotal!: number;
 
   @ManyToOne(() => CompraEntityORM, (compra) => compra.detalles)

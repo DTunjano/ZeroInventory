@@ -12,7 +12,7 @@ export class CreateProductoImagenUseCase {
 
   async ejecutar(data: {
     productoId: number;
-    url: any;
+    url: Express.Multer.File;
   }): Promise<ProductoImagen> {
     const uploadResult = await this.cloudinaryService.uploadImage(data.url, {
       folder: 'zeroInventoryProducts',

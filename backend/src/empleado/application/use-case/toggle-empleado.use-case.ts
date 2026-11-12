@@ -42,6 +42,6 @@ export class ToggleEmpleadoUseCase {
       ...empleadoActualizado,
       roles: ['EMPLOYEE'],
       nombreCompleto: empleadoActualizado.nombre,
-    } as EmpleadoConRoles;
+    };
   }
 }

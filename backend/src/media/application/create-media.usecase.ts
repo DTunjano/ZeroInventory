@@ -25,7 +25,7 @@ export class CreateMediaUseCase {
     }
 
     // Subir a Cloudinary
-    let uploadResult
+    let uploadResult: { secure_url: string; public_id: string }
     try {
       uploadResult = await this.cloudinaryService.uploadVideo(file)
     } catch (error) {
@@ -52,7 +52,7 @@ export class CreateMediaUseCase {
     // Guardar en BD
     try {
       return await this.mediaRepository.save(media)
-    } catch (error) {
+    } catch {
       // Si falla la BD, eliminar del archivo de Cloudinary
       await this.cloudinaryService.deleteVideo(uploadResult.public_id)
       throw new InternalServerErrorException('Error al guardar el media en la base de datos')

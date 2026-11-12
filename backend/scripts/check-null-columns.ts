@@ -1,17 +1,6 @@
-import { DataSource } from 'typeorm';
+import dataSource from '../config/data-source';
 
-// Crear conexión directa sin usar el config
-const dataSource = new DataSource({
-  type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'dtunjano',
-  password: '1234',
-  database: 'zero_inventory',
-  entities: [],
-  synchronize: false,
-  logging: false,
-});
+
 
 async function checkNullColumns() {
   try {
@@ -22,14 +11,14 @@ async function checkNullColumns() {
     console.log('📋 Columnas con valores NULL en ajuste_inventario:');
     for (const col of columns) {
       try {
-        const result = await dataSource.query(
+        const result = await dataSource.query<{ count: string }[]>(
           `SELECT COUNT(*) as count FROM ajuste_inventario WHERE "${col}" IS NULL`
         );
         const count = result[0]?.count || 0;
-        if (parseInt(count) > 0) {
+        if (Number(count) > 0) {
           console.log(`   ❌ ${col}: ${count} registros NULL`);
         }
-      } catch (colError) {
+      } catch {
         console.log(`   ⚠️  ${col}: No existe o error al consultar`);
       }
     }
@@ -39,8 +28,8 @@ async function checkNullColumns() {
   } finally {
     try {
       await dataSource.destroy();
-    } catch {}
+    } catch { /* Connection was not initialized. */ }
   }
 }
 
-checkNullColumns();
+void checkNullColumns();

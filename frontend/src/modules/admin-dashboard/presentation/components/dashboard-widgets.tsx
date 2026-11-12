@@ -1,18 +1,5 @@
 import type { ComponentType, ReactNode } from 'react'
-import { ArrowDownRight, ArrowUpRight, BarChart3, Clock3 } from 'lucide-react'
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  CartesianGrid,
-  Tooltip,
-  XAxis,
-  YAxis,
-  LineChart,
-  Line,
-} from 'recharts'
+import { ArrowDownRight, ArrowUpRight, Clock3 } from 'lucide-react'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Badge } from '@/shared/ui/badge'
@@ -21,8 +8,6 @@ import { cn } from '@/shared/lib/utils'
 import { useSettingsStore } from '@/modules/settings/application/settings.store'
 
 import type {
-  AdminDashboardSummary,
-  InventoryMovementPoint,
   MonthlySeriesPoint,
   RecentActivityPoint,
   RecentOrderPoint,

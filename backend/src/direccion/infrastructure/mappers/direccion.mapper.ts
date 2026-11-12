@@ -18,7 +18,7 @@ export class DireccionMapper {
 
   static toPersistence(domain: Direccion): DireccionEntityORM {
     const entity = new DireccionEntityORM();
-    entity.direccionId = domain.direccionId;
+    if (domain.direccionId > 0) entity.direccionId = domain.direccionId;
     entity.clienteId = domain.clienteId;
     entity.proveedorId = domain.proveedorId;
     entity.lineaDir = domain.lineaDir;

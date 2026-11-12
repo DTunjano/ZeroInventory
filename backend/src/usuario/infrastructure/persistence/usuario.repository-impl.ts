@@ -97,7 +97,7 @@ export class UsuarioRepositoryImpl implements UsuarioRepository {
   }
 
   async delete(usuarioId: number): Promise<boolean> {
-    const result = await this.repo.delete({ usuarioId: usuarioId });
+    const result = await this.repo.update({ usuarioId }, { isActive: false });
     return (result.affected ?? 0) > 0;
   }
 }

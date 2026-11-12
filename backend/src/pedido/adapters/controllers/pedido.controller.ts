@@ -60,7 +60,7 @@ export class PedidoController {
   }
 
   @Post()
-  @Roles(RolNombreEnum.CUSTOMER)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @CreatePedidoSwagger()
   async create(@Body() body: CreatePedidoDTO): Promise<Pedido> {
     const pedido = await this.createPedidoUseCase.ejecutar(body);

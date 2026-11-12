@@ -25,7 +25,7 @@ export function ProductTableRow({
   product,
   imageUrl,
   categoryNames,
-  providerName,
+  providerName: _providerName,
   onEdit,
   onToggleActive,
   onSoftDelete,

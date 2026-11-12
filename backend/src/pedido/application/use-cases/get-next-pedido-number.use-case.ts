@@ -17,6 +17,6 @@ export class GetNextPedidoNumberUseCase {
       .where('pedido.clienteId = :clienteId', { clienteId })
       .getRawOne();
 
-    return (result?.max ?? 0) + 1;
+    return Number(result?.max ?? 0) + 1;
   }
 }

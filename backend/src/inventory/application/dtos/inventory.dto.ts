@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsInt, IsNumber, IsPositive, IsString, IsEnum } from 'class-validator'
-import { TipoMovimientoEnum, TipoReferenciaEnum } from '../../../entities/kardex.orm-entity'
+import { IsInt, IsNumber, IsPositive, IsString, IsEnum, Min, IsNotEmpty } from 'class-validator'
+import { TipoMovimientoEnum, TipoReferenciaEnum } from '../../../kardex/infrastructure/persistence/kardex.orm-entity'
 
 /**
  * DTO para crear un movimiento en Kárdex
@@ -87,6 +87,7 @@ export class RegisterStockAdjustmentDto {
     example: 100,
   })
   @IsInt()
+  @Min(0)
   stockAnterior!: number
 
   @ApiProperty({
@@ -94,6 +95,7 @@ export class RegisterStockAdjustmentDto {
     example: 150,
   })
   @IsInt()
+  @Min(0)
   stockNuevo!: number
 
   @ApiProperty({
@@ -101,5 +103,6 @@ export class RegisterStockAdjustmentDto {
     example: 'Recount de inventario físico',
   })
   @IsString()
+  @IsNotEmpty()
   motivo!: string
 }

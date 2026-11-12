@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm'
 
 import { GetInventoryAdjustmentsUseCase } from './get-inventory-adjustments.use-case'
-import { TipoCambioEnum } from '../../../entities/ajuste-inventario.orm-entity'
+import { TipoCambioEnum } from '../../../ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity'
 
 function createQueryBuilderMock() {
   const chain: Record<string, jest.Mock> = {
@@ -64,7 +64,7 @@ describe('GetInventoryAdjustmentsUseCase', () => {
     expect(result.total).toBe(1)
     expect(result.page).toBe(2)
     expect(result.limit).toBe(15)
-    expect(result.data[0]?.productName).toBe('Taza')
-    expect(result.data[0]?.userUsername).toBe('Admin')
+    expect(result.data[0]?.productoNombre).toBe('Taza')
+    expect(result.data[0]?.usuarioNombre).toBe('Admin')
   })
 })

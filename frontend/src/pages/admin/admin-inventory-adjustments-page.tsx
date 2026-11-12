@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { useInventoryAdjustments } from '@/modules/admin-dashboard/application/use-inventory-adjustments'
-import { formatCurrency, formatCompact, formatDateTime, DashboardSkeleton } from '@/modules/admin-dashboard/presentation/components/dashboard-widgets'
+import { formatCompact, formatDateTime, DashboardSkeleton } from '@/modules/admin-dashboard/presentation/components/dashboard-widgets'
 import { useSettingsStore } from '@/modules/settings/application/settings.store'
 import { Input } from '@/shared/ui/input'
 import { Badge } from '@/shared/ui/badge'
@@ -13,8 +13,10 @@ import { ModalBase } from '@/shared/ui/modals/modal-base'
 
 function AdjustmentsTable({
   rows,
+  onPreview,
 }: {
   rows: Awaited<ReturnType<typeof useInventoryAdjustments>>['data'] extends infer T ? T extends { data: infer D } ? D : never : never
+  onPreview: (content: string) => void
 }) {
   const theme = useSettingsStore((state) => state.theme)
   const isDark = theme === 'dark'
@@ -76,8 +78,7 @@ function AdjustmentsTable({
                         <button
                           className="text-xs text-blue-400 hover:underline"
                           onClick={() => {
-                            setPreviewContent(row.productoNombre)
-                            setPreviewOpen(true)
+                            onPreview(row.productoNombre)
                           }}
                         >
                           ver más
@@ -105,8 +106,7 @@ function AdjustmentsTable({
                       <button
                         className="text-xs text-blue-400 hover:underline"
                         onClick={() => {
-                          setPreviewContent(row.motivo)
-                          setPreviewOpen(true)
+                          onPreview(row.motivo)
                         }}
                       >
                         ver más
@@ -331,7 +331,7 @@ export function AdminInventoryAdjustmentsPage() {
 
       {/* Tabla */}
       <section>
-        <AdjustmentsTable rows={data.data} />
+        <AdjustmentsTable rows={data.data} onPreview={(content) => { setPreviewContent(content); setPreviewOpen(true) }} />
       </section>
 
       {/* Paginación elegante integrada */}

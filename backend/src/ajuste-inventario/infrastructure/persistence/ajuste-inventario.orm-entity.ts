@@ -6,19 +6,15 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UsuarioEntityORM } from '../usuario/infrastructure/persistence/usuario.orm-entity';
-import { ProductoEntityORM } from '../producto/infrastructure/persistence/producto.orm-entity';
-
-export enum TipoMovimientoEnum {
-  ENTRADA = 'ENTRADA',
-  SALIDA = 'SALIDA',
-  AJUSTE = 'AJUSTE',
-}
+import { UsuarioEntityORM } from '../../../usuario/infrastructure/persistence/usuario.orm-entity';
+import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
 
 export enum TipoCambioEnum {
   AUMENTO = 'AUMENTO',
   REDUCCION = 'REDUCCION',
 }
+
+import { TipoMovimientoEnum } from '../../../kardex/domain/entity/kardex.entity';
 
 @Entity({ name: 'ajuste_inventario' })
 export class AjusteInventarioEntityORM {

@@ -23,7 +23,7 @@ export class ProductoMapper {
 
   static toPersistence(domain: Producto): ProductoEntityORM {
     const entity = new ProductoEntityORM();
-    entity.productoId = domain.productoId;
+    if (domain.productoId > 0) entity.productoId = domain.productoId;
     entity.proveedorId = domain.proveedorId;
     entity.nombre = domain.nombre;
     entity.cantidad = domain.cantidad;

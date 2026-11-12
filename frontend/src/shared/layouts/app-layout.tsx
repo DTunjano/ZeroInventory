@@ -25,7 +25,6 @@ import type { ComponentType } from 'react'
 import { useAuthStore } from '@/modules/auth/application/auth.store'
 import { useSettingsStore } from '@/modules/settings/application/settings.store'
 import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,7 +76,7 @@ function pickNav(roles: string[]): AppLayoutNavItem[] {
   const isEmployee = roles.includes('EMPLOYEE')
 
   if (isAdmin) {
-    return [sharedNav[0], ...adminOnlyNav, ...sharedNav.slice(1)]
+    return [...sharedNav.slice(0, 1), ...adminOnlyNav, ...sharedNav.slice(1)]
   }
 
   if (isEmployee) {

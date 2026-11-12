@@ -11,6 +11,7 @@ import {
   Query,
   Req,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
@@ -36,6 +37,7 @@ import { CreateDireccionSwagger } from '../documentation/create-direccion.swagge
 import { GetAllDireccionSwagger } from '../documentation/get-all-direccion.swagger';
 import { UpdateDireccionSwagger } from '../documentation/update-direccion.swagger';
 import { DeleteDireccionSwagger } from '../documentation/delete-direccion.swagger';
+import { ClienteRepository } from '../../../cliente/domain/repository/cliente.repository';
 import { GetDireccionByIdSwagger } from '../documentation/get-direccion-by-id.swagger';
 
 @ApiTags('Direcciones')
@@ -50,6 +52,7 @@ export class DireccionController {
     private readonly updateDireccionUseCase: UpdateDireccionUseCase,
     private readonly deleteDireccionUseCase: DeleteDireccionUseCase,
     private readonly setPredeterminadaDireccionUseCase: SetPredeterminadaDireccionUseCase,
+    private readonly clienteRepo: ClienteRepository,
   ) {}
 
   @Post()
@@ -109,10 +112,13 @@ export class DireccionController {
   }
 
   @Get(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE, RolNombreEnum.CUSTOMER)
   @GetDireccionByIdSwagger()
   async getById(
     @Param('id', ParseIntPipe) direccionId: number,
+    @Req() req: { user: { sub: number; roles: string[] } },
   ): Promise<Direccion> {
+    await this.assertAccess(direccionId, req.user);
     const direccion = await this.getDireccionByIdUseCase.ejecutar(direccionId);
     if (!direccion) {
       throw new NotFoundException('Dirección no encontrada');
@@ -121,11 +127,14 @@ export class DireccionController {
   }
 
   @Put(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE, RolNombreEnum.CUSTOMER)
   @UpdateDireccionSwagger()
   async update(
     @Param('id', ParseIntPipe) direccionId: number,
     @Body() body: UpdateDireccionDTO,
+    @Req() req: { user: { sub: number; roles: string[] } },
   ): Promise<Direccion> {
+    await this.assertAccess(direccionId, req.user);
     const direccion = await this.updateDireccionUseCase.ejecutar(
       direccionId,
       body,
@@ -137,8 +146,20 @@ export class DireccionController {
   }
 
   @Delete(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE, RolNombreEnum.CUSTOMER)
   @DeleteDireccionSwagger()
-  async remove(@Param('id', ParseIntPipe) direccionId: number): Promise<void> {
+  async remove(@Param('id', ParseIntPipe) direccionId: number, @Req() req: { user: { sub: number; roles: string[] } }): Promise<void> {
+    await this.assertAccess(direccionId, req.user);
     return this.deleteDireccionUseCase.ejecutar(direccionId);
+  }
+
+  private async assertAccess(id: number, user: { sub: number; roles: string[] }) {
+    if (user.roles.some((role) => ['ADMIN', 'EMPLOYEE'].includes(role))) return;
+    const [address, customer] = await Promise.all([
+      this.getDireccionByIdUseCase.ejecutar(id), this.clienteRepo.getByUsuarioId(user.sub),
+    ]);
+    if (!address || !customer || address.clienteId !== customer.clienteId) {
+      throw new ForbiddenException('La dirección no pertenece al cliente');
+    }
   }
 }

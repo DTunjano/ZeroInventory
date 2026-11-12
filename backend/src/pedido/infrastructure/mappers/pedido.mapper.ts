@@ -16,7 +16,7 @@ export class PedidoMapper {
 
   static toPersistence(domain: Pedido): PedidoEntityORM {
     const entity = new PedidoEntityORM();
-    entity.pedidoId = domain.pedidoId;
+    if (domain.pedidoId > 0) entity.pedidoId = domain.pedidoId;
     entity.clienteId = domain.clienteId;
     entity.direccionId = domain.direccionId;
     entity.estado = domain.estado;

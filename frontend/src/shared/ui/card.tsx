@@ -5,7 +5,7 @@ import { cn } from '@/shared/lib/utils'
 export function Card({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: React.ComponentPropsWithRef<'div'>) {
   return (
     <div
       className={cn(

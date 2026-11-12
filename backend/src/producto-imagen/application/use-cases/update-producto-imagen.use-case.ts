@@ -13,7 +13,7 @@ export class UpdateProductoImagenUseCase {
   async ejecutar(
     imagenProductoId: number,
     cambios: {
-      url?: any;
+      url?: Express.Multer.File;
     },
   ): Promise<ProductoImagen> {
     const actual = await this.productoImagenRepo.getById(imagenProductoId);

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown, Search } from 'lucide-react'
 import { Input } from '@/shared/ui/input'
-import { cn } from '@/shared/lib/utils'
 
 interface Category {
   categoriaId: number
@@ -25,7 +24,7 @@ export function CategoryFilterDropdown({
   onSelectionChange,
   isOpen,
   onOpenChange,
-  label = 'Todas las categorías',
+  label: _label = 'Todas las categorías',
   placeholder = 'Todas las categorías',
   searchPlaceholder = 'Buscar categoría…',
 }: CategoryFilterDropdownProps) {

@@ -19,7 +19,7 @@ export class EmpleadoMapper {
   static toPersistence(empleado: Empleado): EmpleadoEntityORM {
     const entity = new EmpleadoEntityORM();
     if (empleado.empleadoId !== null) {
-      entity.empleadoId = empleado.empleadoId;
+      if (empleado.empleadoId > 0) entity.empleadoId = empleado.empleadoId;
     }
     entity.nombre = empleado.nombre;
     entity.email = empleado.email;

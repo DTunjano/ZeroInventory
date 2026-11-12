@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
-import { Upload, FileVideo, FileImage, X } from 'lucide-react'
+import { Upload, X } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
 import { http } from '@/infrastructure/http/http'
@@ -20,9 +20,6 @@ export function MediaUploader({ onUpload, accept = 'video/*,image/*', className 
   const handleFileChange = useCallback(
     async (file: File) => {
       if (!file) return
-
-      const isImage = file.type.startsWith('image/')
-      const isVideo = file.type.startsWith('video/')
       const reader = new FileReader()
 
       reader.onload = (e) => {
@@ -42,7 +39,7 @@ export function MediaUploader({ onUpload, accept = 'video/*,image/*', className 
         const { secure_url, public_id } = response.data ?? {}
         onUpload(secure_url, public_id)
         toast.success('Archivo subido exitosamente')
-      } catch (error) {
+      } catch {
         toast.error('Error al subir el archivo')
         setPreview(null)
       } finally {

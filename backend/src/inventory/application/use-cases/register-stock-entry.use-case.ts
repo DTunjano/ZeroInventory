@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
-import { TipoMovimientoEnum, TipoReferenciaEnum } from '../../../entities/kardex.orm-entity'
+import { TipoMovimientoEnum, TipoReferenciaEnum } from '../../../kardex/infrastructure/persistence/kardex.orm-entity'
 import type { KardexMovement, TipoReferenciaKardex } from '../../domain/inventory.types'
 import { CreateKardexMovementUseCase } from './create-kardex-movement.use-case'
 

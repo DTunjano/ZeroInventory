@@ -6,6 +6,7 @@ import {
   Res,
 } from '@nestjs/common'
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { ConfigService } from '@nestjs/config'
 import type { Request, Response } from 'express'
 
 import { LoginDTO } from '../../application/dto/login.dto'
@@ -14,16 +15,19 @@ import { LoginUseCase } from '../../application/use-cases/login.use-case'
 import { RefreshUseCase } from '../../application/use-cases/refresh.use-case'
 import { RegisterDTO } from '../../application/dto/register.dto'
 import { RegisterUseCase } from '../../application/use-cases/register.use-case'
+import { Public } from '../decorators/public.decorator'
 
 const REFRESH_COOKIE_NAME = 'refresh_token'
 
 @ApiTags('Auth')
 @Controller('auth')
+@Public()
 export class AuthController {
   constructor(
     private readonly loginUseCase: LoginUseCase,
     private readonly refreshUseCase: RefreshUseCase,
     private readonly registerUseCase: RegisterUseCase,
+    private readonly config: ConfigService,
   ) {}
 
   @Post('login')
@@ -69,21 +73,21 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@Res({ passthrough: true }) res: Response): Promise<{ success: true }> {
-    res.clearCookie(REFRESH_COOKIE_NAME, {
-      httpOnly: true,
-      sameSite: 'lax',
-      path: '/auth/refresh',
-    })
+  logout(@Res({ passthrough: true }) res: Response): { success: true } {
+    res.clearCookie(REFRESH_COOKIE_NAME, this.cookieOptions())
     return { success: true }
   }
 
   private setRefreshCookie(res: Response, token: string) {
-    res.cookie(REFRESH_COOKIE_NAME, token, {
+    res.cookie(REFRESH_COOKIE_NAME, token, this.cookieOptions())
+  }
+
+  private cookieOptions() {
+    return {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: false,
+      sameSite: (this.config.get<string>('COOKIE_SAME_SITE') ?? 'lax') as 'lax' | 'strict' | 'none',
+      secure: this.config.get<string>('NODE_ENV') === 'production' || this.config.get<string>('COOKIE_SECURE') === 'true',
       path: '/auth/refresh',
-    })
+    }
   }
 }

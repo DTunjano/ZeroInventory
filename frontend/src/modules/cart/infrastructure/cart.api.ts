@@ -6,6 +6,7 @@ import type {
   AddCartItemInput,
   CheckoutCartInput,
   CheckoutCartResult,
+  CheckoutStockInsufficientResponse,
   OpenCartView,
   UpdateCartItemQuantityInput,
 } from '../domain/cart.models'
@@ -49,7 +50,7 @@ export class CartHttpApi {
       const { data } = await http.post<CheckoutCartResult>('/carritos/me/checkout', input)
       return data
     } catch (error) {
-      if (error instanceof AxiosError && error.response?.status === 409) {
+      if (error instanceof AxiosError && error.response?.status === 409 && error.response.data?.error === 'STOCK_INSUFFICIENT') {
         return error.response.data as CheckoutStockInsufficientResponse
       }
 

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
+import { ConfigService } from '@nestjs/config'
 import { PassportModule } from '@nestjs/passport'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
@@ -26,13 +27,13 @@ import { RegisterUseCase } from './application/use-cases/register.use-case'
     UsuarioRolModule,
     RolModule,
     JwtModule.registerAsync({
-      useFactory: (configService: any) => ({
+      useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_ACCESS_SECRET'),
         signOptions: {
           expiresIn: configService.get('JWT_ACCESS_EXPIRES_IN') ?? '15m',
         },
       }),
-      inject: [require('@nestjs/config').ConfigService],
+      inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([UsuarioEntityORM, UsuarioRolEntityORM]),
   ],

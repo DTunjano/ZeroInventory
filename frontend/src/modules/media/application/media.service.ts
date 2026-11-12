@@ -28,23 +28,10 @@ export async function createMedia(payload: CreateMediaPayload): Promise<MediaIte
   }
   formData.append('file', payload.file)
 
-  // DEBUG: Log FormData contents
-  console.log('🎥 DEBUG: FormData content:', {
-    tipo: payload.tipo,
-    titulo: payload.titulo,
-    descripcion: payload.descripcion,
-    file: {
-      name: payload.file.name,
-      size: payload.file.size,
-      type: payload.file.type,
-    },
-  })
-
   try {
     const { data } = await http.post('/media', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
-    console.log('✅ Video creado:', data)
     return data
   } catch (error) {
     console.error('❌ Error al crear video:', error)

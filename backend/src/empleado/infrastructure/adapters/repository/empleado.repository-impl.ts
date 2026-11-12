@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { UsuarioEntityORM } from '../../../../usuario/infrastructure/persistence/usuario.orm-entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
   Empleado,
-  EmpleadoEstadoEnum,
   EmpleadoConRoles,
 } from '../../../domain/entity/empleado.entity';
 import {
@@ -119,12 +119,17 @@ export class EmpleadoRepositoryImpl implements EmpleadoRepositoryPort {
   async actualizar(
     empleadoId: number,
     datos: Partial<Empleado>,
+    passwordHash?: string,
   ): Promise<Empleado> {
-    await this.repo.update(empleadoId, datos as Partial<EmpleadoEntityORM>);
-    const updated = await this.repo.findOneOrFail({
-      where: { empleadoId },
+    return this.repo.manager.transaction(async (manager) => {
+      const employee = await manager.findOneOrFail(EmpleadoEntityORM, { where: { empleadoId }, lock: { mode: 'pessimistic_write' } });
+      await manager.update(EmpleadoEntityORM, empleadoId, datos as Partial<EmpleadoEntityORM>);
+      if (passwordHash && employee.usuarioId != null) {
+        await manager.update(UsuarioEntityORM, employee.usuarioId, { password: passwordHash });
+      }
+      const updated = await manager.findOneOrFail(EmpleadoEntityORM, { where: { empleadoId } });
+      return EmpleadoMapper.toDomain(updated);
     });
-    return EmpleadoMapper.toDomain(updated);
   }
 
   async cambiarEstado(

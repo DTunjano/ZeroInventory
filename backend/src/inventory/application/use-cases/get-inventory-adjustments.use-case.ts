@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common'
 import { DataSource } from 'typeorm'
 
-import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity'
+import { AjusteInventarioEntityORM } from '../../../ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity'
 import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity'
 import { UsuarioEntityORM } from '../../../usuario/infrastructure/persistence/usuario.orm-entity'
 import type {

@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Film, Eye, EyeOff, Pencil, Trash2 } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Badge } from '@/shared/ui/badge'
-import { Button } from '@/shared/ui/button'
 import type { MediaItem } from '@/modules/media/application/media.models'
 import { MediaActionsDropdown } from './MediaActionsDropdown'
 

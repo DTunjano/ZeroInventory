@@ -1,3 +1,4 @@
+import { Public } from '../../../auth/adapters/decorators/public.decorator';
 import {
   Body,
   Controller,
@@ -55,6 +56,7 @@ export class ProductoController {
     return producto;
   }
 
+  @Public()
   @Get()
   @GetAllProductSwagger()
   async getAll(@Query() filters?: FiltersProductDTO): Promise<{
@@ -64,10 +66,10 @@ export class ProductoController {
     limit: number;
     totalPages: number;
   }> {
-    console.debug('[ProductoController] GET /productos filters ->', filters)
     return this.getAllProductosUseCase.ejecutar(filters);
   }
 
+  @Public()
   @Get(':id')
   @GetProductByIdSwagger()
   async getById(

@@ -1,7 +1,6 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import { Button } from '@/shared/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { cn } from '@/shared/lib/utils'
 import type { Product } from '../../domain/product.models'
 import { ProductTableRow } from './ProductTableRow'
 

@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { listMedia } from '@/modules/media/application/media.service'
-import type { MediaItem } from '@/modules/media/application/media.models'
 
 /**
  * Hook: Obtener video activo para hero section

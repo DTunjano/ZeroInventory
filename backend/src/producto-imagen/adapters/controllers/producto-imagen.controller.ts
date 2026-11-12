@@ -1,3 +1,4 @@
+import { Public } from '../../../auth/adapters/decorators/public.decorator';
 import {
   Body,
   Controller,
@@ -65,6 +66,7 @@ export class ProductoImagenController {
     return productoImagen;
   }
 
+  @Public()
   @Get()
   @GetAllProductoImagenSwagger()
   async getAll(@Query() filters?: FiltersProductoImagenDTO): Promise<{
@@ -77,6 +79,7 @@ export class ProductoImagenController {
     return this.getAllProductoImagenUseCase.ejecutar(filters);
   }
 
+  @Public()
   @Get(':id')
   @GetProductoImagenByIdSwagger()
   async getById(

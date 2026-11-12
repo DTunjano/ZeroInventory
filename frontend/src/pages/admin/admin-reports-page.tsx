@@ -1,4 +1,4 @@
-import { BarChart3, Sparkles, ArrowRight, TrendingUp, PieChart, LineChart } from 'lucide-react'
+import { Sparkles, ArrowRight, TrendingUp, PieChart, LineChart } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export function AdminReportsPage() {

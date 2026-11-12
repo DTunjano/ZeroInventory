@@ -35,6 +35,7 @@ import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity'
 @ApiTags('Usuarios')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('usuarios')
+@Roles(RolNombreEnum.ADMIN)
 export class UsuarioController {
   constructor(
     private readonly createUsuarioUseCase: CreateUsuarioUseCase,

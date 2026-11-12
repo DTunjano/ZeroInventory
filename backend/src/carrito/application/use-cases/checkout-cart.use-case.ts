@@ -32,7 +32,7 @@ export class CheckoutCartUseCase {
     }
 
     const direccion = await this.direccionRepo.getById(params.direccionId);
-    if (!direccion) {
+    if (!direccion || !direccion.estado) {
       throw new NotFoundException('Dirección no encontrada');
     }
     if (direccion.clienteId !== cliente.clienteId) {

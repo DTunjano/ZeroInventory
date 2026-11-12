@@ -1,3 +1,4 @@
+import { Producto } from '../../domain/entity/producto.entity';
 import { UpdateProductUseCase } from './update-product.use-case'
 
 describe('UpdateProductUseCase', () => {
@@ -40,49 +41,32 @@ describe('UpdateProductUseCase', () => {
     })
     productoRepo.existsByNombre.mockResolvedValue(false)
     productoRepo.existsBySku.mockResolvedValue(false)
-    productoRepo.update.mockImplementation(async (producto) => producto)
+    productoRepo.update.mockImplementation((producto: Producto) => Promise.resolve(producto))
     proveedorRepo.getById.mockResolvedValue({ proveedorId: 2 })
     registerStockAdjustmentUseCase.ejecutar.mockResolvedValue({ ajusteInventarioId: 1 })
     registerStockEntryUseCase.ejecutar.mockResolvedValue({ kardexId: 1 })
   })
 
-  it('registers entry and adjustment when stock increases', async () => {
+  it('passes the stock version to atomic persistence when stock increases', async () => {
     const useCase = new UpdateProductUseCase(
       productoRepo as never,
       proveedorRepo as never,
-      registerStockAdjustmentUseCase as never,
-      registerStockEntryUseCase as never,
     )
 
     const result = await useCase.ejecutar(9, 5, { cantidad: 15 })
 
     expect(result.cantidad).toBe(15)
-    expect(registerStockEntryUseCase.ejecutar).toHaveBeenCalledWith(expect.objectContaining({
-      productoId: 9,
-      cantidad: 5,
-      referenciaId: 9,
-    }))
-    expect(registerStockAdjustmentUseCase.ejecutar).toHaveBeenCalledWith(5, expect.objectContaining({
-      productoId: 9,
-      stockAnterior: 10,
-      stockNuevo: 15,
-    }))
+    expect(productoRepo.update).toHaveBeenCalledWith(expect.objectContaining({ cantidad: 15 }), { usuarioId: 5, expectedStock: 10, changeStock: true })
   })
 
-  it('registers only adjustment when stock decreases', async () => {
+  it('passes a decrease to atomic persistence', async () => {
     const useCase = new UpdateProductUseCase(
       productoRepo as never,
       proveedorRepo as never,
-      registerStockAdjustmentUseCase as never,
-      registerStockEntryUseCase as never,
     )
 
     await useCase.ejecutar(9, 5, { cantidad: 4 })
 
     expect(registerStockEntryUseCase.ejecutar).not.toHaveBeenCalled()
-    expect(registerStockAdjustmentUseCase.ejecutar).toHaveBeenCalledWith(5, expect.objectContaining({
-      stockAnterior: 10,
-      stockNuevo: 4,
-    }))
   })
 })

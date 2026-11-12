@@ -1,3 +1,4 @@
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
 import {
   Body,
   Controller,
@@ -9,7 +10,6 @@ import {
   Post,
   Put,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -59,12 +59,14 @@ export class CarritoController {
     private readonly clearCartUseCase: ClearCartUseCase,
   ) {}
 
+  @Roles('CUSTOMER')
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getMyOpenCart(@CurrentUser() usuarioId: number): Promise<OpenCartView> {
     return this.getOpenCartByUsuarioUseCase.ejecutar(usuarioId);
   }
 
+  @Roles('CUSTOMER')
   @Post('me/items')
   @UseGuards(JwtAuthGuard)
   async addItem(
@@ -78,6 +80,7 @@ export class CarritoController {
     });
   }
 
+  @Roles('CUSTOMER')
   @Post('me/checkout')
   @UseGuards(JwtAuthGuard)
   async checkout(
@@ -91,6 +94,7 @@ export class CarritoController {
     });
   }
 
+  @Roles('CUSTOMER')
   @Put('me/items/:carritoDetalleId')
   @UseGuards(JwtAuthGuard)
   async updateItemQuantity(
@@ -105,6 +109,7 @@ export class CarritoController {
     });
   }
 
+  @Roles('CUSTOMER')
   @Delete('me/items/:carritoDetalleId')
   @UseGuards(JwtAuthGuard)
   async removeItem(
@@ -117,6 +122,7 @@ export class CarritoController {
     });
   }
 
+  @Roles('CUSTOMER')
   @Delete('me')
   @UseGuards(JwtAuthGuard)
   async clearCart(@CurrentUser() usuarioId: number): Promise<OpenCartView> {

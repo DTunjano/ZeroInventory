@@ -25,13 +25,18 @@ import { SettingsModule } from './settings/settings.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { MediaModule } from './media/media.module';
+import { validateEnvironment } from '../config/environment';
+import { APP_GUARD } from '@nestjs/core';
+import { ApiAccessGuard } from './auth/adapters/guards/api-access.guard';
 
 @Module({
+  providers: [{ provide: APP_GUARD, useClass: ApiAccessGuard }],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env', '../.env'],
       load: [databaseConfig],
+      validate: validateEnvironment,
     }),
     DatabaseModule,
     CloudinaryModule,

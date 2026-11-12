@@ -18,12 +18,10 @@ import { Card, CardContent, CardTitle } from '@/shared/ui/card'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { Input } from '@/shared/ui/input'
 import { useNavigate } from 'react-router-dom'
-import { Package, ShoppingCart, Sparkles, Search, CheckCircle, AlertTriangle, XCircle, ArrowLeft } from 'lucide-react'
+import { Package, ShoppingCart, Sparkles, Search, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { useState, useEffect, useMemo, useRef } from 'react'
 
-import { MediaHero } from '@/modules/media/presentation/MediaHero'
-import { useStoreHeroVideo } from '@/modules/media/application/media.hooks'
 
 const STOCK_THRESHOLD = 150
 
@@ -192,9 +190,9 @@ export function StoreHomePage() {
       listProducts({
         page: 1,
         limit: 24,
-        search: debouncedSearch || undefined,
-        categoriaIds: categoryFilter.length ? categoryFilter : undefined,
-        sortBy,
+        ...(debouncedSearch ? { search: debouncedSearch } : {}),
+        ...(categoryFilter.length ? { categoriaIds: categoryFilter } : {}),
+        ...(sortBy ? { sortBy } : {}),
         order,
         isActive: true,
       }),
@@ -250,9 +248,8 @@ export function StoreHomePage() {
     }
   }, [status])
 
-  const products = productsQuery.data?.data ?? []
+  const products = useMemo(() => productsQuery.data?.data ?? [], [productsQuery.data?.data])
 
-  const { data: heroMedia } = useStoreHeroVideo()
 
   const displayedProducts = useMemo(() => {
     const priority = (p: Product) => {

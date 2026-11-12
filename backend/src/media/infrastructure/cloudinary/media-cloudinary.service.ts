@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common'
 import { CloudinaryService } from '../../../../infrastructure/cloudinary/cloudinary.service'
-import { Readable } from 'stream'
+import type { UploadApiOptions } from 'cloudinary'
 
 /**
  * Servicio para manejar uploads de media a Cloudinary
@@ -48,7 +48,7 @@ export class MediaCloudinaryService {
 
     try {
       // Configurar opciones para Cloudinary
-      const uploadOptions: any = {
+      const uploadOptions: UploadApiOptions = {
         folder: this.CLOUDINARY_FOLDER,
         resource_type: 'video' as const,
       }

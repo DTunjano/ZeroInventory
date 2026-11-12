@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Upload, Video, ImageOff, X } from 'lucide-react'
+import { Upload, X } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'

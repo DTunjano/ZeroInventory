@@ -1,28 +1,12 @@
+import { configureHttp } from '../config/http.config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger/dist/swagger-module';
 import { swaggerConfig } from '../config/swagger.config';
-import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  app.use(cookieParser());
-
-  app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    credentials: true,
-  });
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
+  configureHttp(app);
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
@@ -32,4 +16,4 @@ async function bootstrap() {
 
   console.log(`Server is running on http://localhost:${port}`);
 }
-bootstrap();
+void bootstrap().catch((error: Error) => { console.error(error.message); process.exitCode = 1; });

@@ -1,0 +1,67 @@
+name: Validate application
+
+on:
+  push:
+    branches: [dev, main, 'codex/**']
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.0
+        env:
+          POSTGRES_USER: zero_inventory_ci
+          POSTGRES_PASSWORD: isolated_ci_only
+          POSTGRES_DB: zero_inventory_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U zero_inventory_ci -d zero_inventory_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_PORT: '5432'
+      DB_USER: zero_inventory_ci
+      DB_PASSWORD: isolated_ci_only
+      DB_NAME: zero_inventory_ci
+      DB_SSL: 'false'
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test -- --runInBand
+      - run: pnpm test:integration
+      - run: pnpm build
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm build

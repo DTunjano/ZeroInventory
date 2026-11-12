@@ -41,7 +41,7 @@ export class FiltersProductDTO {
     example: true,
   })
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (value === undefined || value === null || value === '') return value;
     if (value === true || value === 'true') return true;
     if (value === false || value === 'false') return false;
@@ -67,7 +67,7 @@ export class FiltersProductDTO {
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (value === undefined || value === null || value === '') return value
     const values = Array.isArray(value) ? value : [value]
     return values

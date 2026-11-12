@@ -49,8 +49,11 @@ let refreshPromise: Promise<AuthSession> | null = null
 async function ensureFreshSession(): Promise<AuthSession> {
   if (!refreshPromise) {
     refreshPromise = refreshHttp
-      .post<AuthSession>('/auth/refresh')
-      .then((r) => r.data)
+      .post<AuthSession | null>('/auth/refresh')
+      .then((r) => {
+        if (!r.data?.accessToken) throw new Error('La sesión ha expirado')
+        return r.data
+      })
       .finally(() => {
         refreshPromise = null
       })

@@ -120,7 +120,6 @@ export function SettingsPage() {
   const isCustomer = roles.includes('CUSTOMER')
   const isEmployeeOnly = roles.includes('EMPLOYEE') && !isAdmin && !isCustomer
   const canEditGeneral = isAdmin || isCustomer
-  const canEditSecurity = isAdmin || isCustomer
 
   const [activeTab, setActiveTab] = useState<'general' | 'security' | 'appearance'>(
     canEditGeneral ? 'general' : 'appearance',
@@ -297,16 +296,6 @@ export function SettingsPage() {
     if (target === 'appearance') {
       await appearanceMutation.mutateAsync(appearanceForm.getValues())
     }
-  }
-
-  const handleConfirmLeave = () => {
-    setLeavePromptOpen(false)
-    blocker.proceed?.()
-  }
-
-  const handleCancelLeave = () => {
-    setLeavePromptOpen(false)
-    blocker.reset?.()
   }
 
   const generalCard = (
@@ -542,14 +531,14 @@ export function SettingsPage() {
       <ConfirmModal
         open={leavePromptOpen}
         onOpenChange={(open) => {
-          if (!open) handleCancelLeave()
+          if (!open) handlePromptCancel()
         }}
         title="Tienes cambios sin guardar"
         description="Si sales ahora perderás los cambios realizados."
         confirmText="Salir sin guardar"
         cancelText="Cancelar"
         confirmVariant="destructive"
-        onConfirm={handleConfirmLeave}
+        onConfirm={handlePromptConfirm}
       />
     </div>
   )

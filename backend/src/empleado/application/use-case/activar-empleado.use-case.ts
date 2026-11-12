@@ -36,6 +36,6 @@ export class ActivarEmpleadoUseCase {
       ...empleadoActualizado,
       roles: ['EMPLOYEE'],
       nombreCompleto: empleadoActualizado.nombre,
-    } as EmpleadoConRoles;
+    };
   }
 }

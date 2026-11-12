@@ -17,7 +17,6 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
 import { Select } from '@/shared/ui/select'
-import { Skeleton } from '@/shared/ui/skeleton'
 
 function formatPrice(value: number): string {
   return new Intl.NumberFormat('es-CO', {
@@ -343,7 +342,7 @@ export function MyCartPage() {
     queryFn: getMyDirecciones,
   })
 
-  const rawItems = cartQuery.data?.items ?? []
+  const rawItems = useMemo(() => cartQuery.data?.items ?? [], [cartQuery.data?.items])
 
   const items = useMemo(() => {
     const sorted = [...rawItems].sort((a, b) => a.carritoDetalleId - b.carritoDetalleId)
@@ -357,7 +356,7 @@ export function MyCartPage() {
   useEffect(() => {
     const first = direccionesQuery.data?.[0]
     if (!direccionId && first) setDireccionId(String(first.direccionId))
-  }, [direccionesQuery.data])
+  }, [direccionesQuery.data, direccionId])
 
   const refreshCart = useCallback((next: Awaited<ReturnType<typeof getMyCart>>) => {
     queryClient.setQueryData(cartQueryKey, next)
@@ -387,7 +386,7 @@ export function MyCartPage() {
       return checkoutCart({ direccionId: parsedDireccionId, metodoPago })
     },
     onSuccess: async (result) => {
-      if ('error' in result && result.error === 'STOCK_INSUFFICIENT' && Array.isArray(result.productos)) {
+      if ('error' in result) {
         setCheckoutStockIssue(result)
         window.scrollTo({ top: 0, behavior: 'smooth' })
         toast.error('No se pudo completar tu compra')
@@ -400,7 +399,7 @@ export function MyCartPage() {
       await queryClient.invalidateQueries({ queryKey: cartQueryKey })
       toast.success(`Compra confirmada. Pedido #${result.numeroPedidoUsuario} por ${formatPrice(result.total)}`)
     },
-    onError: (err) => {
+    onError: () => {
       setCheckoutStockIssue(null)
       window.scrollTo({ top: 0, behavior: 'smooth' })
       toast.error('No se pudo completar tu compra')

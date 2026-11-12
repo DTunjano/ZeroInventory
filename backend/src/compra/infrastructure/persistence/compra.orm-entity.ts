@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { ProveedorEntityORM } from '../../../proveedor/infrastructure/persistence/proveedor.orm-entity';
 import { UsuarioEntityORM } from '../../../usuario/infrastructure/persistence/usuario.orm-entity';
-import { CompraDetalleEntityORM } from '../../../entities/compra-detalle.orm-entity';
+import { CompraDetalleEntityORM } from '../../../compra-detalle/infrastructure/persistence/compra-detalle.orm-entity';
 
 @Entity({ name: 'compra' })
 export class CompraEntityORM {
@@ -22,7 +22,7 @@ export class CompraEntityORM {
   @Column({ name: 'usuario_id', type: 'int' })
   usuarioId!: number;
 
-  @Column({ name: 'total', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'total', precision: 14, scale: 2, type: 'numeric' })
   total!: number;
 
   @CreateDateColumn({ name: 'fecha_compra', type: 'timestamp' })

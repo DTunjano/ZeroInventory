@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import type { MediaItem } from '@/modules/media/application/media.models'
 import { MediaCard } from './MediaCard'
 import { Skeleton } from '@/shared/ui/skeleton'
@@ -50,7 +49,7 @@ export function MediaList({
         <MediaCard
           key={item.mediaId}
           media={item}
-          isAdmin={isAdmin}
+          isAdmin={isAdmin ?? false}
           onEdit={onEdit}
           onDelete={onDelete}
           onToggleStatus={onToggleStatus}

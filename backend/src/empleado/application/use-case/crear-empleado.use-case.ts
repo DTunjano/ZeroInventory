@@ -91,7 +91,7 @@ export class CrearEmpleadoUseCase {
       // Actualizar empleado con el usuarioId creado
       await this.empleadoRepo.actualizar(empleadoCreado.empleadoId!, {
         usuarioId: usuarioCreado.usuarioId,
-      } as any);
+      });
 
       const empleadoActualizado = await this.empleadoRepo.obtenerPorId(empleadoCreado.empleadoId!);
 
@@ -99,7 +99,7 @@ export class CrearEmpleadoUseCase {
         ...empleadoActualizado!,
         roles: ['EMPLOYEE'],
         nombreCompleto: dto.nombre,
-      } as EmpleadoConRoles;
+      };
     } catch (error) {
       if (error instanceof ConflictException || error instanceof NotFoundException) {
         throw error;

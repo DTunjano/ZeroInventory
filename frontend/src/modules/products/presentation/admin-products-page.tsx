@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Check, ChevronDown, ChevronUp, Image as ImageIcon, Package2, Search, Sparkles, Tags, Trash2 } from 'lucide-react'
+import { Check, ChevronDown, Image as ImageIcon, Package2, Search, Sparkles, Tags } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { CategoryFilterDropdown } from './components/CategoryFilterDropdown'
@@ -13,7 +13,6 @@ import { ClearFiltersButton } from './components/ClearFiltersButton'
 
 import {
   createProduct,
-  deleteProduct,
   listProducts,
   updateProduct,
 } from '../application/products.use-cases'
@@ -128,7 +127,7 @@ function toDefaults(p?: Product | null): FormInput {
 
 export function AdminProductsPage() {
   const qc = useQueryClient()
-  const { canCreate, canDelete } = usePermissions()
+  const { canCreate } = usePermissions()
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 300)
   const [categoryFilter, setCategoryFilter] = useState<number[]>([])
@@ -163,18 +162,6 @@ export function AdminProductsPage() {
       if (order) filters.order = order
 
       const result = await listProducts(filters)
-      console.log('📦 Productos recibidos:', {
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-        data: result.data.map((p) => ({
-          id: p.productoId,
-          nombre: p.nombre,
-          precio: p.precio,
-          cantidad: p.cantidad,
-          tipo_precio: typeof p.precio,
-        })),
-      })
       return result
     },
   })

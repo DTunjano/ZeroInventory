@@ -56,7 +56,7 @@ export class UpdateMediaUseCase {
     // Guardar cambios
     try {
       return await this.mediaRepository.update(id, updateData)
-    } catch (error) {
+    } catch {
       if (file && updateData.publicId) {
         await this.cloudinaryService.deleteVideo(updateData.publicId)
       }

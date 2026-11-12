@@ -38,8 +38,8 @@ export function MediaPage() {
       listMedia({
         page,
         limit: PAGE_SIZE,
-        search: debouncedSearch || undefined,
-        estado: filter === 'all' ? undefined : (filter as MediaEstado),
+        ...(debouncedSearch ? { search: debouncedSearch } : {}),
+        ...(filter !== 'all' ? { estado: filter as MediaEstado } : {}),
         tipo: 'video',
         admin: true,
       }),
@@ -222,7 +222,7 @@ export function MediaPage() {
             if (!values.file) {
               throw new Error('El video es requerido')
             }
-            await createMutation.mutateAsync(values)
+            await createMutation.mutateAsync({ ...values, file: values.file })
           }
         }}
       />

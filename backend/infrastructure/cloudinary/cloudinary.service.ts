@@ -19,7 +19,7 @@ export class CloudinaryService {
   ) {}
 
   uploadImage(
-    file: any,
+    file: Express.Multer.File,
     options?: UploadApiOptions,
   ): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
@@ -32,7 +32,7 @@ export class CloudinaryService {
         },
       );
 
-      Readable.from(file.buffer).pipe(upload);
+      Readable.from([file.buffer]).pipe(upload);
     });
   }
 

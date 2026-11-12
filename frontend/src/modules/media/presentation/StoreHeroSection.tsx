@@ -3,7 +3,7 @@ import { MediaHero } from '@/modules/media/presentation/MediaHero'
 import { cn } from '@/shared/lib/utils'
 import type { ComponentPropsWithoutRef } from 'react'
 
-interface StoreHeroSectionProps extends ComponentPropsWithoutRef<'div'> {}
+type StoreHeroSectionProps = ComponentPropsWithoutRef<'div'>
 
 export function StoreHeroSection({ className, ...rest }: StoreHeroSectionProps) {
   const { data: heroMedia } = useStoreHeroVideo()

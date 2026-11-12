@@ -21,7 +21,7 @@ export class ConfirmPagoUseCase {
     await this.pagoRepo.update({
       ...pago,
       estado: EstadoPagoEnum.APROBADO,
-    } as any);
+    });
 
     // mark pedido as completed
     const pedido = await this.pedidoRepo.getById(pago.pedidoId);

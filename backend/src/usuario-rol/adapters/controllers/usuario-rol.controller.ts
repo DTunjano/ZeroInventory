@@ -1,3 +1,4 @@
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
 import {
   Body,
   Controller,
@@ -28,6 +29,7 @@ import { GetUsuarioRolByIdSwagger } from '../documentation/get-usuario-rol-by-id
 
 @ApiTags('Usuario Roles')
 @Controller('usuario-roles')
+@Roles('ADMIN')
 export class UsuarioRolController {
   constructor(
     private readonly createUsuarioRolUseCase: CreateUsuarioRolUseCase,

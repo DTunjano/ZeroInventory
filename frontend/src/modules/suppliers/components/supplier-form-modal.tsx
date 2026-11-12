@@ -13,7 +13,7 @@ import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { supplierService } from '../application/supplier.service'
-import type { Proveedor, Direccion } from '../domain/supplier.entity'
+import type { Proveedor } from '../domain/supplier.entity'
 
 interface SupplierFormModalProps {
   open: boolean

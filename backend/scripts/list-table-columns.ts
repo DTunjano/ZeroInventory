@@ -1,16 +1,6 @@
-import { DataSource } from 'typeorm';
+import dataSource from '../config/data-source';
 
-const dataSource = new DataSource({
-  type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'dtunjano',
-  password: '1234',
-  database: 'zero_inventory',
-  entities: [],
-  synchronize: false,
-  logging: false,
-});
+
 
 async function listTableColumns() {
   try {
@@ -35,8 +25,8 @@ async function listTableColumns() {
   } finally {
     try {
       await dataSource.destroy();
-    } catch {}
+    } catch { /* Connection was not initialized. */ }
   }
 }
 
-listTableColumns();
+void listTableColumns();

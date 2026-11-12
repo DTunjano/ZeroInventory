@@ -4,25 +4,31 @@ services:
     container_name: postgres-zero-inventory
     restart: always
     ports:
-      - 5432:5432
+      - 127.0.0.1:5432:5432
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
   
   pgAdmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4@sha256:5d9624a93634d1c5e595619cc57b1d330758120d1baf445fa97300c0c1fc3c0a
     container_name: pgadmin-zero-inventory
     restart: always
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
-      - 8082:80
+      - 127.0.0.1:8082:80
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@zeroinventory.com
-      - PGADMIN_DEFAULT_PASSWORD=zeroinventory2026
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@zeroinventory.com}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:?Ejecuta pnpm setup:env en backend}
     volumes:
       - pgadmin_data:/var/lib/pgadmin
 

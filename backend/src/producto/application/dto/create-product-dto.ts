@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsNumber, Max, Min } from 'class-validator';
 
 export class CreateProductDTO {
   @ApiProperty({
@@ -29,6 +29,8 @@ export class CreateProductDTO {
   })
   @IsNotEmpty({ message: 'La cantidad disponible es obligatoria' })
   @Min(0, { message: 'La cantidad disponible no puede ser negativa' })
+    @IsInt()
+  @Max(2147483647)
   cantidad!: number;
 
   @ApiProperty({
@@ -38,6 +40,8 @@ export class CreateProductDTO {
   })
   @IsNotEmpty({ message: 'El precio del producto es obligatorio' })
   @Min(0, { message: 'El precio del producto no puede ser negativo' })
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Max(999999999999.99)
   precio!: number;
 
   @ApiPropertyOptional({

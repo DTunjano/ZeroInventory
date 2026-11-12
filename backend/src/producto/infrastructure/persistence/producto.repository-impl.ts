@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { ProductoEntityORM } from './producto.orm-entity';
@@ -6,6 +6,9 @@ import { ProductoRepository } from '../../domain/repository/producto.repository'
 import { ProductoMapper } from '../mappers/producto.mapper';
 import { Producto } from '../../domain/entity/producto.entity';
 import { FiltersProductDTO } from '../../application/dto/filters-product-dto';
+import { KardexEntityORM, TipoMovimientoEnum, TipoReferenciaEnum } from '../../../kardex/infrastructure/persistence/kardex.orm-entity';
+import { recordStockAdjustment, validateStock } from '../../../inventory/infrastructure/stock-transaction';
+import { SkuGeneratorService } from '../../domain/services/sku-generator.service';
 
 @Injectable()
 export class ProductoRepositoryImpl implements ProductoRepository {
@@ -15,15 +18,41 @@ export class ProductoRepositoryImpl implements ProductoRepository {
   ) {}
 
   async create(producto: Producto): Promise<Producto> {
-    const entity = ProductoMapper.toPersistence(producto);
-    const saved = await this.repo.save(entity);
-    return ProductoMapper.toDomain(saved);
+    validateStock(producto.cantidad);
+    return this.repo.manager.transaction(async (manager) => {
+      const saved = await manager.save(ProductoEntityORM, ProductoMapper.toPersistence(producto));
+      saved.sku = SkuGeneratorService.generate(saved.nombre, saved.productoId);
+      await manager.save(ProductoEntityORM, saved);
+      if (saved.cantidad > 0) {
+        await manager.insert(KardexEntityORM, {
+          productoId: saved.productoId, tipoMovimiento: TipoMovimientoEnum.ENTRADA,
+          cantidad: saved.cantidad, costoUnitario: saved.precio,
+          valorTotal: saved.cantidad * saved.precio, referenciaId: saved.productoId,
+          tipoReferencia: TipoReferenciaEnum.AJUSTE,
+        });
+      }
+      return ProductoMapper.toDomain(saved);
+    });
   }
 
-  async update(producto: Producto): Promise<Producto> {
-    const entity = ProductoMapper.toPersistence(producto);
-    const saved = await this.repo.save(entity);
-    return ProductoMapper.toDomain(saved);
+  async update(producto: Producto, stockChange?: { usuarioId: number; expectedStock: number; changeStock: boolean }): Promise<Producto> {
+    return this.repo.manager.transaction(async (manager) => {
+      const current = await manager.findOne(ProductoEntityORM, {
+        where: { productoId: producto.productoId }, lock: { mode: 'pessimistic_write' },
+      });
+      if (!current) throw new NotFoundException('Producto no encontrado');
+      if (stockChange?.changeStock && producto.cantidad !== current.cantidad) {
+        await recordStockAdjustment(manager, current, stockChange.usuarioId, producto.cantidad,
+          stockChange.expectedStock, 'Ajuste manual de inventario desde gestión de productos');
+      } else if (stockChange?.changeStock && current.cantidad !== stockChange.expectedStock) {
+        // A concurrent operation already changed this stock, even if it happens to equal the desired value.
+        throw new ConflictException('El stock cambió. Actualiza el producto.');
+      }
+      const entity = ProductoMapper.toPersistence(producto);
+      entity.cantidad = current.cantidad;
+      const saved = await manager.save(ProductoEntityORM, entity);
+      return ProductoMapper.toDomain(saved);
+    });
   }
 
   async getById(productoId: number): Promise<Producto | null> {
@@ -146,7 +175,7 @@ export class ProductoRepositoryImpl implements ProductoRepository {
   }
 
   async delete(productoId: number): Promise<boolean> {
-    const result = await this.repo.delete({ productoId: productoId });
+    const result = await this.repo.update({ productoId }, { isActive: false, updatedAt: new Date() });
     return (result.affected ?? 0) > 0;
   }
 

@@ -2,14 +2,13 @@ import { Injectable } from '@nestjs/common'
 import { DataSource } from 'typeorm'
 
 import { ClienteEntityORM } from '../../../cliente/infrastructure/persistence/cliente.orm-entity'
-import { KardexEntityORM, TipoMovimientoEnum, TipoReferenciaEnum } from '../../../entities/kardex.orm-entity'
+import { KardexEntityORM } from '../../../kardex/infrastructure/persistence/kardex.orm-entity'
 import { PedidoDetalleEntityORM } from '../../../pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity'
 import { PagoEntityORM } from '../../../pago/infrastructure/persistence/pago.orm-entity'
 import { EstadoPedidoEnum } from '../../../pedido/domain/entity/pedido.entity'
 import { PedidoEntityORM } from '../../../pedido/infrastructure/persistence/pedido.orm-entity'
 import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity'
 import { UsuarioEntityORM } from '../../../usuario/infrastructure/persistence/usuario.orm-entity'
-import { EstadoPagoEnum } from '../../../pago/domain/entity/pago.entity'
 import type {
   AdminDashboardResponse,
   InventoryMovementPoint,

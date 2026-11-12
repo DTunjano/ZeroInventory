@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { KardexEntityORM } from '../entities/kardex.orm-entity'
-import { AjusteInventarioEntityORM } from '../entities/ajuste-inventario.orm-entity'
+import { KardexEntityORM } from '../kardex/infrastructure/persistence/kardex.orm-entity'
+import { AjusteInventarioEntityORM } from '../ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity'
 
 // Use cases
 import { CreateKardexMovementUseCase } from './application/use-cases/create-kardex-movement.use-case'
@@ -15,8 +15,6 @@ import { KardexRepository } from './infrastructure/repositories/kardex.repositor
 import { StockAdjustmentRepository } from './infrastructure/repositories/stock-adjustment.repository'
 
 // Domain interfaces
-import type { IKardexRepository } from './domain/kardex.repository'
-import type { IStockAdjustmentRepository } from './domain/stock-adjustment.repository'
 
 // Controllers
 import { InventoryController } from './adapters/controllers/inventory.controller'

@@ -1,3 +1,4 @@
+import { Producto } from '../../domain/entity/producto.entity';
 import { ConflictException } from '@nestjs/common'
 
 import { CreateProductUseCase } from './create-product.use-case'
@@ -23,13 +24,13 @@ describe('CreateProductUseCase', () => {
     jest.clearAllMocks()
     productoRepo.existsByNombre.mockResolvedValue(false)
     proveedorRepo.getById.mockResolvedValue({ proveedorId: 1 })
-    productoRepo.create.mockImplementation(async (producto) => ({ ...producto, productoId: 21 }))
-    productoRepo.update.mockImplementation(async (producto) => producto)
+    productoRepo.create.mockImplementation((producto: Producto) => Promise.resolve({ ...producto, productoId: 21 }))
+    productoRepo.update.mockImplementation((producto: Producto) => Promise.resolve(producto))
     registerStockEntryUseCase.ejecutar.mockResolvedValue({ kardexId: 1 })
   })
 
-  it('registers an ENTRADA movement when the new product starts with stock', async () => {
-    const useCase = new CreateProductUseCase(productoRepo as never, proveedorRepo as never, registerStockEntryUseCase as never)
+  it('delegates product and initial stock persistence to the atomic repository', async () => {
+    const useCase = new CreateProductUseCase(productoRepo as never, proveedorRepo as never)
 
     const result = await useCase.ejecutar({
       proveedorId: 1,
@@ -39,17 +40,12 @@ describe('CreateProductUseCase', () => {
     })
 
     expect(result.productoId).toBe(21)
-    expect(registerStockEntryUseCase.ejecutar).toHaveBeenCalledWith(expect.objectContaining({
-      productoId: 21,
-      cantidad: 8,
-      costoUnitario: 1200,
-      referenciaId: 21,
-    }))
+    expect(productoRepo.create).toHaveBeenCalledWith(expect.objectContaining({ cantidad: 8, precio: 1200 }))
   })
 
   it('rejects duplicated product names', async () => {
     productoRepo.existsByNombre.mockResolvedValue(true)
-    const useCase = new CreateProductUseCase(productoRepo as never, proveedorRepo as never, registerStockEntryUseCase as never)
+    const useCase = new CreateProductUseCase(productoRepo as never, proveedorRepo as never)
 
     await expect(useCase.ejecutar({ nombre: 'Duplicado', cantidad: 1, precio: 100 })).rejects.toBeInstanceOf(ConflictException)
   })

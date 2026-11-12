@@ -6,15 +6,16 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { KardexEntityORM } from '../../../entities/kardex.orm-entity';
+import { KardexEntityORM } from '../../../kardex/infrastructure/persistence/kardex.orm-entity';
 import { CategoriaProductoEntityORM } from '../../../categoria-producto/infrastructure/persistence/categoria-producto.orm-entity';
 import { CarritoDetalleEntityORM } from '../../../carrito-detalle/infrastructure/persistence/carrito-detalle.orm-entity';
 
-import { CompraDetalleEntityORM } from '../../../entities/compra-detalle.orm-entity';
-import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity';
+import { CompraDetalleEntityORM } from '../../../compra-detalle/infrastructure/persistence/compra-detalle.orm-entity';
+import { AjusteInventarioEntityORM } from '../../../ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity';
 import { ProductoImagenEntityORM } from '../../../producto-imagen/infrastructure/persistence/producto-imagen.orm-entity';
 import { PedidoDetalleEntityORM } from '../../../pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity';
 import { ProveedorEntityORM } from '../../../proveedor/infrastructure/persistence/proveedor.orm-entity';
+
 
 @Entity({ name: 'producto' })
 export class ProductoEntityORM {
@@ -30,7 +31,7 @@ export class ProductoEntityORM {
   @Column({ name: 'cantidad', type: 'int' })
   cantidad!: number;
 
-  @Column({ name: 'precio', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'precio', precision: 14, scale: 2, type: 'numeric' })
   precio!: number;
 
   @Column({ name: 'descripcion', type: 'text', nullable: true })

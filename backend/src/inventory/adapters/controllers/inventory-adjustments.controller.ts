@@ -1,12 +1,10 @@
 import { BadRequestException, Controller, DefaultValuePipe, Get, Query, ParseIntPipe, UseGuards } from '@nestjs/common'
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 
-import { TipoCambioEnum } from '../../../entities/ajuste-inventario.orm-entity'
+import { TipoCambioEnum } from '../../../ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity'
 import { GetInventoryAdjustmentsUseCase } from '../../application/use-cases/get-inventory-adjustments.use-case'
 import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard'
 import { RolesGuard } from '../../../auth/adapters/guards/roles.guard'
-import { Roles } from '../../../auth/adapters/decorators/roles.decorator'
-import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity'
 
 @ApiTags('Inventario / Ajustes')
 @UseGuards(JwtAuthGuard, RolesGuard)

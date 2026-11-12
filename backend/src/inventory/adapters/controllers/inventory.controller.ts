@@ -154,6 +154,9 @@ export class InventoryController {
     @Body() dto: RegisterStockAdjustmentDto,
     @CurrentUser() usuarioId: number,
   ) {
+    if (dto.cantidad !== Math.abs(dto.stockNuevo - dto.stockAnterior)) {
+      throw new BadRequestException('cantidad no coincide con el cambio de stock')
+    }
     const result = await this.registerStockAdjustmentUseCase.ejecutar(usuarioId, {
       productoId: dto.productoId,
       stockAnterior: dto.stockAnterior,

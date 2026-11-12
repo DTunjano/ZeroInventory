@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Building, Plus, Search, RotateCw } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
@@ -28,7 +28,7 @@ export function SuppliersPage() {
   const [editingSupplier, setEditingSupplier] = useState<Proveedor | null>(null)
   const [statusModalSupplier, setStatusModalSupplier] = useState<Proveedor | null>(null)
   const [deleteModalSupplier, setDeleteModalSupplier] = useState<Proveedor | null>(null)
-  const { canCreate, canDelete } = usePermissions()
+  const { canCreate } = usePermissions()
 
   const isActive =
     statusFilter === 'ALL' ? undefined : statusFilter === 'ACTIVE' ? true : false
@@ -138,7 +138,7 @@ export function SuppliersPage() {
             setCreateModalOpen(true)
           }
         }}
-        proveedor={editingSupplier || undefined}
+        proveedor={editingSupplier ?? null}
       />
 
       <ConfirmModal

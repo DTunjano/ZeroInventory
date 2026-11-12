@@ -1,0 +1,68 @@
+# Validación de las correcciones
+
+Fecha: 12 de noviembre de 2026. Entorno local Windows/PowerShell, Node.js 24.11.0, pnpm 10.33.2, PostgreSQL 18.0 en Docker.
+
+## Resultados
+
+| Comprobación | Resultado observado |
+| --- | --- |
+| Instalación con lockfile congelado, ambos paquetes | Correcta; no se necesitó resolver dependencias fuera de los lockfiles |
+| Backend `pnpm typecheck` | Correcto |
+| Backend `pnpm lint` | Correcto, sin errores ni avisos de ESLint |
+| Backend `pnpm test -- --runInBand` | 5 suites, **10 pruebas correctas** |
+| Backend `pnpm test:integration` | 1 suite, **21 pruebas correctas**, DB temporal aislada |
+| Backend `pnpm build` | Correcto |
+| Backend `pnpm test:upgrade` | Copia de DB real conservó las filas de las 21 tablas; saldos conciliados; repetición sin cambios |
+| Backend `pnpm db:check` sobre la DB del proyecto | Sin migraciones pendientes, diferencias de stock ni números de pedido duplicados |
+| Frontend `pnpm lint` | Correcto, sin errores ni avisos de ESLint |
+| Frontend `pnpm build` | Correcto; incluye chequeo TypeScript |
+| Backend real `pnpm start:dev` | Compiló sin errores, migraciones al día y API iniciada |
+| Backend compilado `pnpm start:prod` | Arrancó con las credenciales locales actualizadas |
+| HTTP API `/productos` y Swagger `/api/docs` | HTTP 200 |
+| Especificación `/api/docs-json` | Esquema Bearer definido con el mismo nombre usado por los decoradores |
+| `/usuarios` sin sesión | HTTP 401 |
+| Vite real: `/`, `src/main.tsx`, `src/App.tsx`, pantalla de tienda | HTTP 200 y transformación correcta |
+| Docker del proyecto | DB saludable en `127.0.0.1:5432`; pgAdmin en `127.0.0.1:8082` |
+| Inicio de sesión pgAdmin tras rotación | Correcto, respuesta HTTP 302 de autenticación con formulario y CSRF válidos |
+| `git diff --check` | Sin errores de espacios del cambio |
+
+## Cobertura funcional de las 21 pruebas de integración
+
+1. Migración de instalación vacía e idempotencia.
+2. Lectura pública de catálogo y bloqueo de datos privados sin sesión.
+3. Registro de clientes distintos y permisos del rol.
+4. Rechazo de cantidades fraccionarias, precios negativos y campos no admitidos.
+5. Creación de producto, SKU definitivo y saldo inicial consistente.
+6. Aumentos y reducciones con Kardex y auditoría.
+7. Endpoint de ajustes y rechazo de saldos esperados obsoletos.
+8. Rollback de edición de producto si falla la auditoría.
+9. Movimientos de stock atómicos y rechazo de sobregiro.
+10. Dos clientes comprando simultáneamente la última unidad: una sola compra.
+11. Checkout duplicado del mismo carrito: una sola compra.
+12. Numeración única de pedidos para dos carritos concurrentes del mismo cliente.
+13. Pedidos de 120 millones, superiores al antiguo límite monetario.
+14. Cálculo exacto en centavos para precios fraccionarios.
+15. Rollback de pedido, stock, Kardex y carrito cuando falla una escritura posterior.
+16. Rechazo de una dirección de entrega ajena.
+17. Login inválido, cookie HttpOnly, renovación y limpieza al cerrar sesión.
+18. Consultas reales del dashboard y listado de ajustes.
+19. Desactivación de producto sin borrar su historial.
+20. Edición de direcciones por propietario y eliminación lógica de direcciones usadas por pedidos.
+21. CORS con credenciales para el origen autorizado y ausencia de autorización para otro origen.
+
+Las pruebas unitarias incluyen seguridad de cookie en desarrollo/producción y validación de secretos, además de los casos de producto, dashboard y ajustes.
+
+## Límites y avisos
+
+- La validación del frontend incluyó tipos, ESLint, build y respuestas HTTP de Vite. No se hizo una revisión visual manual de todas las pantallas en un navegador.
+- No se hicieron cargas reales de archivos a Cloudinary ni operaciones con un procesador de pagos externo. El proyecto registra pagos internos.
+- Vite mostró un aviso informativo de tiempo empleado en Babel/React Compiler. No bloquea el build. La carga por rutas redujo el archivo inicial de aproximadamente 1.39 MB a 442 kB antes de gzip, y el build dejó de avisar por chunks superiores a 500 kB.
+- El dataset de compatibilidad de Browserslist instalado puede mostrar un aviso de antigüedad en desarrollo. No se alteraron dependencias ajenas al cambio para ocultarlo.
+- En el entorno aislado de ejecución, la primera instancia Vite no podía resolver/acceder correctamente a dependencias y al puerto del host. Se repitió fuera de ese aislamiento y las mismas fuentes respondieron correctamente sin ajustes de código para ese problema.
+- El push original se reprodujo con `--dry-run` y fue rechazado por divergencia. Los resultados locales anteriores no dependen de GitHub Actions. El workflow añadido ejecuta sus propios controles al publicarse; no se atribuye a CI un resultado que no se haya consultado.
+
+## Conservación y limpieza
+
+Las pruebas crearon y eliminaron únicamente bases temporales con prefijo `zero_inventory_test_`. No insertaron clientes de prueba en la DB del usuario. El respaldo previo de PostgreSQL y el de configuración de pgAdmin permanecen en `.local/backups`, fuera de Git.
+
+Los procesos Node iniciados para comprobar el arranque se detuvieron al terminar. Los servicios Docker del proyecto permanecen activos para que el usuario inicie backend y frontend desde sus dos consolas.

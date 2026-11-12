@@ -47,8 +47,8 @@ export class ActualizarEmpleadoUseCase {
       telefono: dto.telefono !== undefined ? dto.telefono : empleadoExistente.telefono,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const empleadoActualizado = await this.empleadoRepo.actualizar(empleadoId, datosActualizar as any);
+
+    const empleadoActualizado = await this.empleadoRepo.actualizar(empleadoId, datosActualizar, passwordHash);
 
     return {
       ...empleadoActualizado,

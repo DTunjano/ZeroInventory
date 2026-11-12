@@ -22,7 +22,7 @@ export class UsuarioMapper {
 
   static toPersistence(domain: Usuario): UsuarioEntityORM {
     const entity = new UsuarioEntityORM();
-    entity.usuarioId = domain.usuarioId;
+    if (domain.usuarioId > 0) entity.usuarioId = domain.usuarioId;
     entity.username = domain.username;
     entity.email = domain.email;
     entity.telefono = domain.telefono;

@@ -15,7 +15,7 @@ export class ProveedorMapper {
 
   static toPersistence(domain: Proveedor): ProveedorEntityORM {
     const entity = new ProveedorEntityORM();
-    entity.proveedorId = domain.proveedorId;
+    if (domain.proveedorId > 0) entity.proveedorId = domain.proveedorId;
     entity.nombre = domain.nombre;
     entity.nombreTitular = domain.nombreTitular;
     entity.telefono = domain.telefono;

@@ -22,6 +22,6 @@ export abstract class EmpleadoRepositoryPort {
   abstract obtenerPorEmail(email: string): Promise<EmpleadoConRoles | null>;
   abstract obtenerPorDocumento(documento: string): Promise<EmpleadoConRoles | null>;
   abstract listar(filtros?: FiltrosEmpleadoDTO): Promise<PaginatedEmpleados>;
-  abstract actualizar(empleadoId: number, datos: Partial<Empleado>): Promise<Empleado>;
+  abstract actualizar(empleadoId: number, datos: Partial<Empleado>, passwordHash?: string): Promise<Empleado>;
   abstract cambiarEstado(empleadoId: number, estado: string): Promise<Empleado>;
 }

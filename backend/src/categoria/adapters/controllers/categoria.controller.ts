@@ -1,3 +1,4 @@
+import { Public } from '../../../auth/adapters/decorators/public.decorator';
 import {
   Body,
   Controller,
@@ -12,7 +13,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Public } from '../../../auth/adapters/decorators/public.decorator';
 import { CreateCategoriaUseCase } from '../../application/use-cases/create-categoria.use-case';
 import { Categoria } from '../../domain/entity/categoria.entity';
 import { CreateCategoriaDTO } from '../../application/dto/create-categoria-dto';
@@ -55,6 +55,7 @@ export class CategoriaController {
     return categoria;
   }
 
+  @Public()
   @Get()
   @Public()
   @GetAllCategoriaSwagger()
@@ -68,6 +69,7 @@ export class CategoriaController {
     return this.getAllCategoriasUseCase.ejecutar(filters);
   }
 
+  @Public()
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)

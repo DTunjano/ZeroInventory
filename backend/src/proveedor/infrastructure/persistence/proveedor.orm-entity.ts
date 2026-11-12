@@ -2,7 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CompraEntityORM } from '../../../compra/infrastructure/persistence/compra.orm-entity';
 import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
 import { DireccionEntityORM } from '../../../direccion/infrastructure/persistence/direccion.orm-entity';
-import { AjusteInventarioEntityORM } from '../../../entities/ajuste-inventario.orm-entity';
+import { AjusteInventarioEntityORM } from '../../../ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity';
 
 @Entity({ name: 'proveedor' })
 export class ProveedorEntityORM {
