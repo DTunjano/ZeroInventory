@@ -31,7 +31,7 @@ export function HomePage() {
 
   // Determine CTA button text
   const ctaText = isAuthenticated ? config.hero.cta.authenticated : config.hero.cta.unauthenticated
-  const ctaHref = isAuthenticated ? '/admin/products' : '/login'
+  const ctaHref = isAuthenticated ? '/' : '/login'
 
   // Icon map for features
   const iconMap = {

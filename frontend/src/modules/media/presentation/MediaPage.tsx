@@ -87,7 +87,7 @@ export function MediaPage() {
 
   const items = query.data?.data ?? []
   const total = query.data?.total ?? 0
-  const totalPages = query.data?.totalPages ?? 1
+  const totalPages = Math.max(1, query.data?.totalPages ?? 1)
   const activeFilterCount = useMemo(() => (debouncedSearch ? 1 : 0) + (filter === 'all' ? 0 : 1), [debouncedSearch, filter])
 
   return (

@@ -67,3 +67,9 @@ Las pruebas unitarias incluyen seguridad de cookie en desarrollo/producción y v
 Las pruebas crearon y eliminaron únicamente bases temporales con prefijo `zero_inventory_test_`. No insertaron clientes de prueba en la DB del usuario. El respaldo previo de PostgreSQL y el de configuración de pgAdmin permanecen en `.local/backups`, fuera de Git.
 
 Los procesos Node iniciados para comprobar el arranque se detuvieron al terminar. Los servicios Docker del proyecto permanecen activos para que el usuario inicie backend y frontend desde sus dos consolas.
+
+## Revisión funcional posterior — etapa 1 en curso
+
+La evidencia de interfaz del 12 de noviembre de 2026 está en [revision-funcional-mvp.md](revision-funcional-mvp.md). Se verificaron recorridos con tres perfiles ficticios en una base independiente y se corrigieron navegación móvil, acceso desde Home por rol, rótulo del método de pago y paginación de medios vacíos. Después del cambio pasaron `pnpm typecheck`, `pnpm lint` y `pnpm build` del frontend. No se repitieron las suites del backend porque sus fuentes y el esquema no cambiaron.
+
+Esta revisión parcial no cierra el MVP: hay decisiones de alcance y casos de interfaz pendientes. Se detuvieron los procesos de revisión y se comprobó la retirada de su DB temporal, conservando los datos habituales. La pasarela de pagos no se ha incorporado.

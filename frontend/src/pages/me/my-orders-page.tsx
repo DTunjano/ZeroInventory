@@ -132,7 +132,7 @@ function OrderDetailCard(props: { order: Order }) {
                 Pedido #{order.numeroPedidoUsuario}
               </span>
               <Badge variant={getStatusBadgeVariant(order.estado)}>{getStatusLabel(order.estado)}</Badge>
-              <Badge variant="outline">{itemCount} productos</Badge>
+              <Badge variant="outline">{itemCount} {itemCount === 1 ? 'producto' : 'productos'}</Badge>
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
@@ -150,7 +150,7 @@ function OrderDetailCard(props: { order: Order }) {
           <div className="rounded-2xl border border-border/70 bg-gradient-to-br from-slate-950 via-card to-card p-4 shadow-[0_16px_50px_rgba(15,23,42,0.08)] lg:min-w-56 lg:text-right">
             <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Total del pedido</p>
             <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatPrice(order.total)}</p>
-            <p className="mt-1 text-sm text-muted-foreground">Estado de pago: {order.pago ? getPaymentLabel(order.pago.metodoPago) : 'Pendiente'}</p>
+            <p className="mt-1 text-sm text-muted-foreground">Método de pago: {order.pago ? getPaymentLabel(order.pago.metodoPago) : 'Sin registrar'}</p>
           </div>
         </div>
 

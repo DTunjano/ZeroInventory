@@ -21,6 +21,8 @@ No confundir la existencia de una carpeta o de un repositorio CRUD con una funci
 
 ## Lecturas iniciales
 
+- `docs/plan-de-trabajo.md` y `docs/revision-funcional-mvp.md`: etapa activa, criterios de cierre y decisiones pendientes.
+
 - `README.md`: arranque, variables, migraciones, validaciones y versionado.
 - `docs/database-schema.md`: tablas, columnas, enums y claves foráneas.
 - `docs/diagnostics.md`: causas de los problemas históricos comprobados.
@@ -30,6 +32,14 @@ No confundir la existencia de una carpeta o de un repositorio CRUD con una funci
 - Ambos `package.json` y lockfiles cuando se cambien dependencias.
 
 No vuelvas a leer secretos para contestar preguntas que pueden resolverse con nombres de variables, metadatos o consultas agregadas.
+
+## Secuencia de trabajo actual
+
+El usuario pidió avanzar en orden por seis etapas. Solo está activa la **etapa 1: revisión funcional y usabilidad**. No inicies la etapa 2 sin documentar el cierre de la etapa 1 y su aceptación por el usuario. Ejecutar manualmente un recorrido existente no equivale a iniciar la implementación de una etapa futura.
+
+La pasarela de pagos está aplazada explícitamente. Puede documentarse la posibilidad de simulación, pero no deben añadirse integraciones, SDKs, endpoints, webhooks, claves, migraciones ni métodos de pago de un proveedor hasta una autorización posterior específica.
+
+Registra en la matriz qué se probó desde la interfaz, qué solo tiene evidencia API y qué continúa pendiente. No presentes las pantallas provisionales de usuarios/reportes como funcionalidades terminadas ni declares la etapa cerrada con casos del alcance aún sin ejecutar.
 
 ## Arquitectura real
 

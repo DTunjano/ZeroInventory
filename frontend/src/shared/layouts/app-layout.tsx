@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Building,
@@ -25,6 +25,7 @@ import type { ComponentType } from 'react'
 import { useAuthStore } from '@/modules/auth/application/auth.store'
 import { useSettingsStore } from '@/modules/settings/application/settings.store'
 import { Button } from '@/shared/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/shared/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -111,6 +112,8 @@ export function AppLayout(props: { title?: string }) {
   const logout = useAuthStore((s) => s.logout)
   const theme = useSettingsStore((s) => s.theme)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const mobileMenuButton = useRef<HTMLButtonElement>(null)
   const isAuthenticated = status === 'authenticated'
 
   const roles = (user?.roles ?? []).map((r) => r.toUpperCase())
@@ -258,27 +261,72 @@ export function AppLayout(props: { title?: string }) {
           </div>
         </aside>
 
-        <div 
-          className="flex min-w-0 flex-col h-dvh overflow-hidden transition-colors duration-200"
-          style={{
-            marginLeft: isSidebarCollapsed ? '5rem' : '17rem',
-          }}
+        <Dialog open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+          <DialogContent
+            id="mobile-navigation"
+            className="left-0 top-0 flex h-dvh w-[min(20rem,90vw)] max-w-none translate-x-0 translate-y-0 flex-col rounded-none p-5"
+            onCloseAutoFocus={(event) => {
+              event.preventDefault()
+              mobileMenuButton.current?.focus()
+            }}
+          >
+            <DialogTitle>Zero Inventory</DialogTitle>
+            <DialogDescription>{sidebarLabel}</DialogDescription>
+            <nav aria-label="Navegación móvil" className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto py-4">
+              {nav.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={({ isActive }) => cn(
+                    'flex items-center gap-3 rounded-xl px-3 py-3 text-sm',
+                    isActive ? 'bg-blue-500 text-white' : 'text-foreground hover:bg-muted',
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
+            <div className="border-t border-border pt-4">
+              <p className="mb-3 truncate text-sm text-muted-foreground">{accountDisplayName}</p>
+              <Button className="w-full" variant="outline" onClick={async () => {
+                setIsMobileMenuOpen(false)
+                await goToAuthEntry()
+              }}>
+                <LogOut className="mr-2 h-4 w-4" />
+                {accountActionLabel}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <div
+          className={cn(
+            'flex h-dvh min-w-0 flex-col overflow-hidden transition-all duration-200',
+            isSidebarCollapsed ? 'md:ml-20' : 'md:ml-[17rem]',
+          )}
         >
           <header className={cn('app-topbar flex h-16 items-center gap-3 border-b px-4 backdrop-blur-sm', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsSidebarCollapsed((current) => !current)}
+              ref={mobileMenuButton}
+              onClick={() => setIsMobileMenuOpen(true)}
               className={cn('h-10 w-10 md:hidden', isDark ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900')}
-              aria-label={isSidebarCollapsed ? 'Abrir sidebar' : 'Cerrar sidebar'}
+              aria-label="Abrir menú de navegación"
+              aria-haspopup="dialog"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-navigation"
             >
-              {isSidebarCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
+              <Menu className="h-5 w-5" />
             </Button>
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-3">
                 <Button asChild variant="ghost" size="icon" className={cn(isDark ? 'text-white/70' : 'text-slate-600')}>
-                  <Link to="/tienda">
+                  <Link to="/tienda" aria-label="Ir a la tienda">
                     <LayoutGrid className="h-5 w-5" />
                   </Link>
                 </Button>

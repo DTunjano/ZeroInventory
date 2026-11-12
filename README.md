@@ -2,6 +2,8 @@
 
 Aplicación web para administrar productos e inventario y permitir a clientes comprar desde un catálogo. Incluye tienda, carrito, direcciones, pedidos, pagos registrados, proveedores, empleados, usuarios, panel administrativo y contenido multimedia.
 
+El trabajo siguiente se organiza por etapas en [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md). Está activa la revisión funcional de la etapa 1; su evidencia y pendientes están en [docs/revision-funcional-mvp.md](docs/revision-funcional-mvp.md). Las vistas de usuarios y reportes avanzados todavía son provisionales. El alcance completo del MVP requiere aceptación del responsable del proyecto.
+
 ## Requisitos
 
 - Windows con PowerShell, o un sistema con Node.js y Docker equivalentes.
