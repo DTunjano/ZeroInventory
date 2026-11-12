@@ -10,6 +10,10 @@ Se integró el remoto dentro de `codex/fix-inventory-consistency`. Hubo conflict
 
 No se encontró un hook del repositorio que vincule el push a la DB. Publicar código y migrar la DB son operaciones independientes. La solución al rechazo conserva las dos historias y no requiere forzar el remoto.
 
+## Diferencia de ejecución de pruebas en Linux
+
+El primer workflow publicado detectó que `pnpm test -- --runInBand` terminaba en Linux como `jest -- --runInBand`; Jest interpretaba la opción como un patrón y devolvía `No tests found`. El fallo se reprodujo en un contenedor oficial Node 22/Linux. Se corrigieron el workflow y los comandos de documentación para usar `pnpm test --runInBand`, sin desactivar pruebas ni aceptar una ejecución sin tests.
+
 ## Contenedor identificado
 
 Docker confirmó el contenedor `postgres-zero-inventory`, imagen `postgres:18.0`, activo en `5432`. Sus labels indicaban proyecto Compose `zeroinventory`, servicio `db` y este directorio de proyecto. `pgadmin-zero-inventory` estaba activo en `8082`.

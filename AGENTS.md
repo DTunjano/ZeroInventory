@@ -215,7 +215,7 @@ Para cambios en backend:
 cd backend
 pnpm typecheck
 pnpm lint
-pnpm test -- --runInBand
+pnpm test --runInBand
 pnpm test:integration
 pnpm build
 ```
@@ -230,6 +230,8 @@ pnpm build
 ```
 
 La integración crea una base `zero_inventory_test_*` por ejecución, necesita permiso `CREATEDB` y la elimina al terminar. El guard del test rechaza ejecutar sobre la DB del usuario. No relajes ese guard para resolver un error de configuración.
+
+Pasa los argumentos de Jest directamente a pnpm: `pnpm test --runInBand`. No añadas otro separador `--` entre `test` y la opción: se comprobó que en Linux llega a Jest como un filtro de nombres y provoca `No tests found`, aunque en PowerShell la misma línea aparente funcionar.
 
 Agrega pruebas que detecten el riesgo real: concurrencia de última unidad y mismo carrito, rollback a mitad de escritura, números únicos por cliente, disminución/incremento con Kardex, propiedad de dirección, números monetarios límite y cookies de producción. Evita pruebas que solo repliquen detalles internos sin comprobar una propiedad útil.
 

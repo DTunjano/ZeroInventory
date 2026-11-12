@@ -9,8 +9,9 @@ Fecha: 12 de noviembre de 2026. Entorno local Windows/PowerShell, Node.js 24.11.
 | Instalación con lockfile congelado, ambos paquetes | Correcta; no se necesitó resolver dependencias fuera de los lockfiles |
 | Backend `pnpm typecheck` | Correcto |
 | Backend `pnpm lint` | Correcto, sin errores ni avisos de ESLint |
-| Backend `pnpm test -- --runInBand` | 5 suites, **10 pruebas correctas** |
+| Backend `pnpm test --runInBand` | 5 suites, **10 pruebas correctas** |
 | Backend `pnpm test:integration` | 1 suite, **21 pruebas correctas**, DB temporal aislada |
+| Reproducción en Node 22/Linux con PostgreSQL independiente | **10 unitarias y 21 de integración correctas**, build correcto; contenedores temporales retirados |
 | Backend `pnpm build` | Correcto |
 | Backend `pnpm test:upgrade` | Copia de DB real conservó las filas de las 21 tablas; saldos conciliados; repetición sin cambios |
 | Backend `pnpm db:check` sobre la DB del proyecto | Sin migraciones pendientes, diferencias de stock ni números de pedido duplicados |

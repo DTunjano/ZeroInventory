@@ -219,7 +219,7 @@ Detén el proceso en observación si vas a realizar una validación completa, y 
 # Consola backend
 pnpm typecheck
 pnpm lint
-pnpm test -- --runInBand
+pnpm test --runInBand
 pnpm test:integration
 pnpm test:upgrade
 pnpm build
