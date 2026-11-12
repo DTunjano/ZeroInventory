@@ -157,11 +157,11 @@ Los directorios históricos `kardex`, `ajuste-inventario` y `compra-detalle` se 
 
 ## Usuarios y reglas del catálogo del MVP
 
-La pantalla **Usuarios y roles** permite a ADMIN crear/editar cuentas, asignar los tres roles existentes, buscar, filtrar y desactivar/reactivar. Las respuestas no contienen contraseñas ni hashes. Los cambios de roles y de cuenta activa se comprueban en cada solicitud; no se permite dejar el sistema sin administrador activo. Crear un perfil CUSTOMER nuevo necesita documento. La ficha laboral se administra por separado en Empleados.
+La pantalla **Usuarios y roles** permite a ADMIN crear/editar cuentas, asignar los tres roles existentes, buscar, filtrar y desactivar/reactivar. Las respuestas no contienen contraseñas ni hashes. Los cambios de roles y de cuenta activa se comprueban en cada solicitud; no se permite dejar el sistema sin administrador activo. Crear un perfil CUSTOMER nuevo necesita documento. La ficha laboral se administra por separado en Empleados. El registro de cliente y el alta de empleado guardan cuenta, perfil y roles atómicamente.
 
-Las altas de producto exigen proveedor, al menos una categoría y precio mayor que cero; **la imagen es opcional**. Producto, categorías, SKU y movimiento inicial se guardan atómicamente. La edición conserva campos omitidos y los datos históricos existentes. Si falla una carga de imagen posterior, se informa que el producto sí quedó guardado para evitar creaciones duplicadas.
+Las altas de producto exigen proveedor, al menos una categoría y precio mayor que cero; **la imagen es opcional** (PNG/JPEG/WebP de hasta 5 MB). Producto, categorías, SKU y movimiento inicial se guardan atómicamente. La edición conserva campos omitidos y los datos históricos existentes. Si falla una carga de imagen posterior, se informa que el producto sí quedó guardado para evitar creaciones duplicadas.
 
-Los contratos HTTP, transacciones y límites están en [docs/usuarios-y-productos.md](docs/usuarios-y-productos.md). No se añadieron servicios de arranque ni migraciones; se conservan las dos consolas habituales. Esta entrega no integra pasarela de pagos.
+Los contratos HTTP, transacciones y límites están en [docs/usuarios-y-productos.md](docs/usuarios-y-productos.md). No se añadieron servicios de arranque ni migraciones; se conservan las dos consolas habituales. Los filtros de pedidos por estado/fecha/orden están validados en la API y conservan controles para limpiar resultados vacíos. Esta entrega no integra pasarela de pagos.
 
 ## Roles y autenticación
 

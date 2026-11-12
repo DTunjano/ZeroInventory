@@ -1,3 +1,4 @@
+import { formatCOP as formatPrice } from '@/shared/lib/currency'
 import { useMutation } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { confirmPayment } from '@/modules/payment/application/payment.use-cases'
@@ -13,13 +14,7 @@ interface PaymentConfirmationModalProps {
   onSuccess: () => void
 }
 
-function formatPrice(value: number): string {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
+
 
 export function PaymentConfirmationModal(props: PaymentConfirmationModalProps) {
   const { pagoId, monto, isOpen, onClose, onSuccess } = props

@@ -34,6 +34,7 @@ import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
 import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 import { JwtAccessPayload } from '../../../auth/infrastructure/strategies/jwt.strategy';
 import { ClienteRepository } from '../../../cliente/domain/repository/cliente.repository';
+import { FiltersMyOrdersDTO } from '../../application/dto/filters-my-orders.dto';
 
 @ApiTags('Pedidos')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -51,12 +52,12 @@ export class PedidoController {
 
   @Get('me')
   @Roles(RolNombreEnum.CUSTOMER)
-  async getMyOrders(@Req() req: { user: JwtAccessPayload }): Promise<OrderView[]> {
+  async getMyOrders(@Req() req: { user: JwtAccessPayload }, @Query() filters: FiltersMyOrdersDTO): Promise<OrderView[]> {
     const cliente = await this.clienteRepo.getByUsuarioId(req.user.sub);
     if (!cliente) {
       return [];
     }
-    return this.getOrdersByClienteUseCase.ejecutar(cliente.clienteId);
+    return this.getOrdersByClienteUseCase.ejecutar(cliente.clienteId, filters);
   }
 
   @Post()

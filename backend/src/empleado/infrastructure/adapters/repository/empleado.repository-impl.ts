@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsuarioEntityORM } from '../../../../usuario/infrastructure/persistence/usuario.orm-entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,6 +14,9 @@ import {
 import { EmpleadoEntityORM } from '../persistence/empleado.orm-entity';
 import { EmpleadoMapper } from '../persistence/empleado.mapper';
 import { lockAccess, preserveAdmin } from '../../../../usuario/infrastructure/persistence/access-policy';
+import { RolEntityORM } from '../../../../rol/infrastructure/persistence/rol.orm-entity';
+import { RolNombreEnum } from '../../../../rol/domain/entity/rol.entity';
+import { UsuarioRolEntityORM } from '../../../../usuario-rol/infrastructure/persistence/usuario-rol.orm-entity';
 
 @Injectable()
 export class EmpleadoRepositoryImpl implements EmpleadoRepositoryPort {
@@ -22,10 +25,23 @@ export class EmpleadoRepositoryImpl implements EmpleadoRepositoryPort {
     private readonly repo: Repository<EmpleadoEntityORM>,
   ) {}
 
-  async crear(empleado: Empleado): Promise<Empleado> {
-    const entity = EmpleadoMapper.toPersistence(empleado);
-    const saved = await this.repo.save(entity);
-    return EmpleadoMapper.toDomain(saved);
+  async crear(empleado: Empleado, passwordHash?: string): Promise<Empleado> {
+    return this.repo.manager.transaction(async (manager) => {
+      await lockAccess(manager);
+      const saved = await manager.save(EmpleadoEntityORM, EmpleadoMapper.toPersistence(empleado));
+      if (passwordHash) {
+        const role = await manager.findOneBy(RolEntityORM, { nombre: RolNombreEnum.EMPLOYEE });
+        if (!role) throw new NotFoundException('Rol EMPLOYEE no encontrado');
+        const user = await manager.save(UsuarioEntityORM, manager.create(UsuarioEntityORM, {
+          username: empleado.email, email: empleado.email, password: passwordHash,
+          telefono: empleado.telefono, primerNombre: empleado.nombre, isActive: true,
+        }));
+        await manager.insert(UsuarioRolEntityORM, { usuarioId: user.usuarioId, rolId: role.rolId });
+        saved.usuarioId = user.usuarioId;
+        await manager.save(EmpleadoEntityORM, saved);
+      }
+      return EmpleadoMapper.toDomain(saved);
+    });
   }
 
   async obtenerPorId(empleadoId: number): Promise<EmpleadoConRoles | null> {

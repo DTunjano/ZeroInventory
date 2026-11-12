@@ -17,7 +17,7 @@ export interface PaginatedEmpleados {
 }
 
 export abstract class EmpleadoRepositoryPort {
-  abstract crear(empleado: Empleado): Promise<Empleado>;
+  abstract crear(empleado: Empleado, passwordHash?: string): Promise<Empleado>;
   abstract obtenerPorId(empleadoId: number): Promise<EmpleadoConRoles | null>;
   abstract obtenerPorEmail(email: string): Promise<EmpleadoConRoles | null>;
   abstract obtenerPorDocumento(documento: string): Promise<EmpleadoConRoles | null>;

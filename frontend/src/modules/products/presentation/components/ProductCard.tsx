@@ -1,3 +1,4 @@
+import { formatCOP } from '@/shared/lib/currency'
 import { cn } from '@/shared/lib/utils'
 import { truncateText } from '../../domain/text.utils'
 import type { Product } from '../../domain/product.models'
@@ -29,7 +30,7 @@ export function ProductCard({
   onSoftDelete,
   isLoading = false,
 }: ProductCardProps) {
-  const displayPrice = typeof product.precio === 'number' ? product.precio.toFixed(2) : '0.00'
+  const displayPrice = formatCOP(product.precio)
   const displayQuantity = typeof product.cantidad === 'number' ? product.cantidad : 0
   const productNameDisplay = truncateText(product.nombre, 40)
 
@@ -113,7 +114,7 @@ export function ProductCard({
         <div className="grid grid-cols-2 gap-4 pt-2 border-t border-white/10">
           <div>
             <p className="text-xs text-white/60 mb-2">Precio</p>
-            <p className="text-xl font-bold text-white">${displayPrice}</p>
+            <p className="text-xl font-bold text-white">{displayPrice}</p>
           </div>
 
           <div className="text-right">

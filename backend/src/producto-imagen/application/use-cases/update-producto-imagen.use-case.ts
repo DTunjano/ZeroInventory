@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductoImagenRepository } from '../../domain/repository/producto-imagen.repository';
 import { ProductoImagen } from '../../domain/entity/producto-imagen.entity';
 import { CloudinaryService } from '../../../../infrastructure/cloudinary/cloudinary.service';
+import { validateProductImage } from '../validate-product-image';
 
 @Injectable()
 export class UpdateProductoImagenUseCase {
@@ -23,7 +24,8 @@ export class UpdateProductoImagenUseCase {
     }
 
     if (cambios.url !== undefined) {
-      await this.cloudinaryService.deleteImage(actual.publicId);
+      validateProductImage(cambios.url);
+      const previousPublicId = actual.publicId;
 
       const uploadResult = await this.cloudinaryService.uploadImage(
         cambios.url,
@@ -32,8 +34,17 @@ export class UpdateProductoImagenUseCase {
         },
       );
 
-      actual.url = uploadResult.secure_url;
-      actual.publicId = uploadResult.public_id;
+      const updated = new ProductoImagen(actual.imagenProductoId, actual.productoId, uploadResult.secure_url,
+        uploadResult.public_id, actual.createdAt, new Date());
+      let saved: ProductoImagen;
+      try {
+        saved = await this.productoImagenRepo.update(updated);
+      } catch (error) {
+        await this.cloudinaryService.deleteImage(uploadResult.public_id);
+        throw error;
+      }
+      await this.cloudinaryService.deleteImage(previousPublicId);
+      return saved;
     }
 
     actual.updatedAt = new Date();

@@ -221,6 +221,14 @@ TLS de PostgreSQL verifica certificados. No uses `rejectUnauthorized:false` como
 
 Cloudinary maneja imágenes/videos; Multer recibe archivos. Revisa tipo MIME, tamaño y contenido antes de subir. Conserva compensaciones: si la carga externa se completó y falla la persistencia, limpia el recurso recién creado sin borrar medios existentes de otros registros.
 
+Las imágenes de producto admiten PNG/JPEG/WebP, máximo 5 MB: `validateProductImage` comprueba firma y MIME, y Multer limita el tamaño antes de cargar todo el archivo. Usa URLs HTTPS de Cloudinary. Al reemplazar una imagen o video, guarda primero la referencia nueva; solo después retira el recurso anterior. Un fallo de DB compensa únicamente el recurso nuevo. Los videos se eliminan con `resource_type: video`; no uses el tipo predeterminado image ni ocultes fallos del proveedor con logs de éxito. No registres objetos completos de error del SDK.
+
+El alta pública de cliente y el alta administrativa de empleado guardan perfil/cuenta/roles en una transacción. No vuelvas a dividir esas escrituras entre repositorios con conexiones distintas: una unicidad fallida no debe dejar perfiles o cuentas huérfanos.
+
+`GET /pedidos/me` recibe filtros validados de estado, fechas ISO sin hora y orden de una lista constante. Siempre conserva el cliente autenticado como condición; la fecha final incluye el día completo. La interfaz conserva los controles cuando el resultado queda vacío y ofrece limpiar filtros. Evita volver a filtrar fechas en el navegador sobre resultados ya filtrados por la DB.
+
+React Hook Form expone estado mediante proxies. En Configuración, suscribe `isDirty` e `isValid` con `useFormState` y léelos sin cortocircuitos; se comprobó que el botón podía quedar deshabilitado con cambios válidos. `formatCOP` es la presentación compartida del catálogo/carrito/pedidos y conserva hasta dos decimales. Las listas de proveedores se invalidan tras alta/edición; no uses toggle como sustituto de una eliminación lógica idempotente.
+
 Las pruebas aisladas no deben cargar archivos al Cloudinary real ni enviar correos o mensajes. Si un cambio requiere probar el servicio externo, delimita una cuenta/asset de prueba y registra qué se comprobó.
 
 ## Pruebas y controles

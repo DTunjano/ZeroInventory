@@ -50,10 +50,19 @@ Producto, SKU definitivo, categorías y movimiento inicial se guardan en una tra
 
 En `PUT /productos/:id`, los campos omitidos se conservan. `proveedorId` enviado no admite null; `categoriaIds` enviado requiere al menos una categoría válida; un precio enviado debe ser mayor que cero. Las altas nuevas siguen la política aprobada; no se reescribieron los productos históricos que carecen de proveedor/categoría o tienen precio cero. Cambiar solo el estado envía únicamente `isActive` para preservar el stock actual y permitir desactivar registros históricos.
 
-Si se guarda el producto y falla la carga opcional posterior de una imagen, la interfaz informa que el producto quedó guardado y que la imagen puede cargarse al editar. No presenta esa situación como una creación fallida que deba repetirse. Esta entrega no realizó cargas al Cloudinary real; la disponibilidad del proveedor sigue pendiente de validación con un asset de prueba delimitado.
+Si se guarda el producto y falla la carga opcional posterior de una imagen, la interfaz informa que el producto quedó guardado y que la imagen puede cargarse al editar. No presenta esa situación como una creación fallida que deba repetirse. Se validó la carga real de un PNG ficticio de 32×32 autorizado, vinculado solo a la DB temporal. Se verificó su renderizado y después se retiró el recurso con autorización expresa. No se cargaron videos reales.
 
 ## Reportes y estado de la etapa
 
 Los reportes avanzados se excluyeron de la primera entrega por decisión del usuario. Se retiraron del menú; la ruta antigua explica el aplazamiento y enlaza al dashboard existente. No se anunciaron fechas de disponibilidad.
 
 Esta decisión cierra el acuerdo de alcance de usuarios/reportes y catálogo, no la etapa 1 completa. Su matriz y casos pendientes continúan en [revision-funcional-mvp.md](revision-funcional-mvp.md). La etapa 2 y la pasarela siguen sin iniciarse.
+
+## Ampliación de validación y medios
+
+- El registro público de cliente y el alta de empleado usan una transacción para perfil/cuenta/roles. Conflictos de documento o cuenta no dejan registros parciales; hay pruebas de concurrencia y rollback.
+- `GET /pedidos/me` acepta `estado`, `dateFrom`, `dateTo`, `sortBy` (`fecha_desc`, `fecha_asc`, `total_desc`, `total_asc`). Las fechas tienen formato `YYYY-MM-DD`; la final incluye todo el día. El cliente autenticado siempre limita la consulta. Una fecha invertida o un valor fuera de las listas admitidas devuelve 400. Los controles siguen visibles sin resultados y permiten limpiar filtros.
+- Las imágenes de producto aceptan PNG/JPEG/WebP de hasta 5 MB, con firma/MIME comprobados y límite Multer. La imagen nueva se persiste antes de retirar la anterior; al fallar la DB se limpia solo el recurso recién creado. Para videos se comprueba firma MP4/WebM y se retiran con el tipo de recurso video.
+- La vista de proveedores refresca sus datos al guardar y consulta su trazabilidad. Eliminar lógicamente asigna `isActive: false`, incluso si ya estaba inactivo; no alterna el estado.
+- El formato COP compartido muestra los centavos admitidos por el servidor, en vez de redondearlos visualmente a cero. Configuración usa una suscripción explícita al estado del formulario para habilitar guardar con cambios válidos.
+- Los recorridos de registro, direcciones, carrito, pedidos, proveedores, empleados, perfil y auditoría están documentados en la matriz. Videos reales, modo claro y las limitaciones indicadas aún requieren acordar/completar aceptación antes de cerrar etapa 1.

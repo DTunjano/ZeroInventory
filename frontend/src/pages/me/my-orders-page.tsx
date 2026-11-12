@@ -1,3 +1,4 @@
+import { formatCOP as formatPrice } from '@/shared/lib/currency'
 import { useMemo, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -24,13 +25,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { DropdownSelect } from '@/shared/components/DropdownSelect'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 
-function formatPrice(value: number): string {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
+
 
 function formatDate(date: string | Date): string {
   return new Intl.DateTimeFormat('es-CO', {
@@ -335,42 +330,13 @@ export function MyOrdersPage() {
     }
   }, [orders])
 
-  const filteredAndSortedOrders = useMemo(() => {
-    let list = [...orders]
-
-    if (statusFilter !== 'ALL') {
-      list = list.filter((o) => o.estado === statusFilter)
-    }
-
-    if (dateFrom) {
-      const from = new Date(dateFrom)
-      list = list.filter((o) => new Date(o.fecha) >= from)
-    }
-
-    if (dateTo) {
-      const to = new Date(dateTo)
-      // include the whole day
-      to.setHours(23, 59, 59, 999)
-      list = list.filter((o) => new Date(o.fecha) <= to)
-    }
-
-    switch (sortBy) {
-      case 'fecha_asc':
-        list.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
-        break
-      case 'fecha_desc':
-        list.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-        break
-      case 'total_asc':
-        list.sort((a, b) => a.total - b.total)
-        break
-      case 'total_desc':
-        list.sort((a, b) => b.total - a.total)
-        break
-    }
-
-    return list
-  }, [orders, statusFilter, dateFrom, dateTo, sortBy])
+  const hasFilters = statusFilter !== 'ALL' || !!dateFrom || !!dateTo
+  function resetFilters() {
+    setStatusFilter('ALL')
+    setDateFrom(null)
+    setDateTo(null)
+    setSortBy('fecha_desc')
+  }
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -392,13 +358,13 @@ export function MyOrdersPage() {
           <StatCard
             label="Pedidos"
             value={String(orders.length)}
-            description="Compras registradas en tu cuenta"
+            description="Compras que coinciden con los filtros"
             icon={<ShoppingBag className="h-5 w-5" />}
           />
           <StatCard
             label="Gastado"
             value={formatPrice(summary.totalSpent)}
-            description="Total acumulado en pedidos"
+            description="Total de los pedidos mostrados"
             icon={<CircleDollarSign className="h-5 w-5" />}
           />
           <StatCard
@@ -429,10 +395,9 @@ export function MyOrdersPage() {
             <Button variant="outline" onClick={() => void ordersQuery.refetch()}>
               Reintentar
             </Button>
+            <Button variant="outline" className="ml-2" onClick={resetFilters}>Limpiar filtros</Button>
           </CardContent>
         </Card>
-      ) : !hasOrders ? (
-        <EmptyState />
       ) : (
         <div className="space-y-4">
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -456,13 +421,13 @@ export function MyOrdersPage() {
               </div>
 
               <div>
-                <label className="text-xs text-white/70">Desde</label>
-                <Input type="date" value={dateFrom ?? ''} onChange={(e) => setDateFrom(e.target.value || null)} className="mt-1" />
+                <label htmlFor="orders-date-from" className="text-xs text-white/70">Desde</label>
+                <Input id="orders-date-from" type="date" value={dateFrom ?? ''} onChange={(e) => setDateFrom(e.target.value || null)} className="mt-1" />
               </div>
 
               <div>
-                <label className="text-xs text-white/70">Hasta</label>
-                <Input type="date" value={dateTo ?? ''} onChange={(e) => setDateTo(e.target.value || null)} className="mt-1" />
+                <label htmlFor="orders-date-to" className="text-xs text-white/70">Hasta</label>
+                <Input id="orders-date-to" type="date" value={dateTo ?? ''} onChange={(e) => setDateTo(e.target.value || null)} className="mt-1" />
               </div>
 
               <div>
@@ -484,8 +449,10 @@ export function MyOrdersPage() {
             </div>
           </div>
 
+          <Button variant="outline" disabled={!hasFilters} onClick={resetFilters}>Limpiar filtros</Button>
           <div className="space-y-4">
-            {filteredAndSortedOrders.map((order) => (
+            {!hasOrders && (hasFilters ? <p role="status">No hay pedidos con los filtros seleccionados.</p> : <EmptyState />)}
+            {orders.map((order) => (
               <OrderDetailCard key={order.pedidoId} order={order} />
             ))}
           </div>

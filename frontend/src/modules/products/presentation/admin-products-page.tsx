@@ -293,7 +293,7 @@ export function AdminProductsPage() {
     form.reset(defaults)
   }, [editing, open, form])
 
-  const invalidateProducts = () => Promise.all(['products', 'product-images', 'all-product-images', 'product-category-ids', 'category-ids-by-products', 'store-products', 'inventory-products', 'inventory-summary', 'inventory-adjustments', 'admin-dashboard', 'cart'].map((key) => qc.invalidateQueries({ queryKey: [key] })))
+  const invalidateProducts = () => Promise.all(['products', 'proveedores', 'providers', 'product-images', 'all-product-images', 'product-category-ids', 'category-ids-by-products', 'store-products', 'inventory-products', 'inventory-summary', 'inventory-adjustments', 'admin-dashboard', 'cart'].map((key) => qc.invalidateQueries({ queryKey: [key] })))
 
   const upsertMutation = useMutation({
     mutationFn: async (values: FormValues) => {
@@ -759,9 +759,10 @@ export function AdminProductsPage() {
               <Input
                 id="imagen"
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/webp"
                 onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
               />
+              <p className="text-xs text-muted-foreground">PNG, JPEG o WebP; máximo 5 MB. La imagen es opcional.</p>
               <div className="mt-2 rounded-lg border bg-card p-2">
                 <div className="flex h-40 w-full items-center justify-center overflow-hidden rounded-md bg-muted/30">
                   {imagePreviewUrl ? (

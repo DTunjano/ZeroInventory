@@ -19,6 +19,7 @@ import {
 } from '@/shared/ui/dropdown-menu'
 import { usePermissions } from '@/shared/hooks/usePermissions'
 import type { Proveedor } from '../domain/supplier.entity'
+import { useGetSuppliedProductCount } from '../application/hooks/useSuppliers'
 
 export type SupplierCardProps = {
   proveedor: Proveedor
@@ -54,6 +55,8 @@ export function SupplierCard({ proveedor, onEdit, onToggleStatus, onDelete }: Su
   const initials = getInitials(proveedor.nombre)
   const direccionPrincipal = proveedor.direcciones?.[0]
   const { canDelete, canDeactivate } = usePermissions()
+  const suppliedQuery = useGetSuppliedProductCount(proveedor.proveedorId)
+  const suppliedCount = proveedor.productosSuministrados ?? suppliedQuery.data
 
   return (
     <article className="rounded-2xl border border-white/10 bg-zinc-900/80 p-5 shadow-lg shadow-black/25 backdrop-blur-sm transition-colors hover:border-blue-500/30">
@@ -140,10 +143,10 @@ export function SupplierCard({ proveedor, onEdit, onToggleStatus, onDelete }: Su
         <div className="flex items-center justify-between gap-2">
           <p className="flex items-center gap-2 text-sm text-zinc-400">
             <Building className="h-4 w-4 text-zinc-500" />
-            {typeof proveedor.productosSuministrados === 'number' ? (
-              <span>{proveedor.productosSuministrados} productos suministrados</span>
+            {typeof suppliedCount === 'number' ? (
+              <span>{suppliedCount} productos suministrados</span>
             ) : (
-              <span className="italic">Calculando trazabilidad...</span>
+              <span className="italic">{suppliedQuery.isPending ? 'Calculando trazabilidad…' : 'Trazabilidad no disponible'}</span>
             )}
           </p>
           <StatusBadge isActive={proveedor.isActive} />

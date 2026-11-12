@@ -15,9 +15,6 @@ import {
   Menu,
   X,
   LogOut,
-  Bell,
-  Sparkles,
-  HelpCircle,
   Film,
 } from 'lucide-react'
 import type { ComponentType } from 'react'
@@ -331,13 +328,7 @@ export function AppLayout(props: { title?: string }) {
                   </Link>
                 </Button>
 
-                <Button variant="ghost" size="icon" className={cn(isDark ? 'text-white/70' : 'text-slate-600')} title="Ofertas">
-                  <Sparkles className="h-5 w-5" />
-                </Button>
 
-                <Button variant="ghost" size="icon" className={cn(isDark ? 'text-white/70' : 'text-slate-600')} title="Ayuda">
-                  <HelpCircle className="h-5 w-5" />
-                </Button>
 
                 <div className={cn('ml-4 hidden min-w-0 items-center gap-2 rounded-2xl px-3 py-2', isDark ? 'bg-white/3' : 'bg-slate-100')}>
                   <div className={cn('text-sm font-medium', isDark ? 'text-white/80' : 'text-slate-800')}>Súper atajos</div>
@@ -346,9 +337,6 @@ export function AppLayout(props: { title?: string }) {
               </div>
             </div>
 
-            <Button variant="ghost" size="icon" className={cn('h-10 w-10', isDark ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900')} aria-label="Notificaciones">
-              <Bell className="h-4 w-4" />
-            </Button>
 
             {/* Usuario: eliminado del header porque ya existe en la sidebar */}
           </header>

@@ -180,7 +180,7 @@ export function SuppliersPage() {
         title="Eliminar proveedor"
         description={
           deleteModalSupplier
-            ? `Se desactivara a ${deleteModalSupplier.nombre} (soft delete). Deseas continuar?`
+            ? `Se desactivará a ${deleteModalSupplier.nombre} conservando su historial. ¿Deseas continuar?`
             : undefined
         }
         confirmText="Eliminar"
@@ -188,7 +188,7 @@ export function SuppliersPage() {
         onConfirm={() => {
           if (!deleteModalSupplier) return
           supplierService
-            .toggleStatus(deleteModalSupplier.proveedorId)
+            .update(deleteModalSupplier.proveedorId, { isActive: false })
             .then(() => {
               toast.success('Proveedor desactivado')
               void qc.invalidateQueries({ queryKey: ['proveedores'] })

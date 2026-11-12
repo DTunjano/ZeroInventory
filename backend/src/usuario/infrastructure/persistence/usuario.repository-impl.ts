@@ -27,7 +27,7 @@ export class UsuarioRepositoryImpl implements UsuarioRepository {
     if (!names.length || roles.length !== names.length) throw new BadRequestException('Selecciona roles válidos');
     if (names.includes(RolNombreEnum.CUSTOMER) && !await manager.existsBy(ClienteEntityORM, { usuarioId })) {
       if (!access.documento?.trim()) throw new BadRequestException('El documento es obligatorio para crear el perfil de cliente');
-      await manager.insert(ClienteEntityORM, { usuarioId, documento: access.documento.trim(), tipoDocumento: TipoDocumentoEnum.CC });
+      await manager.insert(ClienteEntityORM, { usuarioId, documento: access.documento.trim(), tipoDocumento: access.tipoDocumento ?? TipoDocumentoEnum.CC });
     }
     await manager.delete(UsuarioRolEntityORM, { usuarioId });
     await manager.insert(UsuarioRolEntityORM, roles.map((role) => ({ usuarioId, rolId: role.rolId })));

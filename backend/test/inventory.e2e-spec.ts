@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'node:http';
 import { Test } from '@nestjs/testing';
+import { JwtService } from '@nestjs/jwt';
 import { DataSource } from 'typeorm';
 import request from 'supertest';
 import * as bcrypt from 'bcrypt';
@@ -90,6 +91,78 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
     await api().post('/productos').set(auth(first.token)).send({ nombre: 'No autorizado', cantidad: 1, precio: 1 }).expect(403);
     await api().get('/settings/appearance').set(auth(first.token)).expect(200);
   });
+  it('registers one customer for a concurrent duplicate document without orphan accounts', async () => {
+    const suffix = ++sequence;
+    const usernames = [`registration_a_${suffix}`, `registration_b_${suffix}`];
+    const results = await Promise.all(usernames.map((username) => api().post('/auth/register').send({ username, password, documento: `REG-CONCURRENT-${suffix}`, tipoDocumento: 'CE' })));
+    expect(results.map((result) => result.status).sort()).toEqual([201, 409]);
+    expect((await db.query('SELECT 1 FROM usuario WHERE username=ANY($1::text[])', [usernames])).length).toBe(1);
+    const [profile] = await db.query('SELECT tipo_documento FROM cliente WHERE documento=$1', [`REG-CONCURRENT-${suffix}`]);
+    expect(profile.tipo_documento).toBe('CE');
+  });
+  it('filters and sorts only the authenticated customer orders with inclusive end dates', async () => {
+    const c = await customer(); const other = await customer();
+    const first = await product(2, 100); const second = await product(2, 200);
+    await add(c, first.productoId); const orderA = await checkout(c).expect(201);
+    await add(c, second.productoId); const orderB = await checkout(c).expect(201);
+    await db.query("UPDATE pedido SET fecha='2026-01-02 23:59:59',estado='COMPLETADO' WHERE pedido_id=$1", [orderA.body.pedidoId]);
+    await db.query("UPDATE pedido SET fecha='2026-01-03 00:00:00' WHERE pedido_id=$1", [orderB.body.pedidoId]);
+    const sorted = await api().get('/pedidos/me').set(auth(c.token)).query({ sortBy: 'total_asc' }).expect(200);
+    expect(sorted.body.map((order: { total: number }) => order.total)).toEqual([100, 200]);
+    const filtered = await api().get('/pedidos/me').set(auth(c.token)).query({ dateFrom: '2026-01-02', dateTo: '2026-01-02', estado: 'COMPLETADO' }).expect(200);
+    expect(filtered.body.map((order: { pedidoId: number }) => order.pedidoId)).toEqual([orderA.body.pedidoId]);
+    await api().get('/pedidos/me').set(auth(other.token)).expect(200).expect((result) => expect(result.body).toEqual([]));
+    for (const query of [{ dateFrom: '2026-02-30' }, { dateFrom: '2026-02-02', dateTo: '2026-01-01' }, { sortBy: 'total; DROP TABLE pedido' }, { estado: 'PAID' }, { clienteId: c.clientId }]) {
+      await api().get('/pedidos/me').set(auth(c.token)).query(query).expect(400);
+    }
+  });
+  it('creates employee, account and role atomically and rolls back an account conflict', async () => {
+    const suffix = ++sequence;
+    const email = `employee-create-${suffix}@example.test`;
+    const created = await api().post('/empleados').set(auth(adminToken)).send({ nombre: 'Empleado ficticio', email, password, documento: `EMP-${suffix}` }).expect(201);
+    expect(created.body.usuarioId).toBeGreaterThan(0);
+    const login = await api().post('/auth/login').send({ username: email, password }).expect(201);
+    expect(login.body.user.roles).toEqual(['EMPLOYEE']);
+    const collisionEmail = `employee-collision-${suffix}@example.test`;
+    await api().post('/usuarios').set(auth(adminToken)).send({ username: collisionEmail, password, roles: ['EMPLOYEE'] }).expect(201);
+    await api().post('/empleados').set(auth(adminToken)).send({ nombre: 'No debe persistirse', email: collisionEmail, password }).expect(409);
+    expect((await db.query('SELECT 1 FROM empleado WHERE email=$1', [collisionEmail])).length).toBe(0);
+  });
+  it('filters inactive suppliers and keeps repeated logical deactivation idempotent', async () => {
+    const nombre = `Proveedor estado ${++sequence}`;
+    const created = await api().post('/proveedores').set(auth(adminToken)).send({ nombre }).expect(201);
+    const id = created.body.proveedorId as number;
+    for (let index = 0; index < 2; index++) await api().put(`/proveedores/${id}`).set(auth(adminToken)).send({ isActive: false }).expect(200);
+    const inactive = await api().get('/proveedores').set(auth(adminToken)).query({ nombre, isActive: false }).expect(200);
+    expect(inactive.body.data.map((supplier: { proveedorId: number }) => supplier.proveedorId)).toEqual([id]);
+    await api().get('/proveedores').set(auth(adminToken)).query({ nombre, isActive: true }).expect(200).expect((result) => expect(result.body.total).toBe(0));
+    await api().get(`/proveedores/${id}/productos-suministrados`).set(auth(adminToken)).expect(200).expect((result) => expect(result.body.total).toBe(0));
+    await api().put(`/proveedores/${id}`).set(auth(adminToken)).send({ isActive: true }).expect(200);
+  });
+  it('rejects expired access, renews a customer session and validates self-service password changes', async () => {
+    const c = await customer();
+    const [user] = await db.query<{ username: string }[]>('SELECT username FROM usuario WHERE usuario_id=$1', [c.userId]);
+    const expired = await app.get(JwtService).signAsync({ sub: c.userId }, { expiresIn: -1 });
+    await api().get('/settings').set(auth(expired)).expect(401);
+    const login = await api().post('/auth/login').send({ username: user.username, password }).expect(201);
+    const cookies = login.headers['set-cookie'] as unknown as string[];
+    const renewed = await api().post('/auth/refresh').set('Cookie', cookies[0].split(';')[0]).expect(201);
+    await api().get('/settings').set(auth(renewed.body.accessToken as string)).expect(200);
+    await api().put('/settings').set(auth(c.token)).send({ primerNombre: 'Perfil editado QA' }).expect(200);
+    await api().get('/settings').set(auth(c.token)).expect(200).expect((result) => expect(result.body.profile.primerNombre).toBe('Perfil editado QA'));
+    const changedPassword = 'OwnChanged123!';
+    await api().patch('/settings/password').set(auth(c.token)).send({ currentPassword: 'Wrong123!', newPassword: changedPassword, confirmPassword: changedPassword }).expect(401);
+    await api().patch('/settings/password').set(auth(c.token)).send({ currentPassword: password, newPassword: changedPassword, confirmPassword: 'Mismatch123!' }).expect(401);
+    await api().patch('/settings/password').set(auth(c.token)).send({ currentPassword: password, newPassword: changedPassword, confirmPassword: changedPassword }).expect(200);
+    await api().post('/auth/login').send({ username: user.username, password }).expect(401);
+    await api().post('/auth/login').send({ username: user.username, password: changedPassword }).expect(201);
+    const employee = await api().post('/usuarios').set(auth(adminToken)).send({ username: `settings_employee_${++sequence}`, password, roles: ['EMPLOYEE'] }).expect(201);
+    const employeeLogin = await api().post('/auth/login').send({ username: employee.body.username, password }).expect(201);
+    const employeeAuth = auth(employeeLogin.body.accessToken as string);
+    await api().get('/settings').set(employeeAuth).expect(403);
+    await api().patch('/settings/password').set(employeeAuth).send({ currentPassword: password, newPassword: changedPassword, confirmPassword: changedPassword }).expect(403);
+    await api().patch('/settings/appearance').set(employeeAuth).send({ theme: 'dark' }).expect(200);
+  });
   it('validates DTOs, fractional stock, negative prices and extra fields', async () => {
     for (const payload of [{ cantidad: 1.5, precio: 10 }, { cantidad: 1, precio: -1 }, { cantidad: 1, precio: 10, extra: true }]) {
       await api().post('/productos').set(auth(adminToken)).send({ nombre: 'Inválido', ...payload }).expect(400);
@@ -107,6 +180,12 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
     expect(await balance(response.body.productoId as number)).toBe(3);
     await api().put(`/productos/${response.body.productoId}`).set(auth(adminToken)).send({ precio: 0 }).expect(400);
     await api().put(`/productos/${response.body.productoId}`).set(auth(adminToken)).send({ proveedorId: null }).expect(400);
+  });
+  it('rejects missing, forged and oversized product images without external uploads', async () => {
+    const p = await product();
+    await api().post('/producto-imagenes').set(auth(adminToken)).field('productoId', p.productoId).expect(400);
+    await api().post('/producto-imagenes').set(auth(adminToken)).field('productoId', p.productoId).attach('imagen', Buffer.from('fake PNG'), { filename: 'fake.png', contentType: 'image/png' }).expect(400);
+    await api().post('/producto-imagenes').set(auth(adminToken)).field('productoId', p.productoId).attach('imagen', Buffer.alloc(5 * 1024 * 1024 + 1), { filename: 'large.png', contentType: 'image/png' }).expect(413);
   });
   it('rolls back product, stock and audit when categories are invalid', async () => {
     const nombre = `Categoría inválida ${++sequence}`;

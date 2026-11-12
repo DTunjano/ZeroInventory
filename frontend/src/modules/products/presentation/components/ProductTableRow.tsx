@@ -1,3 +1,4 @@
+import { formatCOP } from '@/shared/lib/currency'
 import { TableRow, TableCell } from '@/shared/ui/table'
 import { cn } from '@/shared/lib/utils'
 import type { Product } from '../../domain/product.models'
@@ -68,7 +69,7 @@ export function ProductTableRow({
 
       {/* Precio */}
       <TableCell className="text-sm text-white font-semibold">
-        ${typeof product.precio === 'number' ? product.precio.toFixed(2) : '0.00'}
+        {formatCOP(product.precio)}
       </TableCell>
 
       {/* Stock */}

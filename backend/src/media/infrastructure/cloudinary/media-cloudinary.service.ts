@@ -36,6 +36,11 @@ export class MediaCloudinaryService {
     if (!file.buffer || file.buffer.length === 0) {
       throw new BadRequestException('El archivo está vacío')
     }
+    const mp4 = file.buffer.toString('ascii', 4, 8) === 'ftyp'
+    const webm = file.buffer.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]))
+    if (!((file.mimetype === 'video/mp4' && mp4) || (file.mimetype === 'video/webm' && webm))) {
+      throw new BadRequestException('El contenido no corresponde a un video MP4 o WebM')
+    }
   }
 
   /**
@@ -70,7 +75,6 @@ export class MediaCloudinaryService {
         throw error
       }
 
-      console.error('❌ Error al subir a Cloudinary:', error)
       throw new InternalServerErrorException('Error al subir el archivo a Cloudinary')
     }
   }
@@ -80,11 +84,9 @@ export class MediaCloudinaryService {
    */
   async deleteVideo(publicId: string): Promise<void> {
     try {
-      await this.cloudinaryService.deleteImage(publicId)
-    } catch (error) {
-      console.error('❌ Error al eliminar de Cloudinary:', publicId, error)
-      // No lanzar error, solo loguear
-      // En producción, podrías querer manejar esto diferente
+      await this.cloudinaryService.deleteImage(publicId, 'video')
+    } catch {
+      throw new InternalServerErrorException('No se pudo retirar el video del proveedor')
     }
   }
 

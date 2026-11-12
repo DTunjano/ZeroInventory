@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { useForm, type Resolver } from 'react-hook-form'
+import { useForm, useFormState, type Resolver } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -200,9 +200,9 @@ export function SettingsPage() {
     }
   }, [canEditGeneral])
 
-  const isGeneralDirty = generalForm.formState.isDirty
-  const isSecurityDirty = passwordForm.formState.isDirty
-  const isAppearanceDirty = appearanceForm.formState.isDirty
+  const { isDirty: isGeneralDirty, isValid: isGeneralValid } = useFormState({ control: generalForm.control })
+  const { isDirty: isSecurityDirty, isValid: isSecurityValid } = useFormState({ control: passwordForm.control })
+  const { isDirty: isAppearanceDirty, isValid: isAppearanceValid } = useFormState({ control: appearanceForm.control })
   const hasUnsavedChanges = isGeneralDirty || isSecurityDirty || isAppearanceDirty
 
   useEffect(() => {
@@ -265,9 +265,9 @@ export function SettingsPage() {
 
   const isLoading = fullSettingsQuery.isLoading || appearanceQuery.isLoading
 
-  const generalButtonDisabled = !isGeneralDirty || generalMutation.isPending || !generalForm.formState.isValid
-  const securityButtonDisabled = !isSecurityDirty || securityMutation.isPending || !passwordForm.formState.isValid
-  const appearanceButtonDisabled = !isAppearanceDirty || appearanceMutation.isPending || !appearanceForm.formState.isValid
+  const generalButtonDisabled = !isGeneralDirty || generalMutation.isPending || !isGeneralValid
+  const securityButtonDisabled = !isSecurityDirty || securityMutation.isPending || !isSecurityValid
+  const appearanceButtonDisabled = !isAppearanceDirty || appearanceMutation.isPending || !isAppearanceValid
 
   const handleConfirmSave = async () => {
     const target = saveTarget

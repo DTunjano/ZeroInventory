@@ -7,6 +7,7 @@ import { IdCard, LockKeyhole, Mail, Sparkles, User } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useAuthStore } from '@/modules/auth/application/auth.store'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
@@ -64,8 +65,8 @@ export function RegisterPage() {
       })
       toast.success('Cuenta creada correctamente')
       navigate('/home', { replace: true })
-    } catch {
-      toast.error('No se pudo crear la cuenta')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'No se pudo crear la cuenta'))
     }
   })
 

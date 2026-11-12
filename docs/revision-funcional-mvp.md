@@ -6,7 +6,7 @@ Fecha: 12 de noviembre de 2026. Estado: **en curso; alcance de usuarios/reportes
 
 Base de partida: commit `c558211`, con 10 pruebas unitarias y 21 de integración previamente aprobadas. Esa evidencia técnica está en `docs/validation.md`; no se presenta como sustituto de una prueba de interfaz.
 
-En esta revisión se inició una instancia local de la API con una base temporal `zero_inventory_test_review_*`, secretos de sesión independientes y perfiles ficticios de cliente, empleado y administrador. Se usaron productos, dirección y contactos ficticios. La DB habitual no recibió registros de demostración.
+En esta revisión se iniciaron varias sesiones locales de API, cada una con una base temporal `zero_inventory_test_review_*`, secretos de sesión independientes y perfiles ficticios de cliente, empleado y administrador. Se usaron productos, dirección y contactos ficticios. La DB habitual no recibió registros de demostración.
 
 La revisión se hizo en navegador a 1440 × 900 y 390 × 844. Las capturas privadas de la sesión se conservan localmente en `.local/functional-evidence/`; no contienen tokens, contraseñas ni personas reales.
 
@@ -26,36 +26,36 @@ Estados:
 | AUT-03 | Cliente | Cerrar sesión elimina el acceso autenticado | **Verificado:** regreso al formulario de login |
 | AUT-04 | Cliente | Un acceso directo al dashboard administrativo se rechaza | **Verificado:** redirección a tienda |
 | AUT-05 | Empleado | Un acceso directo a gestión de empleados se rechaza | **Verificado:** redirección a tienda; navegación sin módulos exclusivos de admin |
-| AUT-06 | Cuenta | Renovación después de expiración, cambio de contraseña y otros casos de sesión | **Pendiente:** las pruebas anteriores cubren renovación básica; no se ejecutó todo el recorrido de interfaz |
-| REG-01 | Público | Registro completo con validación de duplicados y regreso al recorrido de compra | **Pendiente** de revisión de interfaz |
+| AUT-06 | Cuenta | Expiración, renovación y cambio de contraseña | **Verificado por API:** token expirado rechazado, cookie renueva sesión, contraseña propia cambia con validación de actual/confirmación; login anterior rechazado. No se completó un cambio de contraseña desde UI |
+| REG-01 | Público | Registro completo, duplicados y regreso a compra | **Verificado:** contraseñas distintas y usuario duplicado informados; cuenta ficticia entra a tienda. API prueba registro concurrente sin cuentas huérfanas |
 | CAT-01 | Público | Ver catálogo; intentar comprar solicita autenticación | **Verificado** |
 | CAT-02 | Cliente | Buscar un producto oculta los que no coinciden | **Verificado:** búsqueda de Vaso QA |
 | CAT-03 | Cliente | Un producto sin existencias no permite agregar al carrito | **Verificado:** Shaker QA sin stock y acción deshabilitada |
-| CAT-04 | Cliente | Categorías, ordenamiento, filtros y resultados vacíos operan de forma coherente | **Pendiente** de completar las combinaciones |
+| CAT-04 | Cliente | Categorías, ordenamiento, filtros y resultados vacíos | **Parcial:** categoría QA, búsqueda vacía y limpiar filtros comprobados; controles de orden usados, falta documentar una comparación visual de varios resultados ordenados |
 | CAR-01 | Cliente | Agregar producto, cambiar cantidad y recalcular subtotal | **Verificado:** 2 unidades de 19.000 produjeron total 38.000 |
-| CAR-02 | Cliente | Eliminar una línea y vaciar voluntariamente el carrito | **Pendiente** de revisión específica de interfaz |
+| CAR-02 | Cliente | Eliminar una línea y vaciar voluntariamente el carrito | **Verificado:** ambos recorridos terminaron en carrito vacío |
 | CAR-03 | Cliente | Confirmar una compra interna con dirección propia y método disponible | **Verificado:** compra ficticia contra entrega; sin pasarela ni cobro externo |
 | CAR-04 | Cliente | La compra confirmada vacía las líneas adquiridas | **Verificado:** estado de carrito vacío |
 | PED-01 | Cliente | Ver pedido, monto, método y productos comprados | **Verificado:** pedido 1, 38.000 y detalle de 2 unidades |
-| PED-02 | Cliente | Filtrar pedidos por estado/fecha y ordenar resultados | **Pendiente** de revisión completa |
+| PED-02 | Cliente | Filtrar pedidos por estado/fecha y ordenar | **Verificado estado/fecha desde UI:** pagados vacío, fecha futura vacía, limpiar recupera pedido. API comprueba orden por monto, fecha final inclusiva, propiedad y rechazo de filtros inválidos |
 | DIR-01 | Cliente | Ver direcciones propias y señalar la predeterminada | **Verificado:** dirección ficticia marcada como predeterminada |
-| DIR-02 | Cliente | Crear, editar, predeterminar y retirar direcciones desde las pantallas | **Pendiente** de revisión completa de interfaz; las restricciones de propiedad ya tienen pruebas API |
+| DIR-02 | Cliente | Crear, editar, predeterminar y retirar direcciones | **Verificado desde UI:** alta, edición de referencia, segunda dirección predeterminada y retirada de la primera; propiedad y conservación cuando hay pedidos cubiertas por API |
 | PRO-01 | Empleado | Ver catálogo administrativo y saldo posterior a una venta | **Verificado:** Vaso QA pasó de 10 a 8 |
 | PRO-02 | Admin / empleado | El formulario informa campos obligatorios faltantes | **Verificado:** proveedor, categoría, nombre, stock y precio positivo; imagen opcional tras la decisión del usuario |
-| PRO-03 | Admin / empleado | Crear y editar un producto con proveedor, categorías y sin imagen | **Verificado desde UI admin:** creación con 5 unidades, edición a 3 y precio 18.000, categoría conservada y validación de precio cero. La carga externa opcional sigue pendiente |
-| PRO-04 | Admin / empleado | Desactivar/reactivar conserva el historial y actualiza la visibilidad | **Verificado:** desactivación/reactivación desde UI; conservación de saldo/historial comprobada por API. La visibilidad de tienda tras cada cambio necesita completar el recorrido |
+| PRO-03 | Admin / empleado | Crear y editar producto con imagen opcional | **Verificado:** altas/ediciones sin imagen; PNG QA autorizado cargado a Cloudinary y renderizado en navegador (32×32). Reemplazos y compensación de errores verificados con dobles de prueba |
+| PRO-04 | Admin / empleado | Desactivar/reactivar conserva historial y actualiza catálogo | **Verificado:** desactivar Cuchara QA la oculta en tienda; reactivar la muestra de nuevo. Saldo e historial tienen pruebas API |
 | INV-01 | Admin / empleado | El inventario muestra el saldo derivado de las operaciones efectuadas | **Verificado:** saldo total 10, con filas 8, 2 y 0 |
-| INV-02 | Admin / empleado | Búsqueda, filtros, ajustes y consulta de auditoría son comprensibles | **Parcial:** auditoría de la edición visible (5 a 3, reducción de 2 y responsable). Faltan completar filtros y ajuste desde la pantalla de inventario |
+| INV-02 | Admin / empleado | Búsqueda, filtros, ajuste manual y auditoría | **Verificado:** Agotado limita a Shaker QA; búsqueda Vaso; ajuste de Cuchara 1→2 desde Productos, auditoría AUMENTO, filtro REDUCCION vacío y limpiar recupera fila. Sin implementar ciclo nuevo de inventario |
 | PRV-01 | Empleado | Listar proveedores sin exponer acciones exclusivas de otros roles | **Verificado:** proveedor ficticio visible |
-| PRV-02 | Admin / empleado | Crear, editar, desactivar y reactivar proveedor con mensajes correctos | **Pendiente** de revisión completa |
+| PRV-02 | Admin / empleado | Crear, editar, desactivar y reactivar proveedores | **Verificado:** alta aparece sin recarga tras corrección; edición de titular; desactivar/reactivar; repetir eliminación lógica conserva inactivo; filtro Inactivos y trazabilidad numérica comprobados |
 | EMP-01 | Admin | Listar colaboradores y su estado | **Verificado:** empleado ficticio activo |
-| EMP-02 | Admin | Crear, editar y cambiar estado de empleado y su acceso asociado | **Pendiente** de revisión completa |
+| EMP-02 | Admin | Crear, editar y cambiar estado con acceso asociado | **Verificado desde UI:** alta con cuenta, edición de nombre, filtro inactivo y reactivación. API comprueba login/rol, atomicidad y rollback ante conflicto de cuenta o último ADMIN |
 | USU-01 | Admin | Administrar usuarios y roles desde una vista operativa | **Verificado:** alta, edición de roles, búsqueda, filtro inactivo, desactivación/reactivación y rechazo del último admin desde UI; contraseñas, perfiles y concurrencia mediante integración API |
 | REP-01 | Admin | Consultar reportes avanzados funcionales | **Fuera del MVP por decisión del usuario:** retirados del menú; la ruta antigua explica el aplazamiento y enlaza al dashboard |
 | DAS-01 | Admin | Dashboard carga datos del escenario de prueba | **Verificado:** 1 pedido, 3 productos y 3 usuarios; ingresos aprobados 0 porque el pago sigue pendiente |
 | MED-01 | Admin | Listar medios y comunicar ausencia de registros sin errores | **Verificado:** lista vacía; se corrigió la paginación que mostraba 1 / 0 |
-| MED-02 | Admin | Crear, editar, desactivar y reproducir medios reales en Cloudinary | **Pendiente:** no se enviaron archivos al proveedor |
-| CFG-01 | Cuenta | Datos personales, apariencia y seguridad mantienen permisos y validaciones | **Pendiente** de revisión completa de interfaz |
+| MED-02 | Admin | Crear, editar, desactivar y reproducir videos promocionales | **Pendiente de prueba real de video:** no se autorizó subir videos. Se corrigieron firma de contenido, conservación del anterior y tipo de recurso al eliminar; validados con dobles de prueba. La carga real autorizada cubre únicamente PNG de producto |
+| CFG-01 | Cuenta | Perfil, apariencia y seguridad respetan permisos | **Parcial:** edición de perfil persistida tras corregir estado reactivo; empleado solo ve Apariencia; API verifica contraseña propia y permisos. Modo claro continúa deshabilitado/en construcción; no se presenta como terminado |
 | NAV-01 | Móvil | El contenido usa el ancho disponible y el menú permite cambiar de módulo | **Verificado tras corrección:** contenido de ~390 px en viewport de 390 px y navegación a proveedores desde el menú |
 | NAV-02 | Escritorio | El menú conserva opciones según rol y admite colapsar/expandir | **Verificado:** navegación de roles y control de sidebar |
 | NAV-03 | Accesibilidad | Cierre de menú con teclado, regreso del foco y controles identificables | **Verificado para el menú móvil:** Escape oculta el diálogo y devuelve el foco a “Abrir menú de navegación”; no representa una auditoría completa de accesibilidad |
@@ -78,11 +78,11 @@ Estados:
 | --- | --- | --- | --- |
 | D-01 | Alcance resuelto | Completar usuarios/roles y aplazar reportes avanzados | Aprobado por el usuario; gestión implementada y reportes retirados del menú |
 | D-02 | Regla resuelta | Imagen opcional; proveedor y categoría obligatorios | Aprobado e implementado en altas; categorías/producto se persisten juntos; datos históricos preservados |
-| D-03 | Validación externa | El producto sin imagen ya no depende de Cloudinary | Alta/edición sin imagen verificadas. Cargas opcionales y videos reales pendientes de una cuenta/asset de prueba delimitados |
+| D-03 | Validación externa parcial | PNG de producto autorizado y comprobado en Cloudinary | Carga y render de 32×32 correctos. Recurso QA retirado tras autorización explícita; ausencia verificada en Cloudinary y DB temporal. Video real aún pendiente |
 | D-04 | Regla resuelta | Precio mayor que cero | Aprobado; API rechaza precio cero en altas y cuando se envía un precio nuevo; UI comprobada |
-| D-05 | Media | Ayuda, Ofertas y Notificaciones aparecen como controles sin acciones implementadas en el layout | Definir si se retiran/deshabilitan para el MVP o se les asigna un comportamiento real |
-| D-06 | Baja | El catálogo administrativo muestra importes con formato distinto a la tienda | Acordar una presentación monetaria uniforme |
-| D-07 | Validación | Registro, CRUD completos y configuración tienen casos de interfaz aún pendientes | Ejecutarlos según la matriz; no clasificarlos como aprobados por tener solo una prueba API |
+| D-05 | Resuelto | Ayuda, Ofertas y Notificaciones eran controles sin acción | Retirados del encabezado para no publicar acciones vacías; sin crear funcionalidades futuras |
+| D-06 | Resuelto | Formatos de precio distintos y centavos redondeados a cero | Formato COP compartido, máximo dos decimales; 0.10 se muestra como $0,1 en administración y tienda, comprobado desde UI |
+| D-07 | Validación parcial completada | Registro, direcciones, proveedores, empleados y perfil | Recorridos ejecutados y documentados. Permanecen las limitaciones explícitas de videos, tema claro, orden visual de catálogo y cambio de contraseña desde UI |
 
 Las reglas de estados de pedido, fecha efectiva de pago, cancelación y devolución pertenecen a la etapa 3. Esta revisión registra lo observado, sin introducir dichas reglas anticipadamente.
 
@@ -119,3 +119,23 @@ Aceptación del usuario: **pendiente**. Inicio de etapa 2: **no autorizado todav
 - La imagen externa opcional y el CRUD de medios reales no se probaron contra Cloudinary. Los demás casos marcados pendientes mantienen ese estado: esta continuación no cierra la etapa 1.
 
 Validación de esta continuación: `pnpm typecheck`, `pnpm lint` y `pnpm build` en ambos paquetes; 10 unitarias y 28 de integración PostgreSQL correctas. `pnpm test:upgrade` conservó 21 tablas de negocio y verificó idempotencia. `pnpm db:check` no encontró migraciones pendientes, inconsistencias de stock ni números de pedido duplicados. La sesión ficticia se cerró y su base temporal se retiró; no se publicaron registros de demostración en la base habitual.
+
+## Rondas adicionales de interfaz y medios
+
+Se comprobaron registro y duplicados; direcciones CRUD/predeterminada; eliminar/vaciar carrito; búsqueda/categoría/estado vacío; filtros de pedidos; proveedores CRUD/estados/trazabilidad; empleados CRUD/estado; perfil y restricciones de configuración; ajuste desde productos y filtros de auditoría; y dashboard a 390 px sin desbordamiento horizontal.
+
+Se corrigieron consultas de pedidos que ignoraban parámetros, pérdida de controles con resultados vacíos, bloqueo reactivo de guardar configuración, refresco de listas de proveedores, eliminación lógica que alternaba estado, booleano `false` interpretado como verdadero, trazabilidad eternamente en carga, cuentas huérfanas ante altas fallidas y formatos monetarios que ocultaban centavos.
+
+La carga externa se limitó al PNG azul de 32×32 aprobado por el usuario, cuenta Cloudinary configurada y autorizada, carpeta `zeroInventoryProducts`, vinculado a producto de DB temporal. El navegador confirmó imagen cargada de 32×32. La revisión automática rechazó su borrado porque la autorización inicial cubría solo la carga; se pidió autorización separada. No se intentó eludir ese rechazo.
+
+Las imágenes de producto admiten PNG/JPEG/WebP de hasta 5 MB con comprobación de firma y MIME. Reemplazar no retira el recurso anterior antes de guardar el nuevo. Si falla la DB, se compensa solo el recurso recién creado. En videos se aplicó el mismo orden de persistencia y se corrigió el uso del tipo `video` al retirar recursos; **esto no equivale a una prueba real de reproducción/carga de video**.
+
+Resultados técnicos finales: 19 pruebas unitarias y 34 de integración, además de tipos, lint y build en ambos paquetes. Sin migraciones nuevas. Las capturas adicionales permanecen en `.local/functional-evidence`: `customer-settings-validated.jpg`, `employees-validated.jpg`, `inventory-audit-validated.jpg`, `order-filters-fixed.jpg`, `dashboard-mobile-validated.jpg`, `suppliers-filter-validated.jpg`, `cloudinary-qa-upload-validated.jpg`.
+
+La etapa 1 continúa abierta con las limitaciones de la matriz y sin aceptación final; etapas 2–6 sin iniciar y pasarela sin integrar.
+
+## Limpieza final
+
+Tras la autorización expresa de retirada, se eliminó únicamente el PNG QA recién creado. Se verificaron cero referencias de imagen en la DB temporal y respuesta de recurso inexistente de Cloudinary. Los medios anteriores se conservaron. Se cerraron sesiones, pestañas y procesos de revisión y se comprobó que la última base temporal ya no existe.
+
+El diagnóstico final de la DB habitual volvió a mostrar cero migraciones pendientes, cero diferencias de stock y cero números de pedido duplicados. La etapa 1 permanece abierta por las limitaciones y aceptación indicadas; esta limpieza no autoriza iniciar la etapa 2.

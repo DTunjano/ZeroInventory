@@ -1,14 +1,11 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common'
+import { ConflictException, Injectable } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
 
 import { ClienteRepository } from '../../../cliente/domain/repository/cliente.repository'
-import { Cliente, TipoDocumentoEnum } from '../../../cliente/domain/entity/cliente.entity'
+import { TipoDocumentoEnum } from '../../../cliente/domain/entity/cliente.entity'
 import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity'
-import { RolRepository } from '../../../rol/domain/repository/rol.repository'
 import { Usuario } from '../../../usuario/domain/entity/usuario.entity'
 import { UsuarioRepository } from '../../../usuario/domain/repository/usuario.repository'
-import { UsuarioRol } from '../../../usuario-rol/domain/entity/usuario-rol.entity'
-import { UsuarioRolRepository } from '../../../usuario-rol/domain/repository/usuario-rol.repository'
 
 import { LoginUseCase } from './login.use-case'
 import { RegisterDTO } from '../dto/register.dto'
@@ -19,8 +16,6 @@ export class RegisterUseCase {
   constructor(
     private readonly usuarioRepo: UsuarioRepository,
     private readonly clienteRepo: ClienteRepository,
-    private readonly usuarioRolRepo: UsuarioRolRepository,
-    private readonly rolRepo: RolRepository,
     private readonly loginUseCase: LoginUseCase,
   ) {}
 
@@ -53,29 +48,10 @@ export class RegisterUseCase {
       now,
     )
 
-    const createdUsuario = await this.usuarioRepo.create(usuario)
-
-    const cliente = new Cliente(
-      0,
-      createdUsuario.usuarioId,
-      input.tipoDocumento ?? TipoDocumentoEnum.CC,
-      input.documento,
-      now,
-      now,
-    )
-    await this.clienteRepo.create(cliente)
-
-    const customerRolePage = await this.rolRepo.getAll({
-      nombre: RolNombreEnum.CUSTOMER,
-      page: 1,
-      limit: 1,
+    await this.usuarioRepo.create(usuario, {
+      roles: [RolNombreEnum.CUSTOMER], documento: input.documento,
+      tipoDocumento: input.tipoDocumento ?? TipoDocumentoEnum.CC,
     })
-    const customerRole = customerRolePage.data[0]
-    if (!customerRole) {
-      throw new UnauthorizedException('El rol CUSTOMER no está configurado')
-    }
-
-    await this.usuarioRolRepo.create(new UsuarioRol(0, createdUsuario.usuarioId, customerRole.rolId))
 
     return this.loginUseCase.ejecutar({
       username: input.username,

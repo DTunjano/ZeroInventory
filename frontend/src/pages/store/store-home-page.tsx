@@ -1,3 +1,4 @@
+import { formatCOP as formatPrice } from '@/shared/lib/currency'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/modules/auth/application/auth.store'
@@ -25,13 +26,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 
 const STOCK_THRESHOLD = 150
 
-function formatPrice(value: number): string {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
+
 
 type StockStatus = 'available' | 'low' | 'out'
 

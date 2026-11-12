@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsInt, Min } from 'class-validator';
 
 export class CreateProductoImagenDTO {
   @ApiProperty({
@@ -10,6 +10,7 @@ export class CreateProductoImagenDTO {
   })
   @Type(() => Number)
   @IsNotEmpty({ message: 'El ID del producto es obligatorio' })
-  @IsNumber({}, { message: 'El ID del producto debe ser un número' })
+  @IsInt({ message: 'El ID del producto debe ser un entero' })
+  @Min(1)
   productoId!: number;
 }

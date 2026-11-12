@@ -1,5 +1,4 @@
-import { useEffect } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Building, Mail, Phone, User } from 'lucide-react'
 import {
@@ -7,12 +6,14 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/shared/ui/dialog'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { supplierService } from '../application/supplier.service'
+import type { CreateProveedorPayload } from '../application/supplier.service'
 import type { Proveedor } from '../domain/supplier.entity'
 
 interface SupplierFormModalProps {
@@ -24,29 +25,25 @@ interface SupplierFormModalProps {
 
 export function SupplierFormModal({ open, onOpenChange, proveedor, onSuccess }: SupplierFormModalProps) {
   const isEditing = !!proveedor?.proveedorId
+  const qc = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (payload: any) => {
+    mutationFn: (payload: CreateProveedorPayload) => {
       if (isEditing && proveedor) {
         return supplierService.update(proveedor.proveedorId, payload)
       }
       return supplierService.create(payload)
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await Promise.all(['proveedores', 'providers', 'admin-dashboard'].map((key) => qc.invalidateQueries({ queryKey: [key] })))
       toast.success(isEditing ? 'Proveedor actualizado' : 'Proveedor creado')
       onOpenChange(false)
       onSuccess?.()
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       toast.error(getApiErrorMessage(err, 'Error al guardar proveedor'))
     },
   })
-
-  useEffect(() => {
-    if (!open) {
-      // Reset form cuando se cierra si es necesario
-    }
-  }, [open])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -67,6 +64,7 @@ export function SupplierFormModal({ open, onOpenChange, proveedor, onSuccess }: 
           <DialogTitle className="text-2xl font-bold">
             {isEditing ? 'Editar Proveedor' : 'Nuevo Proveedor'}
           </DialogTitle>
+          <DialogDescription>Registra el nombre de la empresa y sus datos de contacto.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">

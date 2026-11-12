@@ -93,3 +93,14 @@ Se incorporaron la gestión de usuarios/roles y las reglas de catálogo acordada
 Las siete pruebas de integración añadidas cubren campos obligatorios e imagen opcional; rollback de producto/stock/auditoría al fallar categorías; protección del último administrador por cuentas y asignaciones históricas; edición de contraseña con bcrypt y respuestas sin hashes; roles inválidos/permisos/rollback de alta incompleta; degradación concurrente de administradores; y atomicidad de estados empleado/cuenta.
 
 El acceso comprueba roles y cuenta activa en cada solicitud; no se añadieron sesiones persistentes ni revocación por dispositivo. No hubo cambios de esquema ni migraciones nuevas. No se cargaron medios al Cloudinary real. La matriz mantiene casos pendientes y no se declara cerrada la etapa 1. Etapa 2 y pasarela de pagos sin iniciar.
+
+## Rondas de cierre funcional y protección de medios
+
+- Backend: tipos, lint, build y **19 pruebas unitarias** correctos; integración final **34 pruebas** sobre DB aislada. Las nuevas regresiones incluyen registro concurrente sin huérfanos, alta atómica de empleado, filtros/orden/propiedad de pedidos, proveedores inactivos e imágenes falsas/ausentes/mayores de 5 MB.
+- Frontend: tipos, lint y build correctos. Recorridos ampliados y límites en [revision-funcional-mvp.md](revision-funcional-mvp.md).
+- Medios: las pruebas unitarias simulan fallos de proveedor y DB, comprobando conservación del recurso anterior y limpieza del nuevo. Videos se eliminan con `resource_type: video`; firmas de MP4/WebM verificadas antes de subir. No hubo cargas reales de video.
+- Cloudinary real: se subió únicamente el PNG ficticio autorizado (32×32); el navegador comprobó sus dimensiones al cargarlo. El borrado de ese recurso fue bloqueado por revisión automática y se solicitó autorización expresa; su estado de limpieza debe consultarse en la última nota de la revisión funcional.
+- No se modificó el esquema ni se añadieron servicios obligatorios. La prueba de actualización y el diagnóstico previamente registrados siguen aplicando a las migraciones sin cambios.
+- La aceptación de etapa 1 permanece pendiente; el trabajo de etapa 2 y la pasarela siguen aplazados.
+
+La retirada del PNG QA fue posteriormente autorizada expresamente y completada. Se comprobó ausencia del recurso en Cloudinary y cero referencias en la DB temporal; después se retiró esa DB y se detuvieron los procesos. El diagnóstico final de la DB habitual no encontró migraciones pendientes ni inconsistencias de stock/duplicados. No se eliminaron recursos anteriores ni datos de negocio reales.

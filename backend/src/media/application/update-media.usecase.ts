@@ -48,19 +48,19 @@ export class UpdateMediaUseCase {
       updateData.url = uploadResult.secure_url
       updateData.publicId = uploadResult.public_id
 
-      if (media.publicId) {
-        await this.cloudinaryService.deleteVideo(media.publicId)
-      }
     }
 
     // Guardar cambios
+    let saved: Media
     try {
-      return await this.mediaRepository.update(id, updateData)
+      saved = await this.mediaRepository.update(id, updateData)
     } catch {
       if (file && updateData.publicId) {
         await this.cloudinaryService.deleteVideo(updateData.publicId)
       }
       throw new InternalServerErrorException('Error al actualizar el media')
     }
+    if (file && media.publicId) await this.cloudinaryService.deleteVideo(media.publicId)
+    return saved
   }
 }

@@ -47,16 +47,18 @@ function DireccionForm({
     <Card className="border border-blue-500/30 shadow-md">
       <CardContent className="p-4 space-y-3">
         <div className="grid gap-2">
-          <label className="text-sm font-medium">Línea de dirección</label>
+          <label htmlFor="direccion-linea" className="text-sm font-medium">Línea de dirección</label>
           <Input
+            id="direccion-linea"
             value={lineaDir}
             onChange={(e) => setLineaDir(e.target.value)}
             placeholder="Calle 10 No. 20-30"
           />
         </div>
         <div className="grid gap-2">
-          <label className="text-sm font-medium">Barrio</label>
+          <label htmlFor="direccion-barrio" className="text-sm font-medium">Barrio</label>
           <Input
+            id="direccion-barrio"
             value={barrio}
             onChange={(e) => setBarrio(e.target.value)}
             placeholder="Centro"
@@ -64,16 +66,18 @@ function DireccionForm({
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="grid gap-2">
-            <label className="text-sm font-medium">Código postal</label>
+            <label htmlFor="direccion-postal" className="text-sm font-medium">Código postal</label>
             <Input
+              id="direccion-postal"
               value={codigoPostal}
               onChange={(e) => setCodigoPostal(e.target.value)}
               placeholder="080001"
             />
           </div>
           <div className="grid gap-2">
-            <label className="text-sm font-medium">Información adicional</label>
+            <label htmlFor="direccion-info" className="text-sm font-medium">Información adicional</label>
             <Input
+              id="direccion-info"
               value={infoAdiccional}
               onChange={(e) => setInfoAdiccional(e.target.value)}
               placeholder="Apartamento 305, torre B"
