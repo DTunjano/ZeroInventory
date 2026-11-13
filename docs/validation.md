@@ -118,3 +118,11 @@ La retirada del PNG QA fue posteriormente autorizada expresamente y completada. 
 ## Aceptación del cierre funcional
 
 El 12/11/2026 el usuario aceptó expresamente el cierre de la etapa 1 y autorizó integrar en `dev` y continuar con la etapa 2. Todas las pruebas y limpiezas indicadas arriba se completaron antes de esa aceptación. No hubo cambios adicionales de código por registrar esta decisión.
+
+El cierre aceptado se publicó sin force push en `dev` y `codex/fix-inventory-consistency`, hash remoto comprobado `4e2779c81b31ed6e7d630c332c0579fd329dad17`. [GitHub Actions](https://github.com/DTunjano/ZeroInventory/actions/runs/43367038473) completó la validación con resultado `success` para ese commit.
+
+## Inicio de etapa 2 — ajustes e inspección de compras
+
+En `codex/inventory-lifecycle`, el cálculo de valoración de ajustes usa centavos y valida el total antes de persistir. Tipos/lint/build backend, 24 unitarias y 40 de integración correctos. Prueba de copia real: 21 tablas conservadas e idempotencia; diagnóstico habitual sin pendientes/inconsistencias/duplicados. No se aplicaron migraciones nuevas. Frontend sin cambios en este avance.
+
+La inspección de compras fue de solo lectura y devolvió únicamente columnas/restricciones y conteos agregados. Se documentaron las decisiones solicitadas y garantías pendientes en `docs/ciclo-inventario.md`; no se presume un modelo de recepción completa/parcial antes de la respuesta del responsable. La etapa 2 sigue abierta.

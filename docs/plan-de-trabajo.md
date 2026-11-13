@@ -52,6 +52,10 @@ Documento de referencia: [revisión funcional del MVP](revision-funcional-mvp.md
 
 La sesión ficticia se cerró, los procesos de QA se detuvieron y la DB temporal fue retirada. Todos los casos de la matriz están verificados y el responsable aceptó el resultado.
 
+## Inicio de la etapa 2
+
+Diagnóstico, decisiones de recepción y garantías de integridad en [ciclo-inventario.md](ciclo-inventario.md). El cierre aceptado de la etapa 1 está publicado en `dev` y su CI pasó. Se trabaja la etapa 2 en `codex/inventory-lifecycle`; su implementación de recepción espera las decisiones de negocio solicitadas.
+
 ## Simulación de pagos: decisión futura
 
 Hay dos alternativas distintas que pueden evaluarse cuando corresponda:

@@ -2,7 +2,7 @@
 
 Aplicación web para administrar productos e inventario y permitir a clientes comprar desde un catálogo. Incluye tienda, carrito, direcciones, pedidos, pagos registrados, proveedores, empleados, usuarios, panel administrativo y contenido multimedia.
 
-El trabajo siguiente se organiza por etapas en [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md). La etapa 1 quedó cerrada y aceptada el 12/11/2026; está activo el ciclo del inventario de la etapa 2. Su evidencia funcional está en [docs/revision-funcional-mvp.md](docs/revision-funcional-mvp.md). Usuarios/roles y reportes operativos tienen gestión funcional; el pedido posterior incorporó REP-01 al cierre. Ver [docs/reportes.md](docs/reportes.md) para permisos, fechas, fórmulas y exportación CSV. El responsable aceptó el alcance y los resultados de la etapa 1.
+El trabajo siguiente se organiza por etapas en [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md). La etapa 1 quedó cerrada y aceptada el 12/11/2026; está activo el ciclo del inventario de la etapa 2. El diagnóstico de la etapa activa está en [docs/ciclo-inventario.md](docs/ciclo-inventario.md). La evidencia funcional de la primera está en [docs/revision-funcional-mvp.md](docs/revision-funcional-mvp.md). Usuarios/roles y reportes operativos tienen gestión funcional; el pedido posterior incorporó REP-01 al cierre. Ver [docs/reportes.md](docs/reportes.md) para permisos, fechas, fórmulas y exportación CSV. El responsable aceptó el alcance y los resultados de la etapa 1.
 
 ## Requisitos
 

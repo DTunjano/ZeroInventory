@@ -352,6 +352,24 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
     await expect(app.get(UpdateProductUseCase).ejecutar(p.productoId, -1, { cantidad: 5 })).rejects.toThrow();
     expect(await balance(p.productoId)).toBe(10);
   });
+  it('preserves stock and audit when adjustment valuation exceeds the monetary range', async () => {
+    const p = await product(0, 600000000000);
+    await api().post('/inventory/adjustments').set(auth(adminToken)).send({ productoId: p.productoId, stockAnterior: 0, stockNuevo: 2, cantidad: 2, motivo: 'Importe fuera de rango' }).expect(400);
+    expect(await balance(p.productoId)).toBe(0);
+    const [row] = await db.query('SELECT count(*)::int AS count FROM ajuste_inventario WHERE producto_id=$1', [p.productoId]);
+    expect(row.count).toBe(0);
+  });
+  it('records exact cents and only one concurrent manual adjustment for an expected balance', async () => {
+    const p = await product(5, 0.1);
+    const payload = { productoId: p.productoId, stockAnterior: 5, stockNuevo: 2, cantidad: 3, motivo: 'Baja controlada de QA' };
+    const responses = await Promise.all([api().post('/inventory/adjustments').set(auth(adminToken)).send(payload), api().post('/inventory/adjustments').set(auth(adminToken)).send(payload)]);
+    expect(responses.map(r => r.status).sort()).toEqual([201, 409]);
+    expect(await balance(p.productoId)).toBe(2);
+    const [row] = await db.query("SELECT count(*)::int AS count,sum(valor_total)::text AS total FROM kardex WHERE producto_id=$1 AND tipo_referencia='AJUSTE' AND tipo_movimiento='SALIDA'", [p.productoId]);
+    expect(row).toEqual({ count: 1, total: '0.30' });
+    const [audit] = await db.query('SELECT count(*)::int AS count FROM ajuste_inventario WHERE producto_id=$1', [p.productoId]);
+    expect(audit.count).toBe(1);
+  });
   it('applies stock movements atomically and prevents overdraw', async () => {
     const p = await product(2);
     const payload = { productoId: p.productoId, tipoMovimiento: 'SALIDA', cantidad: 1, costoUnitario: 100, valorTotal: 100, referenciaId: p.productoId, tipoReferencia: 'AJUSTE' };

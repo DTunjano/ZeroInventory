@@ -170,7 +170,7 @@ El usuario confirmó la prueba personal de contraseña. AUT-06 y CFG-01 ya no ti
 
 Validación del último recorrido: contraseña anterior rechazada (HTTP 401) y nueva aceptada (HTTP 201); ambos resultados repetidos en navegador, con entrada a Tienda. Sesión de QA cerrada y base temporal inexistente. No se cambiaron datos habituales ni quedaron medios externos de QA.
 
-Implementación guardada en `008c921`; esta actualización documental registra el último recorrido. `dev` todavía no incorpora esta revisión. El responsable aceptó después el cierre y autorizó publicar e iniciar la etapa 2.
+Implementación guardada en `008c921`; esta actualización documental registra el último recorrido. `dev` y `codex/fix-inventory-consistency` incorporaron el cierre en `4e2779c81b31ed6e7d630c332c0579fd329dad17`, comprobado contra sus hashes remotos. [CI del cierre](https://github.com/DTunjano/ZeroInventory/actions/runs/43367038473): completado correctamente. El responsable aceptó el cierre y autorizó publicar e iniciar la etapa 2.
 
 ## Aceptación registrada
 
