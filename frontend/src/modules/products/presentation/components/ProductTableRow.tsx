@@ -35,13 +35,13 @@ export function ProductTableRow({
   return (
     <TableRow
       className={cn(
-        'border-white/5 hover:bg-white/5 transition-colors duration-150',
+        'border-border hover:bg-muted/50 transition-colors duration-150',
         product.isActive ? '' : 'opacity-70',
       )}
     >
       {/* Imagen */}
       <TableCell className="w-12">
-        <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-900 flex-shrink-0">
+        <div className="w-10 h-10 rounded-md overflow-hidden bg-card flex-shrink-0">
           {imageUrl ? (
             <img
               src={imageUrl}
@@ -55,20 +55,20 @@ export function ProductTableRow({
       </TableCell>
 
       {/* Nombre */}
-      <TableCell className="font-medium text-white">
+      <TableCell className="font-medium text-foreground">
         <div>
           <p className="text-sm">{product.nombre}</p>
-          <p className="text-xs text-white/50 mt-1">SKU: {product.sku || '—'}</p>
+          <p className="text-xs text-muted-foreground mt-1">SKU: {product.sku || '—'}</p>
         </div>
       </TableCell>
 
       {/* Categoría(s) */}
-      <TableCell className="text-sm text-white/80">
+      <TableCell className="text-sm text-muted-foreground">
         {categoryNames && categoryNames.length ? categoryNames.join(', ') : '—'}
       </TableCell>
 
       {/* Precio */}
-      <TableCell className="text-sm text-white font-semibold">
+      <TableCell className="text-sm text-foreground font-semibold">
         {formatCOP(product.precio)}
       </TableCell>
 

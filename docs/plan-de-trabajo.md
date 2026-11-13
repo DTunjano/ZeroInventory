@@ -42,9 +42,10 @@ Documento de referencia: [revisión funcional del MVP](revision-funcional-mvp.md
 - [x] Revisar navegación y accesos de cliente, empleado y administrador.
 - [x] Identificar pantallas provisionales y requisitos contradictorios.
 - [x] Detectar y corregir el bloqueo de navegación móvil.
-- [ ] Completar los casos pendientes de la matriz según el alcance acordado.
-- [x] Acordar los requisitos de catálogo y el tratamiento de usuarios/reportes: usuarios/roles incluidos, reportes avanzados aplazados, imagen opcional, proveedor/categoría/precio positivo obligatorios en altas.
-- [ ] Validar cargas reales de medios en una cuenta y con un archivo de prueba autorizados, si forman parte del alcance.
+- [x] Completar reportes, tema claro, orden visual y video real de la matriz.
+- [ ] Completar cambio de contraseña desde UI por el usuario; API ya verificada.
+- [x] Acordar los requisitos de catálogo y el tratamiento de usuarios/reportes: usuarios/roles incluidos y REP-01 incorporado por petición posterior, imagen opcional, proveedor/categoría/precio positivo obligatorios en altas.
+- [x] Validar PNG y MP4 ficticios autorizados en Cloudinary, verificar render/reproducción y retirar únicamente sus recursos QA.
 - [ ] Obtener aceptación del usuario sobre el resultado de la etapa 1.
 
 **La etapa 1 no está cerrada. No se ha comenzado la etapa 2.**

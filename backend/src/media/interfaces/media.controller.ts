@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  NotFoundException,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common'
@@ -103,6 +104,7 @@ export class MediaController {
   @ApiOperation({ summary: 'Obtener media por ID (público)' })
   async getOne(@Param('id', ParseIntPipe) id: number): Promise<MediaResponseDto> {
     const media = await this.getMedia.execute(id)
+    if (media.estado !== 'activo') throw new NotFoundException('Media no encontrado')
     return MediaResponseDto.fromEntity(media)
   }
 

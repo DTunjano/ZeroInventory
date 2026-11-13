@@ -71,7 +71,7 @@ export function RegisterPage() {
   })
 
   return (
-    <div className="min-h-dvh bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_25%),linear-gradient(135deg,_#09090b_0%,_#1b140f_100%)] px-4 py-8 text-white sm:px-6 lg:px-8">
+    <div className="dark min-h-dvh bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_25%),linear-gradient(135deg,_#09090b_0%,_#1b140f_100%)] px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto grid min-h-[calc(100dvh-4rem)] max-w-6xl items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
         <Card className="order-2 border-white/10 bg-black/60 text-white shadow-2xl shadow-blue-950/20 backdrop-blur-xl lg:order-1">
           <CardHeader className="space-y-2 border-b border-white/10 bg-white/5">

@@ -44,7 +44,7 @@ export function ProductActionsDropdown({
           disabled={isLoading}
           className={cn(
             'flex items-center justify-center w-8 h-8 rounded-md',
-            'text-white/60 hover:text-white hover:bg-white/10',
+            'text-muted-foreground hover:text-foreground hover:bg-muted/50',
             'transition-all duration-200',
             'disabled:opacity-50 disabled:cursor-not-allowed',
           )}
@@ -88,7 +88,7 @@ export function ProductActionsDropdown({
                 onSoftDelete()
               }}
               disabled={isLoading}
-              className="gap-3 text-red-300 focus:text-red-200 focus:bg-red-500/15"
+              className="gap-3 text-red-700 dark:text-red-300 focus:text-red-700 dark:focus:text-red-200 focus:bg-red-500/15"
             >
               <Trash2 className="w-4 h-4" />
               <span>Eliminar</span>

@@ -1,6 +1,12 @@
 @import "tailwindcss";
+@config "../tailwind.config.cjs";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
+  *, ::before, ::after {
+    border-color: hsl(var(--border));
+  }
+
   :root {
     /* Light mode: professional blue + white + dark saturated colors */
     --background: 0 0% 100%;
@@ -23,8 +29,8 @@
     --secondary: 220 14% 20%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 13% 60%;
-    --muted-foreground: 220 13% 20%;
+    --muted: 220 14% 94%;
+    --muted-foreground: 220 13% 36%;
 
     --accent: 217 99% 45%;
     --accent-foreground: 0 0% 100%;
@@ -48,6 +54,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     /* Dark mode: professional blue + dark grays/black */
     --background: 217 33% 4%;
     --foreground: 210 13% 98%;
@@ -100,7 +107,7 @@
 
   html {
     background-color: hsl(var(--background));
-    color-scheme: light dark;
+    color-scheme: light;
   }
 }
 
@@ -121,19 +128,13 @@
     will-change: transform;
   }
 
-  /* Remove prominent blue focus rings in header and tabs to match design preference */
-  .app-topbar button:focus,
+  /* Keyboard focus remains visible in both themes. */
   .app-topbar button:focus-visible,
-  .app-topbar a:focus,
   .app-topbar a:focus-visible,
-  .app-topbar input:focus,
   .app-topbar input:focus-visible,
-  [role="tab"]:focus,
   [role="tab"]:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
-    --tw-ring-color: transparent !important;
-    --tw-ring-offset-color: transparent !important;
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
   }
 
   .card-base {

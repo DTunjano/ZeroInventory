@@ -84,6 +84,50 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
     await api().get('/carritos').expect(401);
     await api().get('/direcciones').expect(401);
   });
+  it('hides inactive media from public reads while preserving administrator management', async () => {
+    const [media] = await db.query(`INSERT INTO media(tipo,titulo,url,"publicId",estado) VALUES('video','QA sin servicio externo','https://example.test/qa.mp4','qa-integration-only','activo') RETURNING "mediaId"`);
+    await api().get(`/media/${media.mediaId}`).expect(200);
+    await api().patch(`/media/${media.mediaId}/toggle-status`).set(auth(adminToken)).expect(200);
+    await api().get(`/media/${media.mediaId}`).expect(404);
+    const visible = await api().get('/media').expect(200);
+    expect(visible.body.data.some((row: { mediaId: number }) => row.mediaId === media.mediaId)).toBe(false);
+    const managed = await api().get('/media/admin/all').set(auth(adminToken)).expect(200);
+    expect(managed.body.data.some((row: { mediaId: number }) => row.mediaId === media.mediaId)).toBe(true);
+    await api().patch(`/media/${media.mediaId}/toggle-status`).set(auth(adminToken)).expect(200);
+    await api().get(`/media/${media.mediaId}`).expect(200);
+  });
+  it('restricts reports to administrators and rejects invalid or excessive date ranges', async () => {
+    await api().get('/admin/reports').expect(401);
+    const c = await customer();
+    await api().get('/admin/reports').set(auth(c.token)).expect(403);
+    const created = await api().post('/usuarios').set(auth(adminToken)).send({ username: `report_employee_${++sequence}`, password, roles: ['EMPLOYEE'] }).expect(201);
+    const login = await api().post('/auth/login').send({ username: created.body.username, password }).expect(201);
+    await api().get('/admin/reports').set(auth(login.body.accessToken as string)).expect(403);
+    for (const query of [{ dateFrom: '2026-02-30' }, { dateFrom: '2026-11-12', dateTo: '2026-11-01' }, { dateFrom: '2020-01-01', dateTo: '2026-11-12' }, { sortBy: 'injected' }]) {
+      await api().get('/admin/reports').set(auth(adminToken)).query(query).expect(400);
+    }
+  });
+  it('aggregates reports without multiplying orders by payment or detail rows', async () => {
+    const c = await customer(); const first = await product(3, 10); const second = await product(3, 20);
+    await add(c, first.productoId); await add(c, second.productoId);
+    const order = await checkout(c).expect(201);
+    const id = order.body.pedidoId as number;
+    await db.query("UPDATE pedido SET fecha='2026-03-01 23:59:59' WHERE pedido_id=$1", [id]);
+    await db.query("UPDATE pago SET estado='APROBADO',fecha_pago='2026-03-02 23:59:59' WHERE pedido_id=$1", [id]);
+    await db.query("INSERT INTO pago(pedido_id,metodo_pago,monto,estado,fecha_pago) VALUES($1,'TRANSFERENCIA',5,'PENDIENTE','2026-03-02'),($1,'TRANSFERENCIA',500,'APROBADO','2026-03-03')", [id]);
+    const report = await api().get('/admin/reports').set(auth(adminToken)).query({ dateFrom: '2026-03-01', dateTo: '2026-03-02' }).expect(200);
+    expect(report.body.summary).toEqual({ orders: 1, orderTotal: 30, approvedPayments: 30, pendingPayments: 5 });
+    expect(report.body.daily).toEqual([{ date: '2026-03-01', orders: 1, total: 30 }]);
+    expect(report.body.states).toEqual([{ state: 'CONFIRMADO', orders: 1, total: 30 }]);
+    expect(report.body.methods).toEqual([{ method: 'EFECTIVO', payments: 1, amount: 30 }]);
+    expect(report.body.topProducts.map((row: { units: number; total: number }) => [row.units, row.total])).toEqual([[1, 10], [1, 20]]);
+    expect(report.body.inventory.lowStock.every((row: { quantity: number }) => row.quantity <= 5)).toBe(true);
+  });
+  it('returns empty report periods with numeric zeros rather than null aggregates', async () => {
+    const result = await api().get('/admin/reports').set(auth(adminToken)).query({ dateFrom: '1900-01-01', dateTo: '1900-01-01' }).expect(200);
+    expect(result.body.summary).toEqual({ orders: 0, orderTotal: 0, approvedPayments: 0, pendingPayments: 0 });
+    expect(result.body.daily).toEqual([]); expect(result.body.topProducts).toEqual([]);
+  });
   it('registers distinct customers and enforces their role', async () => {
     const first = await customer(); const second = await customer();
     expect(first.userId).not.toBe(second.userId);

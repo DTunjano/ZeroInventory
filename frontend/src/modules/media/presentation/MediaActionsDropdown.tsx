@@ -35,8 +35,8 @@ export function MediaActionsDropdown({
           variant="ghost"
           size="icon"
           className={cn(
-            'h-8 w-8 rounded-full text-white/60 hover:bg-white/10 hover:text-white',
-            open ? 'bg-white/10 text-white' : '',
+            'h-8 w-8 rounded-full text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+            open ? 'bg-muted/50 text-foreground' : '',
           )}
           aria-label="Acciones"
         >
@@ -68,7 +68,7 @@ export function MediaActionsDropdown({
 
         <DropdownMenuItem
           onSelect={() => onDelete(media)}
-          className="gap-3 text-red-300 focus:bg-red-500/15 focus:text-red-200"
+          className="gap-3 text-red-700 dark:text-red-300 focus:bg-red-500/15 focus:text-red-700 dark:focus:text-red-200"
         >
           <Trash2 className="h-4 w-4" />
           <span>Eliminar</span>

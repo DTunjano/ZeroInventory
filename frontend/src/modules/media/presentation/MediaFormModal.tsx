@@ -119,10 +119,10 @@ export function MediaFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl border-white/10 bg-slate-950 text-white shadow-2xl shadow-black/50">
+      <DialogContent className="max-w-2xl border-border bg-card text-foreground shadow-2xl shadow-black/50">
         <DialogHeader>
           <DialogTitle className="text-xl">{title}</DialogTitle>
-          <DialogDescription className="text-white/60">
+          <DialogDescription className="text-muted-foreground">
             Sube el archivo desde el backend. No se expone la URL ni campos técnicos en el formulario.
           </DialogDescription>
         </DialogHeader>
@@ -135,7 +135,7 @@ export function MediaFormModal({
               value={values.titulo}
               onChange={(e) => setValues((prev) => ({ ...prev, titulo: e.target.value }))}
               placeholder="Video promocional principal"
-              className="border-white/10 bg-white/5"
+              className="border-border bg-muted/50"
             />
           </div>
 
@@ -146,7 +146,7 @@ export function MediaFormModal({
               value={values.descripcion}
               onChange={(e) => setValues((prev) => ({ ...prev, descripcion: e.target.value }))}
               placeholder="Texto breve para acompañar el video"
-              className="border-white/10 bg-white/5"
+              className="border-border bg-muted/50"
             />
           </div>
 
@@ -165,8 +165,8 @@ export function MediaFormModal({
               }}
               onClick={() => fileInputRef.current?.click()}
               className={cn(
-                'group relative flex min-h-40 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed bg-white/5 px-4 py-6 text-center transition-all',
-                dragActive ? 'border-blue-400 bg-blue-500/10' : 'border-white/10 hover:border-blue-400/60 hover:bg-blue-500/8',
+                'group relative flex min-h-40 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed bg-muted/50 px-4 py-6 text-center transition-all',
+                dragActive ? 'border-blue-400 bg-blue-500/10' : 'border-border hover:border-blue-400/60 hover:bg-blue-500/8',
               )}
             >
               <input
@@ -186,7 +186,7 @@ export function MediaFormModal({
                     muted
                     playsInline
                   />
-                  <div className="mt-3 text-sm text-white/60">Vista previa del archivo seleccionado</div>
+                  <div className="mt-3 text-sm text-muted-foreground">Vista previa del archivo seleccionado</div>
                 </div>
               ) : previewMode === 'current' && editing?.url ? (
                 <div className="relative w-full">
@@ -197,22 +197,22 @@ export function MediaFormModal({
                     muted
                     playsInline
                   />
-                  <div className="mt-3 text-sm text-white/60">Video actual</div>
+                  <div className="mt-3 text-sm text-muted-foreground">Video actual</div>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/10">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted/50 text-muted-foreground ring-1 ring-white/10">
                     <Upload className="h-6 w-6" />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm font-medium text-white">Arrastra un video o haz clic para seleccionarlo</p>
-                    <p className="text-xs text-white/55">Formatos permitidos: MP4 y WebM. El archivo se sube vía backend.</p>
+                    <p className="text-sm font-medium text-foreground">Arrastra un video o haz clic para seleccionarlo</p>
+                    <p className="text-xs text-muted-foreground">Formatos permitidos: MP4 y WebM. El archivo se sube vía backend.</p>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-between gap-3 text-xs text-white/50">
+            <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
               <span>Se recomienda un archivo corto para la portada.</span>
               {values.file ? (
                 <button
@@ -223,7 +223,7 @@ export function MediaFormModal({
                     setPreviewUrl(editing?.url ?? null)
                     if (fileInputRef.current) fileInputRef.current.value = ''
                   }}
-                  className="inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                  className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
                 >
                   <X className="h-3.5 w-3.5" />
                   Quitar archivo
@@ -233,14 +233,14 @@ export function MediaFormModal({
           </div>
 
           {error ? (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-200">
               {error}
             </div>
           ) : null}
         </div>
 
         <DialogFooter className="gap-3 sm:gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-white/10 bg-white/5 text-white hover:bg-white/10">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-border bg-muted/50 text-foreground hover:bg-muted/50">
             Cancelar
           </Button>
           <Button

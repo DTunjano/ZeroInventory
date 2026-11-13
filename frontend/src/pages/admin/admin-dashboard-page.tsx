@@ -39,7 +39,7 @@ export function AdminDashboardPage() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-6">
         <DashboardPanelCard title="No se pudo cargar el dashboard" description="Revisa la conexión con el backend o tus permisos de admin.">
-          <p className="text-sm text-white/70">{dashboardQuery.error instanceof Error ? dashboardQuery.error.message : 'Error desconocido'}</p>
+          <p className="text-sm text-muted-foreground">{dashboardQuery.error instanceof Error ? dashboardQuery.error.message : 'Error desconocido'}</p>
         </DashboardPanelCard>
       </div>
     )
@@ -59,19 +59,19 @@ export function AdminDashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-6">
-      <section className="flex flex-col gap-4 border-b border-white/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+      <section className="flex flex-col gap-4 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-200">
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-200">
             <BarChart3 className="h-3.5 w-3.5" />
             Admin Dashboard
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-white lg:text-4xl">Dashboard principal</h1>
-          <p className="max-w-2xl text-sm text-white/65 lg:text-base">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">Dashboard principal</h1>
+          <p className="max-w-2xl text-sm text-muted-foreground lg:text-base">
             Panel ejecutivo para seguimiento de ventas, pedidos, inventario y actividad reciente en Zero Inventory.
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2 text-xs text-white/60">
+        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
           <DashboardLegendChip label="Ventas" color="#3b82f6" />
           <DashboardLegendChip label="Pedidos" color="#60a5fa" />
           <DashboardLegendChip label="Inventario" color="#8b5cf6" />
@@ -114,11 +114,11 @@ export function AdminDashboardPage() {
         <DashboardStatCard
           title="Productos vendidos"
           value={String(data.summary.totalProductosVendidos)}
-          description={`${data.summary.pedidosCompletados} pedidos completados`}
+          description={`${data.summary.pedidosCompletados} pedidos con pago aprobado`}
           icon={TrendingUp}
         />
         <DashboardStatCard
-          title="Pedidos completados"
+          title="Pedidos con pago aprobado"
           value={String(data.summary.pedidosCompletados)}
           description="Ordenes con pago aprobado"
           icon={BarChart3}

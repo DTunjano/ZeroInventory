@@ -1,6 +1,6 @@
 # Etapa 1 — Revisión funcional y criterios de aceptación
 
-Fecha: 12 de noviembre de 2026. Estado: **en curso; alcance de usuarios/reportes y catálogo acordado; aceptación funcional pendiente**.
+Fecha: 12 de noviembre de 2026. Estado: **validación técnica de los pendientes completada; prueba personal de contraseña y aceptación funcional pendientes**.
 
 ## Alcance y evidencia
 
@@ -8,7 +8,7 @@ Base de partida: commit `c558211`, con 10 pruebas unitarias y 21 de integración
 
 En esta revisión se iniciaron varias sesiones locales de API, cada una con una base temporal `zero_inventory_test_review_*`, secretos de sesión independientes y perfiles ficticios de cliente, empleado y administrador. Se usaron productos, dirección y contactos ficticios. La DB habitual no recibió registros de demostración.
 
-La revisión se hizo en navegador a 1440 × 900 y 390 × 844. Las capturas privadas de la sesión se conservan localmente en `.local/functional-evidence/`; no contienen tokens, contraseñas ni personas reales.
+La revisión acumulada se hizo en navegador a 1440 × 900, 1280 × 720 y 390 × 844. Las capturas privadas de la sesión se conservan localmente en `.local/functional-evidence/`; no contienen tokens, contraseñas ni personas reales.
 
 Estados:
 
@@ -31,7 +31,7 @@ Estados:
 | CAT-01 | Público | Ver catálogo; intentar comprar solicita autenticación | **Verificado** |
 | CAT-02 | Cliente | Buscar un producto oculta los que no coinciden | **Verificado:** búsqueda de Vaso QA |
 | CAT-03 | Cliente | Un producto sin existencias no permite agregar al carrito | **Verificado:** Shaker QA sin stock y acción deshabilitada |
-| CAT-04 | Cliente | Categorías, ordenamiento, filtros y resultados vacíos | **Parcial:** categoría QA, búsqueda vacía y limpiar filtros comprobados; controles de orden usados, falta documentar una comparación visual de varios resultados ordenados |
+| CAT-04 | Cliente | Categorías, ordenamiento, filtros y resultados vacíos  | **Verificado tras corrección:** categorías, búsqueda vacía y limpieza; comparación visual de nombre y stock en ambas direcciones con Cuchara/Shaker/Vaso QA, incluyendo agotados. El orden explícito ya no se sustituye por prioridad de disponibilidad; cinco regresiones automáticas |
 | CAR-01 | Cliente | Agregar producto, cambiar cantidad y recalcular subtotal | **Verificado:** 2 unidades de 19.000 produjeron total 38.000 |
 | CAR-02 | Cliente | Eliminar una línea y vaciar voluntariamente el carrito | **Verificado:** ambos recorridos terminaron en carrito vacío |
 | CAR-03 | Cliente | Confirmar una compra interna con dirección propia y método disponible | **Verificado:** compra ficticia contra entrega; sin pasarela ni cobro externo |
@@ -51,15 +51,38 @@ Estados:
 | EMP-01 | Admin | Listar colaboradores y su estado | **Verificado:** empleado ficticio activo |
 | EMP-02 | Admin | Crear, editar y cambiar estado con acceso asociado | **Verificado desde UI:** alta con cuenta, edición de nombre, filtro inactivo y reactivación. API comprueba login/rol, atomicidad y rollback ante conflicto de cuenta o último ADMIN |
 | USU-01 | Admin | Administrar usuarios y roles desde una vista operativa | **Verificado:** alta, edición de roles, búsqueda, filtro inactivo, desactivación/reactivación y rechazo del último admin desde UI; contraseñas, perfiles y concurrencia mediante integración API |
-| REP-01 | Admin | Consultar reportes avanzados funcionales | **Fuera del MVP por decisión del usuario:** retirados del menú; la ruta antigua explica el aplazamiento y enlaza al dashboard |
+| REP-01 | Admin | Consultar reportes avanzados funcionales  | **Implementado y verificado:** consulta exclusiva ADMIN, rango <=366 días, resumen/día/estado/método/productos/inventario, CSV descargado con cifras comprobadas, período vacío y rango excesivo; temas claro/oscuro y móvil. Ver `docs/reportes.md` |
 | DAS-01 | Admin | Dashboard carga datos del escenario de prueba | **Verificado:** 1 pedido, 3 productos y 3 usuarios; ingresos aprobados 0 porque el pago sigue pendiente |
 | MED-01 | Admin | Listar medios y comunicar ausencia de registros sin errores | **Verificado:** lista vacía; se corrigió la paginación que mostraba 1 / 0 |
-| MED-02 | Admin | Crear, editar, desactivar y reproducir videos promocionales | **Pendiente de prueba real de video:** no se autorizó subir videos. Se corrigieron firma de contenido, conservación del anterior y tipo de recurso al eliminar; validados con dobles de prueba. La carga real autorizada cubre únicamente PNG de producto |
-| CFG-01 | Cuenta | Perfil, apariencia y seguridad respetan permisos | **Parcial:** edición de perfil persistida tras corregir estado reactivo; empleado solo ve Apariencia; API verifica contraseña propia y permisos. Modo claro continúa deshabilitado/en construcción; no se presenta como terminado |
+| MED-02 | Admin | Crear, editar, desactivar y reproducir videos promocionales  | **Verificado con video real autorizado:** MP4 ficticio de 2 s y 320×180, carga vía API, reproducción real en Home, edición desde UI, desactivación/ocultación y reactivación desde UI. Recurso QA retirado y ausencia remota comprobada; medios anteriores conservados. Lectura pública de inactivo por ID devuelve 404, con integración |
+| CFG-01 | Cuenta | Perfil, apariencia y seguridad respetan permisos  | **Perfil y apariencia verificados:** claro/oscuro funcionales y persistidos por cuenta, recarga e inicio de sesión; empleado solo ve Apariencia. Seguridad verificada por API; pendiente acción personal final de cambio de contraseña desde UI (instrucciones en la sección de cierre) |
 | NAV-01 | Móvil | El contenido usa el ancho disponible y el menú permite cambiar de módulo | **Verificado tras corrección:** contenido de ~390 px en viewport de 390 px y navegación a proveedores desde el menú |
 | NAV-02 | Escritorio | El menú conserva opciones según rol y admite colapsar/expandir | **Verificado:** navegación de roles y control de sidebar |
 | NAV-03 | Accesibilidad | Cierre de menú con teclado, regreso del foco y controles identificables | **Verificado para el menú móvil:** Escape oculta el diálogo y devuelve el foco a “Abrir menú de navegación”; no representa una auditoría completa de accesibilidad |
 | INI-01 | Cuenta | El acceso desde Home respeta la ruta de inicio del rol | **Verificado para admin y cliente** tras cambiar el CTA a la ruta central: dashboard y tienda, respectivamente |
+
+## Resultado vigente del cierre técnico
+
+Esta sección y la matriz anterior reflejan el estado actual. Las rondas descritas más abajo conservan su evidencia histórica; sus limitaciones fueron superadas solo donde la matriz lo indica expresamente.
+
+- REP-01 se incorporó por la petición posterior de completar pendientes. Reportes no modifica negocio ni estados: consulta de solo lectura con snapshot consistente, totales independientes y exportación protegida contra fórmulas.
+- Tema claro habilitado y corregido en pantallas operativas, etiquetas, modales y controles. Tailwind carga la configuración semántica; la variante oscura sigue la cuenta, no la preferencia del SO. Home/acceso/registro mantienen su marca oscura.
+- Catálogo de cliente: nombre ascendente Cuchara/Shaker/Vaso, descendente Vaso/Shaker/Cuchara; stock ascendente Shaker/Cuchara/Vaso y descendente Vaso/Cuchara/Shaker. Se corrigió la prioridad que desplazaba agotados aunque hubiera un orden explícito.
+- Video: carga real autorizada de 57.919 bytes vía API temporal; reproducción de 2 s, 320×180, readyState 4, sin error y tiempo de reproducción avanzando. Edición y alternancia desde UI; inactivo ausente de Home. Limpieza autorizada completada con 404 remoto. No se alteraron medios anteriores.
+- Contrastes y anchos comprobados en reportes, catálogo e inventario; pedidos del cliente revisados en claro. Reportes claro/oscuro a 390 px, documento sin desbordamiento; menú Escape devuelve el foco. Empleado carece de enlaces administrativos y solo configura apariencia.
+- Backend: tipos, lint, build y 24 unitarias. Integración: 38 pruebas PostgreSQL aisladas (ver última ejecución en `docs/validation.md`). Frontend: tipos, lint, build y 7 unitarias de CSV/orden. Sin migraciones nuevas. DB habitual: cero pendientes, diferencias de stock y duplicados.
+- Evidencias privadas: `reports-light-validated.jpg`, `reports-mobile-light-validated.jpg`, `reports-mobile-dark-validated.jpg`, `customer-catalog-sorting-validated.jpg`, `customer-store-mobile-light-validated.jpg`, `cloudinary-video-playback-validated.jpg`, `password-ui-handoff.jpg` en `.local/functional-evidence`.
+
+### Acción personal de AUT-06 / CFG-01
+
+La política de control del navegador exige que el usuario introduzca y confirme una nueva contraseña. Se dejó abierta Configuración → Seguridad en la cuenta ficticia `qa_customer` de la DB temporal, con campos vacíos. Las credenciales de QA se entregaron en el chat, no se deben usar en instalaciones habituales.
+
+1. Completar contraseña actual, nueva contraseña de QA y confirmación siguiendo las instrucciones del chat.
+2. Guardar cambios → Aplicar cambios; comprobar «Contraseña actualizada correctamente».
+3. Informar el resultado. El agente verifica después rechazo de la anterior y acceso con la nueva, y retira la DB temporal.
+4. Revisar la matriz y las capturas; aprobar la etapa o indicar ajustes. No se requieren SQL, Git, Docker ni pruebas técnicas manuales por parte del usuario.
+
+**Cierre formal pendiente de esta acción y de la aceptación del usuario. La etapa 2 sigue sin iniciar.** La sesión temporal se conserva únicamente para completar esta prueba; el video remoto ya se retiró.
 
 ## Hallazgos y tratamiento
 
@@ -76,13 +99,13 @@ Estados:
 
 | ID | Prioridad | Situación comprobada | Decisión o trabajo necesario |
 | --- | --- | --- | --- |
-| D-01 | Alcance resuelto | Completar usuarios/roles y aplazar reportes avanzados | Aprobado por el usuario; gestión implementada y reportes retirados del menú |
+| D-01 | Alcance ampliado por petición posterior | Reportes incluidos en el cierre, además de usuarios/roles | REP-01 implementado y validado; no adelanta transiciones de la etapa 3 |
 | D-02 | Regla resuelta | Imagen opcional; proveedor y categoría obligatorios | Aprobado e implementado en altas; categorías/producto se persisten juntos; datos históricos preservados |
-| D-03 | Validación externa parcial | PNG de producto autorizado y comprobado en Cloudinary | Carga y render de 32×32 correctos. Recurso QA retirado tras autorización explícita; ausencia verificada en Cloudinary y DB temporal. Video real aún pendiente |
+| D-03 | Validación externa completada | PNG de producto y MP4 ficticio autorizados y comprobados | Video cargado, reproducido, editado y alternado; ambos recursos QA retirados con ausencia remota verificada |
 | D-04 | Regla resuelta | Precio mayor que cero | Aprobado; API rechaza precio cero en altas y cuando se envía un precio nuevo; UI comprobada |
 | D-05 | Resuelto | Ayuda, Ofertas y Notificaciones eran controles sin acción | Retirados del encabezado para no publicar acciones vacías; sin crear funcionalidades futuras |
 | D-06 | Resuelto | Formatos de precio distintos y centavos redondeados a cero | Formato COP compartido, máximo dos decimales; 0.10 se muestra como $0,1 en administración y tienda, comprobado desde UI |
-| D-07 | Validación parcial completada | Registro, direcciones, proveedores, empleados y perfil | Recorridos ejecutados y documentados. Permanecen las limitaciones explícitas de videos, tema claro, orden visual de catálogo y cambio de contraseña desde UI |
+| D-07 | Validación técnica completada | Registro, direcciones, proveedores, empleados, perfil y pendientes técnicos de catálogo/medios/tema/reportes | Resta cambio de contraseña personal desde UI y aceptación del usuario |
 
 Las reglas de estados de pedido, fecha efectiva de pago, cancelación y devolución pertenecen a la etapa 3. Esta revisión registra lo observado, sin introducir dichas reglas anticipadamente.
 

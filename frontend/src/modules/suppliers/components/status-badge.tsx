@@ -13,8 +13,8 @@ export function SupplierStatusBadge({
     <Badge
       className={
         isActive
-          ? 'border-green-500/30 bg-green-500/20 text-green-300 hover:bg-green-500/20'
-          : 'border-red-500/20 bg-red-500/15 text-red-300 hover:bg-red-500/15'
+          ? 'border-green-500/30 bg-green-500/20 text-green-700 dark:text-green-300 hover:bg-green-500/20'
+          : 'border-red-500/20 bg-red-500/15 text-red-700 dark:text-red-300 hover:bg-red-500/15'
       }
       variant="outline"
     >

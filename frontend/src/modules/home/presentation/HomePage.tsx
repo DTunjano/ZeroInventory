@@ -61,7 +61,7 @@ export function HomePage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="dark relative min-h-screen w-full overflow-x-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       {/* ===== HERO SECTION ===== */}
       <section className="relative flex min-h-screen w-full flex-col overflow-hidden">
         {/* Background Video */}

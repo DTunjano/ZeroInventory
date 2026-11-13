@@ -435,18 +435,18 @@ export function MyCartPage() {
       {/* Sticky header con búsqueda */}
       <div className="sticky top-0 z-10 -mx-4 bg-[#0f172a]/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-[#0f172a]/80">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">Mi carrito</h1>
+          <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">Mi carrito</h1>
           <div className="flex items-center gap-3">
             <div className="relative w-48 sm:w-72">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="Buscar en carrito..."
-                className="h-9 w-full rounded-lg border-white/10 bg-white/10 pl-9 text-sm text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="h-9 w-full rounded-lg border-border bg-muted/50 pl-9 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
-            <Button asChild variant="outline" size="sm" className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white">
+            <Button asChild variant="outline" size="sm" className="border-border bg-muted/50 text-foreground hover:bg-muted/50 hover:text-foreground">
               <Link to="/tienda" className="flex items-center gap-1">
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">Seguir comprando</span>
@@ -461,11 +461,11 @@ export function MyCartPage() {
           <div className="h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500" />
           <CardContent className="space-y-5 p-5 sm:p-6">
             <div className="flex items-start gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/20">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-1 ring-amber-500/20">
                 <AlertTriangle className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-300">
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">
                   <PackageX className="h-3.5 w-3.5" />
                   Revisión requerida
                 </div>

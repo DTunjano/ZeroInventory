@@ -2,7 +2,7 @@
 
 Aplicación web para administrar productos e inventario y permitir a clientes comprar desde un catálogo. Incluye tienda, carrito, direcciones, pedidos, pagos registrados, proveedores, empleados, usuarios, panel administrativo y contenido multimedia.
 
-El trabajo siguiente se organiza por etapas en [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md). Está activa la revisión funcional de la etapa 1; su evidencia y pendientes están en [docs/revision-funcional-mvp.md](docs/revision-funcional-mvp.md). Usuarios y roles ya tienen gestión funcional; los reportes avanzados están aplazados por decisión del usuario. El alcance completo del MVP requiere aceptación del responsable del proyecto.
+El trabajo siguiente se organiza por etapas en [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md). Está activa la revisión funcional de la etapa 1; su evidencia y pendientes están en [docs/revision-funcional-mvp.md](docs/revision-funcional-mvp.md). Usuarios/roles y reportes operativos tienen gestión funcional; el pedido posterior incorporó REP-01 al cierre. Ver [docs/reportes.md](docs/reportes.md) para permisos, fechas, fórmulas y exportación CSV. El alcance completo del MVP requiere aceptación del responsable del proyecto.
 
 ## Requisitos
 
@@ -44,6 +44,8 @@ pnpm dev
 ```
 
 Vite muestra la URL del frontend, normalmente `http://localhost:5173`. El frontend utiliza `http://localhost:3000` como API por defecto. Para cambiarla, crea `frontend/.env.local` con `VITE_API_URL`; `frontend/.env.example` contiene un ejemplo.
+
+Usa el mismo nombre de host en frontend y API (`localhost` para ambos). Mezclar `127.0.0.1` y `localhost` puede impedir el envío de la cookie SameSite de renovación.
 
 ### Direcciones locales
 
@@ -165,7 +167,7 @@ Los contratos HTTP, transacciones y límites están en [docs/usuarios-y-producto
 
 ## Roles y autenticación
 
-- `ADMIN`: gestión administrativa, usuarios y roles, empleados y contenido; reportes avanzados aplazados.
+- `ADMIN`: gestión administrativa, usuarios y roles, empleados y contenido y reportes operativos de solo lectura.
 - `EMPLOYEE`: productos, proveedores, inventario y sus ajustes; las rutas con roles explícitos pueden restringir más.
 - `CUSTOMER`: carrito, pedidos y direcciones propios, configuración de su cuenta y catálogo.
 - Público: login, registro, renovación de sesión, logout y lecturas de catálogo/medios marcadas con `@Public()`.
@@ -240,6 +242,7 @@ pnpm db:check
 # Consola frontend
 pnpm typecheck
 pnpm lint
+pnpm test:unit
 pnpm build
 ```
 
@@ -292,3 +295,9 @@ Integra a `dev` mediante el flujo acordado del repositorio. Si aparece otro rech
 Compose administra los servicios de datos locales. El backend y frontend continúan siendo procesos independientes. En producción: prepara los secretos, verifica el certificado PostgreSQL, respalda, aplica `pnpm db:migrate`, compila el backend y ejecútalo con `pnpm start:prod`. Publica `frontend/dist` en un servidor con fallback de rutas a `index.html` y configura `VITE_API_URL` antes de compilar. Expón la API por HTTPS y ajusta CORS al origen real.
 
 No se configura automáticamente un proveedor de hosting, un dominio, ni un procesador de pagos. Swagger se publica en `/api/docs`; decide su accesibilidad en el proxy del entorno de despliegue.
+
+## Apariencia y reportes del cierre funcional
+
+Configuración → Apariencia permite claro y oscuro en las tres clases de cuenta; la preferencia se guarda en el servidor y se restaura al iniciar sesión. Home, acceso y registro conservan su presentación de marca oscura. Las utilidades de color se generan cargando `frontend/tailwind.config.cjs` desde CSS; la variante `dark` sigue la clase del documento.
+
+ADMIN dispone de `/admin/reports` y exportación CSV. Empleado y cliente no acceden al reporte. `pnpm test:unit` desde `frontend` ejecuta las regresiones de exportación y orden global del catálogo; CI también ejecuta este comando.

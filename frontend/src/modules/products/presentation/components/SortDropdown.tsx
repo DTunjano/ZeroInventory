@@ -49,7 +49,7 @@ export function SortDropdown({
       <button
         type="button"
         onClick={() => onOpenChange(!isOpen)}
-        className="h-10 flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/80"
+        className="h-10 flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm font-medium text-muted-foreground"
         style={{ width: '160px' }}
       >
         <span>{currentLabel}</span>
@@ -57,7 +57,7 @@ export function SortDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-40 rounded-lg border border-white/10 bg-gray-950/95 p-1 shadow-xl shadow-black/50">
+        <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-40 rounded-lg border border-border bg-card p-1 shadow-xl shadow-black/50">
           {SORT_OPTIONS.map((option) => (
             <button
               key={option.value ?? 'default'}
@@ -65,8 +65,8 @@ export function SortDropdown({
               className={cn(
                 'w-full text-left rounded-md px-3 py-2 text-sm transition-colors',
                 value === option.value
-                  ? 'bg-blue-500/20 text-blue-100'
-                  : 'text-white/70 hover:bg-white/5 hover:text-white',
+                  ? 'bg-blue-500/20 text-blue-700 dark:text-blue-100'
+                  : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
               )}
               onClick={() => {
                 onChange(option.value)

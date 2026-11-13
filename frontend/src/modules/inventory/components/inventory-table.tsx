@@ -26,7 +26,7 @@ export function InventoryTable({
 
   if (isLoading) {
     return (
-      <div className={`rounded-2xl border p-8 text-center ${isDark ? 'border-white/10 bg-zinc-900/70 text-zinc-400' : 'border-slate-200 bg-white text-slate-500 shadow-sm'}`}>
+      <div className={`rounded-2xl border p-8 text-center ${isDark ? 'border-border bg-card text-muted-foreground' : 'border-slate-200 bg-white text-muted-foreground shadow-sm'}`}>
         Cargando inventario...
       </div>
     )
@@ -34,36 +34,36 @@ export function InventoryTable({
 
   if (isEmpty || products.length === 0) {
     return (
-      <div className={`rounded-2xl border p-8 text-center ${isDark ? 'border-white/10 bg-zinc-900/70 text-zinc-400' : 'border-slate-200 bg-white text-slate-500 shadow-sm'}`}>
+      <div className={`rounded-2xl border p-8 text-center ${isDark ? 'border-border bg-card text-muted-foreground' : 'border-slate-200 bg-white text-muted-foreground shadow-sm'}`}>
         No hay productos en el inventario.
       </div>
     )
   }
 
   return (
-    <div className={`overflow-hidden rounded-2xl border ${isDark ? 'border-white/10 bg-zinc-900/70' : 'border-slate-200 bg-white shadow-sm'}`}>
+    <div className={`overflow-hidden rounded-2xl border ${isDark ? 'border-border bg-card' : 'border-slate-200 bg-white shadow-sm'}`}>
       <Table>
         <TableHeader>
-          <TableRow className={isDark ? 'border-white/10' : 'border-slate-200'}>
-            <TableHead className={isDark ? 'text-white/70' : 'text-slate-500'}>Producto</TableHead>
-            <TableHead className={isDark ? 'text-white/70' : 'text-slate-500'}>SKU</TableHead>
-            <TableHead className={isDark ? 'text-white/70' : 'text-slate-500'}>Categoría</TableHead>
-            <TableHead className={`text-right ${isDark ? 'text-white/70' : 'text-slate-500'}`}>Stock</TableHead>
-            <TableHead className={isDark ? 'text-white/70' : 'text-slate-500'}>Estado</TableHead>
+          <TableRow className={isDark ? 'border-border' : 'border-slate-200'}>
+            <TableHead className={isDark ? 'text-muted-foreground' : 'text-muted-foreground'}>Producto</TableHead>
+            <TableHead className={isDark ? 'text-muted-foreground' : 'text-muted-foreground'}>SKU</TableHead>
+            <TableHead className={isDark ? 'text-muted-foreground' : 'text-muted-foreground'}>Categoría</TableHead>
+            <TableHead className={`text-right ${isDark ? 'text-muted-foreground' : 'text-muted-foreground'}`}>Stock</TableHead>
+            <TableHead className={isDark ? 'text-muted-foreground' : 'text-muted-foreground'}>Estado</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {products.map((product) => (
             <TableRow
               key={product.productoId}
-              className={isDark ? 'border-white/10 hover:bg-white/5' : 'border-slate-200 hover:bg-slate-50'}
+              className={isDark ? 'border-border hover:bg-muted/50' : 'border-slate-200 hover:bg-slate-50'}
             >
-              <TableCell className={isDark ? 'font-medium text-white' : 'font-medium text-slate-900'}>
+              <TableCell className={isDark ? 'font-medium text-foreground' : 'font-medium text-slate-900'}>
                 {product.nombre}
               </TableCell>
-              <TableCell className={isDark ? 'text-zinc-300' : 'text-slate-600'}>{product.sku}</TableCell>
-              <TableCell className={isDark ? 'text-zinc-400' : 'text-slate-500'}>{product.categoria}</TableCell>
-              <TableCell className={isDark ? 'text-right font-semibold text-white' : 'text-right font-semibold text-slate-900'}>
+              <TableCell className={isDark ? 'text-muted-foreground' : 'text-slate-600'}>{product.sku}</TableCell>
+              <TableCell className={isDark ? 'text-muted-foreground' : 'text-muted-foreground'}>{product.categoria}</TableCell>
+              <TableCell className={isDark ? 'text-right font-semibold text-foreground' : 'text-right font-semibold text-slate-900'}>
                 {product.stock}
               </TableCell>
               <TableCell>

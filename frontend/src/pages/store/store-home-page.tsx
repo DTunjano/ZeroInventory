@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/modules/auth/application/auth.store'
 import { addToCart, getMyCart } from '@/modules/cart/application/cart.use-cases'
 import { useCartStore } from '@/modules/cart/application/cart.store'
+import { sortCatalogProducts } from '@/modules/products/application/sort-catalog-products'
 import { listProducts } from '@/modules/products/application/products.use-cases'
 import { listImagesByProduct } from '@/modules/products/application/product-images.use-cases'
 import { listCategories } from '@/modules/products/application/list-categories.use-case'
@@ -42,17 +43,17 @@ function StockBadge({ quantity }: { quantity: number }) {
   const config = {
     available: {
       label: 'Disponible',
-      className: 'border-green-500/30 bg-green-500/10 text-green-400',
+      className: 'border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400',
       icon: CheckCircle,
     },
     low: {
       label: 'Últimas unidades',
-      className: 'border-amber-500/30 bg-amber-500/10 text-amber-400',
+      className: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400',
       icon: AlertTriangle,
     },
     out: {
       label: 'Sin stock',
-      className: 'border-red-500/30 bg-red-500/10 text-red-400',
+      className: 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400',
       icon: XCircle,
     },
   }
@@ -91,7 +92,7 @@ function ProductCard({ product }: { product: Product }) {
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-sky-400 to-emerald-400 opacity-80" />
 
       <div className="p-3 sm:p-4">
-        <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
+        <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card">
           {imageUrl ? (
             <img
               src={imageUrl}
@@ -104,7 +105,7 @@ function ProductCard({ product }: { product: Product }) {
           ) : (
             <div className="flex h-full w-full items-center justify-center p-6 text-center text-sm text-muted-foreground">
               <div className="space-y-3">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-foreground/70 ring-1 ring-white/10">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted/50 text-foreground/70 ring-1 ring-white/10">
                   {imageQuery.isLoading ? (
                     <Sparkles className="h-5 w-5 animate-pulse" />
                   ) : (
@@ -246,53 +247,25 @@ export function StoreHomePage() {
   const products = useMemo(() => productsQuery.data?.data ?? [], [productsQuery.data?.data])
 
 
-  const displayedProducts = useMemo(() => {
-    const priority = (p: Product) => {
-      const s = getStockStatus(p.cantidad)
-      return s === 'available' ? 0 : s === 'low' ? 1 : 2
-    }
-
-    const copy = [...products]
-
-    copy.sort((a, b) => {
-      const pa = priority(a)
-      const pb = priority(b)
-      if (pa !== pb) return pa - pb
-
-      // same priority, apply sortBy
-      if (sortBy === 'stock') {
-        return order === 'asc' ? a.cantidad - b.cantidad : b.cantidad - a.cantidad
-      }
-
-      if (sortBy === 'nombre') {
-        return order === 'asc'
-          ? a.nombre.localeCompare(b.nombre)
-          : b.nombre.localeCompare(a.nombre)
-      }
-
-      return 0
-    })
-
-    return copy
-  }, [products, sortBy, order])
+  const displayedProducts = useMemo(() => sortCatalogProducts(products, sortBy, order), [products, sortBy, order])
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-card via-card to-slate-950/70 p-6 shadow-[0_20px_80px_rgba(59,130,246,0.08)] sm:p-8">
+      <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-card via-card to-muted/70 p-6 shadow-[0_20px_80px_rgba(59,130,246,0.08)] sm:p-8">
         <div className="absolute right-0 top-0 h-40 w-40 -translate-y-1/2 translate-x-1/3 rounded-full bg-blue-500/10 blur-3xl" />
         <div className="absolute left-20 top-1/2 h-28 w-28 -translate-y-1/2 rounded-full bg-cyan-400/10 blur-3xl" />
 
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-200 shadow-sm shadow-blue-500/10">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-200 shadow-sm shadow-blue-500/10">
               <Sparkles className="h-3.5 w-3.5" />
               Catálogo recomendado
             </div>
             <div className="space-y-3">
-              <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                 Tienda
               </h1>
-              <p className="max-w-2xl text-sm leading-6 text-white/70 sm:text-base">
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
                 Explora el catálogo, agrega productos al carrito y finaliza tu compra.
               </p>
             </div>
@@ -301,14 +274,14 @@ export function StoreHomePage() {
       </div>
 
       {/* Filters Bar */}
-      <div className="relative z-10 grid gap-3 rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-sm lg:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] lg:items-center">
+      <div className="relative z-10 grid gap-3 rounded-lg border border-border bg-muted/50 p-4 backdrop-blur-sm lg:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] lg:items-center">
         <div className="relative w-full">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white/50" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar productos..."
-            className="h-12 w-full rounded-xl border-white/10 bg-white/10 pl-10 text-white placeholder:text-white/50 focus-visible:border-blue-400/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="h-12 w-full rounded-xl border-border bg-muted/50 pl-10 text-foreground placeholder:text-muted-foreground focus-visible:border-blue-400/50 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
 

@@ -22,7 +22,7 @@ export function ProductBadge({ type, value, label, className }: ProductBadgeProp
         <span
           className={cn(
             'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
-            'bg-red-900/30 text-red-300 border border-red-800/50',
+            'bg-red-900/30 text-red-700 dark:text-red-300 border border-red-800/50',
             'transition-colors duration-200',
             className,
           )}
@@ -38,7 +38,7 @@ export function ProductBadge({ type, value, label, className }: ProductBadgeProp
         <span
           className={cn(
             'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
-            'bg-yellow-900/30 text-yellow-300 border border-yellow-800/50',
+            'bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border border-yellow-800/50',
             'transition-colors duration-200',
             className,
           )}
@@ -53,7 +53,7 @@ export function ProductBadge({ type, value, label, className }: ProductBadgeProp
       <span
         className={cn(
           'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
-          'bg-green-900/30 text-green-300 border border-green-800/50',
+          'bg-green-900/30 text-green-700 dark:text-green-300 border border-green-800/50',
           'transition-colors duration-200',
           className,
         )}
@@ -72,8 +72,8 @@ export function ProductBadge({ type, value, label, className }: ProductBadgeProp
       className={cn(
         'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
         isActive
-          ? 'bg-blue-900/30 text-blue-300 border border-blue-800/50'
-          : 'bg-gray-800/50 text-gray-400 border border-gray-700/50',
+          ? 'bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-800/50'
+          : 'bg-card text-muted-foreground border border-gray-700/50',
         'transition-colors duration-200',
         className,
       )}

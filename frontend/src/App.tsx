@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Route, Routes, BrowserRouter } from 'react-router-dom'
 
 import { AuthBootstrap } from '@/modules/auth/presentation/auth-bootstrap'
+import { ThemeSync } from '@/modules/settings/presentation/theme-sync'
 import { RequireAuth } from '@/modules/auth/presentation/require-auth'
 const AdminProductsPage = lazy(() => import('@/modules/products/presentation/admin-products-page').then((module) => ({ default: module.AdminProductsPage })))
 const AdminInventoryPage = lazy(() => import('@/modules/inventory/presentation/admin-inventory-page').then((module) => ({ default: module.AdminInventoryPage })))
@@ -41,6 +42,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthBootstrap />
+        <ThemeSync />
         <Suspense fallback={<div role="status" className="p-8 text-center">Cargando...</div>}>
         <Routes>
           <Route path="login" element={<LoginPage />} />

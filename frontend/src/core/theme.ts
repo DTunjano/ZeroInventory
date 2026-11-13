@@ -13,6 +13,7 @@ export function applyTheme(theme: Theme): void {
   if (typeof document === 'undefined') return
 
   const root = document.documentElement
+  root.style.colorScheme = theme
 
   if (theme === 'dark') {
     root.classList.add('dark')

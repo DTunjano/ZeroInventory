@@ -59,7 +59,7 @@ export function SupplierFormModal({ open, onOpenChange, proveedor, onSuccess }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-zinc-900 border-white/10 text-white">
+      <DialogContent className="sm:max-w-lg bg-card border-border text-foreground">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
             {isEditing ? 'Editar Proveedor' : 'Nuevo Proveedor'}
@@ -69,67 +69,67 @@ export function SupplierFormModal({ open, onOpenChange, proveedor, onSuccess }: 
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="nombre" className="text-zinc-300">
+            <Label htmlFor="nombre" className="text-muted-foreground">
               Nombre de la empresa
             </Label>
             <div className="relative">
-              <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="nombre"
                 name="nombre"
                 defaultValue={proveedor?.nombre || ''}
                 placeholder="Ej: Proveedor XYZ"
-                className="pl-10 rounded-xl bg-zinc-950 border-white/10 text-white"
+                className="pl-10 rounded-xl bg-card border-border text-foreground"
                 required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="nombreTitular" className="text-zinc-300">
+            <Label htmlFor="nombreTitular" className="text-muted-foreground">
               Nombre del titular
             </Label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="nombreTitular"
                 name="nombreTitular"
                 defaultValue={proveedor?.nombreTitular || ''}
                 placeholder="Ej: Juan Pérez"
-                className="pl-10 rounded-xl bg-zinc-950 border-white/10 text-white"
+                className="pl-10 rounded-xl bg-card border-border text-foreground"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-zinc-300">
+            <Label htmlFor="email" className="text-muted-foreground">
               Correo electrónico
             </Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="email"
                 name="email"
                 type="email"
                 defaultValue={proveedor?.email || ''}
                 placeholder="proveedor@ejemplo.com"
-                className="pl-10 rounded-xl bg-zinc-950 border-white/10 text-white"
+                className="pl-10 rounded-xl bg-card border-border text-foreground"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="telefono" className="text-zinc-300">
+            <Label htmlFor="telefono" className="text-muted-foreground">
               Teléfono
             </Label>
             <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="telefono"
                 name="telefono"
                 defaultValue={proveedor?.telefono || ''}
                 placeholder="300 123 4567"
-                className="pl-10 rounded-xl bg-zinc-950 border-white/10 text-white"
+                className="pl-10 rounded-xl bg-card border-border text-foreground"
               />
             </div>
           </div>
@@ -139,7 +139,7 @@ export function SupplierFormModal({ open, onOpenChange, proveedor, onSuccess }: 
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="rounded-xl text-zinc-300 hover:text-white"
+              className="rounded-xl text-muted-foreground hover:text-foreground"
             >
               Cancelar
             </Button>

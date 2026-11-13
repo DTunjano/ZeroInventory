@@ -59,10 +59,10 @@ export function SuppliersPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-white">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">
             Gestion de Proveedores
           </h1>
-          <p className="mt-2 text-lg text-zinc-300">
+          <p className="mt-2 text-lg text-muted-foreground">
             {data?.total ?? 0} proveedores registrados
           </p>
         </div>
@@ -83,17 +83,17 @@ export function SuppliersPage() {
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="w-full max-w-xl relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             placeholder="Buscar proveedores..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-12 rounded-xl border-white/10 bg-zinc-950/70 pl-10 text-lg text-white placeholder:text-zinc-500"
+            className="h-12 rounded-xl border-border bg-card pl-10 text-lg text-foreground placeholder:text-muted-foreground"
           />
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="inline-flex rounded-xl border border-white/10 bg-zinc-900/70 p-1">
+          <div className="inline-flex rounded-xl border border-border bg-card p-1">
             {(
               [
                 ['Todos', 'ALL'],
@@ -107,7 +107,7 @@ export function SuppliersPage() {
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   statusFilter === value
                     ? 'bg-blue-500 text-white'
-                    : 'text-zinc-300 hover:bg-white/10 hover:text-white'
+                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                 }`}
                 type="button"
               >
@@ -119,7 +119,7 @@ export function SuppliersPage() {
           <Button
             onClick={() => qc.invalidateQueries({ queryKey: ['proveedores'] })}
             variant="outline"
-            className="gap-2 rounded-xl border-white/10 px-4 py-2 text-base font-semibold hover:bg-white/5"
+            className="gap-2 rounded-xl border-border px-4 py-2 text-base font-semibold hover:bg-muted/50"
             disabled={isLoading}
           >
             <RotateCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -200,7 +200,7 @@ export function SuppliersPage() {
       />
 
       {isLoading ? (
-        <div className="rounded-2xl border border-white/10 bg-zinc-900/70 p-10 text-center text-zinc-400">
+        <div className="rounded-2xl border border-border bg-card p-10 text-center text-muted-foreground">
           Cargando proveedores...
         </div>
       ) : filteredSuppliers.length ? (
@@ -225,11 +225,11 @@ export function SuppliersPage() {
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-white/10 bg-zinc-900/70 p-10 text-center text-zinc-400">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/5">
-            <Building className="h-6 w-6 text-zinc-400" />
+        <div className="rounded-2xl border border-border bg-card p-10 text-center text-muted-foreground">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted/50">
+            <Building className="h-6 w-6 text-muted-foreground" />
           </div>
-          <p className="text-base text-zinc-300">
+          <p className="text-base text-muted-foreground">
             {searchTerm
               ? 'No hay proveedores que coincidan con tu busqueda.'
               : 'Sin proveedores registrados.'}

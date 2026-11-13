@@ -8,6 +8,7 @@
     "build": "pnpm typecheck && vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
+    "test:unit": "node --test scripts/test-report-csv.cjs scripts/test-catalog-sort.cjs",
     "preview": "vite preview"
   },
   "dependencies": {

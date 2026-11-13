@@ -65,8 +65,8 @@ export function AdminEmployeesPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-white">Gestión de Empleados</h1>
-          <p className="mt-2 text-lg text-zinc-300">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">Gestión de Empleados</h1>
+          <p className="mt-2 text-lg text-muted-foreground">
             {data?.total ?? 0} colaboradores del bar y coctelería
           </p>
         </div>
@@ -89,11 +89,11 @@ export function AdminEmployeesPage() {
             placeholder="Buscar empleados..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-12 rounded-xl border-white/10 bg-zinc-950/70 px-4 text-lg text-white placeholder:text-zinc-500"
+            className="h-12 rounded-xl border-border bg-card px-4 text-lg text-foreground placeholder:text-muted-foreground"
           />
         </div>
 
-        <div className="inline-flex rounded-xl border border-white/10 bg-zinc-900/70 p-1">
+        <div className="inline-flex rounded-xl border border-border bg-card p-1">
           {(
             [
               ['Todos', 'ALL'],
@@ -107,7 +107,7 @@ export function AdminEmployeesPage() {
               className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 statusFilter === value
                   ? 'bg-blue-500 text-white'
-                  : 'text-zinc-300 hover:bg-white/10 hover:text-white'
+                  : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
               }`}
               type="button"
             >
@@ -162,7 +162,7 @@ export function AdminEmployeesPage() {
       />
 
       {isLoading ? (
-        <div className="rounded-2xl border border-white/10 bg-zinc-900/70 p-10 text-center text-zinc-400">
+        <div className="rounded-2xl border border-border bg-card p-10 text-center text-muted-foreground">
           Cargando empleados...
         </div>
       ) : filteredEmployees.length ? (
@@ -183,11 +183,11 @@ export function AdminEmployeesPage() {
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-white/10 bg-zinc-900/70 p-10 text-center text-zinc-400">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/5">
-            <Users className="h-6 w-6 text-zinc-400" />
+        <div className="rounded-2xl border border-border bg-card p-10 text-center text-muted-foreground">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted/50">
+            <Users className="h-6 w-6 text-muted-foreground" />
           </div>
-          <p className="text-base text-zinc-300">
+          <p className="text-base text-muted-foreground">
             {searchTerm
               ? 'No hay empleados que coincidan con tu búsqueda.'
               : 'Sin empleados registrados.'}

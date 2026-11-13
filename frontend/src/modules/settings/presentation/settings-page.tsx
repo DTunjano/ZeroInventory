@@ -17,7 +17,6 @@ import {
   Lock,
   CheckCircle2,
   BadgeCheck,
-  Wrench,
 } from 'lucide-react'
 
 import { settingsService } from '../infrastructure/settings.service'
@@ -128,13 +127,13 @@ export function SettingsPage() {
   const [leavePromptOpen, setLeavePromptOpen] = useState(false)
 
   const fullSettingsQuery = useQuery({
-    queryKey: ['settings', 'full'],
+    queryKey: ['settings', user?.usuarioId, 'full'],
     queryFn: () => settingsService.getSettings(),
     enabled: canEditGeneral,
   })
 
   const appearanceQuery = useQuery({
-    queryKey: ['settings', 'appearance'],
+    queryKey: ['settings', user?.usuarioId, 'appearance'],
     queryFn: () => settingsService.getAppearance(),
     enabled: isEmployeeOnly,
   })
@@ -346,13 +345,13 @@ export function SettingsPage() {
           </Field>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-muted/50 p-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-sm font-medium text-white">
-              <BadgeCheck className="h-4 w-4 text-blue-400" />
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <BadgeCheck className="h-4 w-4 text-blue-700 dark:text-blue-400" />
               Cambios personales
             </div>
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-muted-foreground">
               Los cambios se aplican solo cuando los confirmas desde esta tarjeta.
             </p>
           </div>
@@ -395,13 +394,13 @@ export function SettingsPage() {
           </Field>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-muted/50 p-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-sm font-medium text-white">
-              <Shield className="h-4 w-4 text-blue-400" />
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <Shield className="h-4 w-4 text-blue-700 dark:text-blue-400" />
               Reglas de contraseña
             </div>
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-muted-foreground">
               La nueva contraseña debe tener mínimo 8 caracteres, mayúsculas, minúsculas, números y símbolos.
             </p>
           </div>
@@ -418,7 +417,7 @@ export function SettingsPage() {
     <SettingsCard
       icon={<Paintbrush className="h-5 w-5" />}
       title="Apariencia"
-      description="Controla únicamente el tema visual. El modo oscuro premium se mantiene como base." 
+      description="Elige un tema claro u oscuro. Tu preferencia se guarda en la cuenta y se restaura al iniciar sesión."
       badge="Tema"
     >
       <form
@@ -432,23 +431,23 @@ export function SettingsPage() {
             title="Claro"
             description="Azul y blanco con contraste profesional."
             onClick={() => appearanceForm.setValue('theme', 'light', { shouldDirty: true, shouldValidate: true })}
-            disabled={true}
+            disabled={appearanceMutation.isPending}
           />
           <ThemeOption
             active={appearanceForm.watch('theme') === 'dark'}
-            icon={<Moon className="h-5 w-5 text-blue-400" />}
+            icon={<Moon className="h-5 w-5 text-blue-700 dark:text-blue-400" />}
             title="Oscuro"
             description="Negro azulado con la identidad premium actual."
             onClick={() => appearanceForm.setValue('theme', 'dark', { shouldDirty: true, shouldValidate: true })}
           />
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.02] p-4">
+        <div className="rounded-2xl border border-border bg-gradient-to-br from-muted/30 to-muted/30 p-4">
           <div className="flex items-center gap-3">
-            <Sparkles className="h-4 w-4 text-blue-400" />
+            <Sparkles className="h-4 w-4 text-blue-700 dark:text-blue-400" />
             <div>
-              <p className="text-sm font-medium text-white">Vista previa instantánea</p>
-              <p className="text-sm text-white/60">El cambio se sincroniza globalmente al confirmarlo.</p>
+              <p className="text-sm font-medium text-foreground">Vista previa instantánea</p>
+              <p className="text-sm text-muted-foreground">El cambio se sincroniza globalmente al confirmarlo.</p>
             </div>
           </div>
         </div>
@@ -469,19 +468,19 @@ export function SettingsPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 pb-24">
-      <section className="space-y-3 rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.02] p-6 shadow-2xl shadow-black/20 backdrop-blur-md">
+      <section className="space-y-3 rounded-3xl border border-border bg-gradient-to-br from-muted/30 to-muted/30 p-6 shadow-2xl shadow-black/20 backdrop-blur-md">
         <div className="flex flex-wrap items-center gap-3">
-          <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-100">
+          <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-100">
             <Sparkles className="mr-1 h-3.5 w-3.5" />
             Settings premium
           </Badge>
-          <Badge variant="secondary" className="border-white/10 bg-white/5 text-white/80">
+          <Badge variant="secondary" className="border-border bg-muted/50 text-muted-foreground">
             {isAdmin ? 'ADMIN' : isCustomer ? 'CUSTOMER' : 'EMPLOYEE'}
           </Badge>
         </div>
         <div className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">Configuración</h1>
-          <p className="max-w-2xl text-sm text-white/65 md:text-base">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground md:text-4xl">Configuración</h1>
+          <p className="max-w-2xl text-sm text-muted-foreground md:text-base">
             Gestiona tu perfil, protege tu cuenta y ajusta la apariencia con una experiencia limpia y profesional.
           </p>
         </div>
@@ -491,16 +490,16 @@ export function SettingsPage() {
         <div className="space-y-6">{appearanceCard}</div>
       ) : (
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-3 rounded-2xl border border-white/10 bg-white/5 p-1">
-            <TabsTrigger value="general" className="gap-2 rounded-xl data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+          <TabsList className="grid w-full max-w-2xl grid-cols-3 rounded-2xl border border-border bg-muted/50 p-1">
+            <TabsTrigger value="general" className="gap-2 rounded-xl data-[state=active]:bg-blue-500 data-[state=active]:text-foreground">
               <User className="h-4 w-4" />
               General
             </TabsTrigger>
-            <TabsTrigger value="security" className="gap-2 rounded-xl data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="security" className="gap-2 rounded-xl data-[state=active]:bg-blue-500 data-[state=active]:text-foreground">
               <Shield className="h-4 w-4" />
               Seguridad
             </TabsTrigger>
-            <TabsTrigger value="appearance" className="gap-2 rounded-xl data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="appearance" className="gap-2 rounded-xl data-[state=active]:bg-blue-500 data-[state=active]:text-foreground">
               <Paintbrush className="h-4 w-4" />
               Apariencia
             </TabsTrigger>
@@ -554,19 +553,19 @@ function SettingsCard(props: {
   const { icon, title, description, badge, children } = props
 
   return (
-    <Card className="overflow-hidden border-white/10 bg-card/95 text-foreground shadow-2xl shadow-black/20 backdrop-blur-md">
-      <CardHeader className="border-b border-white/10 bg-gradient-to-r from-white/[0.04] to-transparent">
+    <Card className="overflow-hidden border-border bg-card/95 text-foreground shadow-2xl shadow-black/20 backdrop-blur-md">
+      <CardHeader className="border-b border-border bg-gradient-to-r from-muted/30 to-transparent">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-300">
+            <div className="grid h-11 w-11 place-items-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300">
               {icon}
             </div>
             <div className="space-y-1">
-              <CardTitle className="text-xl text-white">{title}</CardTitle>
-              <CardDescription className="max-w-2xl text-sm text-white/60">{description}</CardDescription>
+              <CardTitle className="text-xl text-foreground">{title}</CardTitle>
+              <CardDescription className="max-w-2xl text-sm text-muted-foreground">{description}</CardDescription>
             </div>
           </div>
-          <Badge variant="outline" className="border-white/10 bg-white/5 text-white/80">
+          <Badge variant="outline" className="border-border bg-muted/50 text-muted-foreground">
             {badge}
           </Badge>
         </div>
@@ -594,41 +593,30 @@ function ThemeOption(props: {
       className={cn(
         'group relative flex min-h-32 flex-col justify-between rounded-3xl border p-5 text-left transition-all duration-200',
         disabled
-          ? 'cursor-not-allowed border-white/5 bg-white/[0.01] opacity-60'
+          ? 'cursor-not-allowed border-border bg-muted/50 opacity-60'
           : active
             ? 'border-blue-500/40 bg-blue-500/10 shadow-lg shadow-blue-500/10 hover:border-blue-500/50 hover:shadow-blue-500/20 cursor-pointer'
-            : 'border-white/10 bg-white/[0.03] hover:border-blue-500/20 hover:bg-white/[0.05] cursor-pointer',
+            : 'border-border bg-muted/50 hover:border-blue-500/20 hover:bg-muted/50 cursor-pointer',
       )}
     >
-      {disabled && (
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/[0.05] via-transparent to-transparent flex items-center justify-center pointer-events-none">
-          <div className="text-center space-y-2">
-            <div className="flex justify-center">
-              <Wrench className="h-8 w-8 text-yellow-400/70 animate-bounce" />
-            </div>
-            <div className="text-xs font-medium text-yellow-300/80">En construccion</div>
-          </div>
-        </div>
-      )}
-      
       <div className="flex items-center justify-between gap-3">
         <div className={cn(
-          'grid h-11 w-11 place-items-center rounded-2xl border bg-black/10',
-          disabled ? 'border-white/5' : 'border-white/10'
+          'grid h-11 w-11 place-items-center rounded-2xl border bg-foreground/5',
+          'border-border'
         )}>
           {icon}
         </div>
-        {active && !disabled ? <CheckCircle2 className="h-5 w-5 text-blue-400" /> : null}
+        {active && !disabled ? <CheckCircle2 className="h-5 w-5 text-blue-700 dark:text-blue-400" /> : null}
       </div>
       <div className="space-y-1">
         <div className={cn(
           'text-base font-semibold',
-          disabled ? 'text-white/50' : 'text-white'
+          disabled ? 'text-muted-foreground' : 'text-foreground'
         )}>{title}</div>
         <div className={cn(
           'text-sm',
-          disabled ? 'text-white/30' : 'text-white/65'
-        )}>{disabled ? 'Proxima mente disponible' : description}</div>
+          'text-muted-foreground'
+        )}>{description}</div>
       </div>
     </button>
   )
@@ -640,19 +628,19 @@ function Field(props: { children: ReactNode }) {
 
 function FieldError(props: { message: string | undefined }) {
   if (!props.message) return null
-  return <p className="text-xs text-red-400">{props.message}</p>
+  return <p className="text-xs text-red-700 dark:text-red-400">{props.message}</p>
 }
 
 function SettingsSkeleton() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 pb-24">
-      <div className="h-48 animate-pulse rounded-3xl border border-white/10 bg-white/[0.04]" />
-      <div className="space-y-4 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-        <div className="h-8 w-40 rounded-full bg-white/10" />
-        <div className="h-4 w-2/3 rounded-full bg-white/10" />
+      <div className="h-48 animate-pulse rounded-3xl border border-border bg-muted/50" />
+      <div className="space-y-4 rounded-3xl border border-border bg-muted/50 p-6">
+        <div className="h-8 w-40 rounded-full bg-muted/50" />
+        <div className="h-4 w-2/3 rounded-full bg-muted/50" />
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="h-56 rounded-3xl bg-white/[0.04]" />
-          <div className="h-56 rounded-3xl bg-white/[0.04]" />
+          <div className="h-56 rounded-3xl bg-muted/50" />
+          <div className="h-56 rounded-3xl bg-muted/50" />
         </div>
       </div>
     </div>

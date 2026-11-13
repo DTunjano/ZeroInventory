@@ -10,7 +10,7 @@ export function OrderToggleButton({ order, onChange }: OrderToggleButtonProps) {
     <button
       type="button"
       onClick={() => onChange(order === 'asc' ? 'desc' : 'asc')}
-      className="h-10 w-10 inline-flex items-center justify-center rounded-md border border-white/10 bg-white/5 transition-colors hover:bg-white/8"
+      className="h-10 w-10 inline-flex items-center justify-center rounded-md border border-border bg-muted/50 transition-colors hover:bg-muted/50"
       title={order === 'asc' ? 'Orden ascendente' : 'Orden descendente'}
       aria-label={order === 'asc' ? 'Orden ascendente' : 'Orden descendente'}
     >

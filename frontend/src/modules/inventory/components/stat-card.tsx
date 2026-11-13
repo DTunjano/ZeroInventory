@@ -20,25 +20,25 @@ const variantConfig: Record<StatCardVariant, {
   total: {
     icon: Archive,
     bgColor: 'bg-blue-500/15',
-    iconColor: 'text-blue-400',
+    iconColor: 'text-blue-700 dark:text-blue-400',
     accentBg: 'bg-blue-500/20',
   },
   low: {
     icon: TrendingDown,
     bgColor: 'bg-yellow-500/15',
-    iconColor: 'text-yellow-400',
+    iconColor: 'text-yellow-700 dark:text-yellow-400',
     accentBg: 'bg-yellow-500/20',
   },
   critical: {
     icon: AlertCircle,
     bgColor: 'bg-red-500/15',
-    iconColor: 'text-red-400',
+    iconColor: 'text-red-700 dark:text-red-400',
     accentBg: 'bg-red-500/20',
   },
   out: {
     icon: Package,
     bgColor: 'bg-gray-500/15',
-    iconColor: 'text-gray-400',
+    iconColor: 'text-muted-foreground',
     accentBg: 'bg-gray-500/20',
   },
 }
@@ -53,13 +53,13 @@ export function StatCard({ variant, label, value, description, isLoading = false
     <div className={`rounded-2xl border p-6 ${isDark ? `border-white/10 ${config.bgColor}` : 'border-slate-200 bg-white shadow-sm'}`}>
       <div className="flex items-start justify-between">
         <div>
-          <p className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-slate-500'}`}>{label}</p>
+          <p className={`text-sm font-medium ${isDark ? 'text-muted-foreground' : 'text-muted-foreground'}`}>{label}</p>
           {isLoading ? (
-            <div className={`mt-2 h-9 w-20 animate-pulse rounded-md ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
+            <div className={`mt-2 h-9 w-20 animate-pulse rounded-md ${isDark ? 'bg-muted/50' : 'bg-slate-200'}`} />
           ) : (
-            <p className={`mt-2 text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{value}</p>
+            <p className={`mt-2 text-3xl font-bold ${isDark ? 'text-foreground' : 'text-slate-900'}`}>{value}</p>
           )}
-          {description && <p className={`mt-1 text-xs ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>{description}</p>}
+          {description && <p className={`mt-1 text-xs ${isDark ? 'text-muted-foreground' : 'text-muted-foreground'}`}>{description}</p>}
         </div>
         <div className={`rounded-xl p-3 ${isDark ? config.accentBg : 'bg-blue-50'}`}>
           <Icon className={`h-6 w-6 ${config.iconColor}`} />

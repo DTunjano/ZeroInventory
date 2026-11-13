@@ -4,6 +4,7 @@ import {
   Building,
   Truck,
   Briefcase,
+  BarChart3,
   Users,
   House,
   LayoutGrid,
@@ -46,6 +47,7 @@ const adminOnlyNav: AppLayoutNavItem[] = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutGrid },
   { to: '/admin/employees', label: 'Empleados', icon: Briefcase },
   { to: '/admin/users', label: 'Usuarios y roles', icon: Users },
+  { to: '/admin/reports', label: 'Reportes', icon: BarChart3 },
   { to: '/admin/media', label: 'Contenido', icon: Film },
 ]
 

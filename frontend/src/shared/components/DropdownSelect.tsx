@@ -49,7 +49,7 @@ export function DropdownSelect<T extends string | number | undefined>({
       <button
         type="button"
         onClick={() => setIsOpen((open) => !open)}
-        className="flex h-10 items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/80"
+        className="flex h-10 items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm font-medium text-muted-foreground"
         style={{ width }}
       >
         <span>{currentLabel}</span>
@@ -59,7 +59,7 @@ export function DropdownSelect<T extends string | number | undefined>({
       {isOpen && (
         <div
           className={cn(
-            'absolute top-[calc(100%+0.5rem)] z-50 rounded-lg border border-white/10 bg-gray-950/95 p-1 shadow-xl shadow-black/50',
+            'absolute top-[calc(100%+0.5rem)] z-50 rounded-lg border border-border bg-card p-1 shadow-xl shadow-black/50',
             align === 'right' ? 'right-0' : 'left-0',
           )}
           style={{ width }}
@@ -71,8 +71,8 @@ export function DropdownSelect<T extends string | number | undefined>({
               className={cn(
                 'w-full rounded-md px-3 py-2 text-left text-sm transition-colors',
                 value === option.value
-                  ? 'bg-blue-500/20 text-blue-100'
-                  : 'text-white/70 hover:bg-white/5 hover:text-white',
+                  ? 'bg-blue-500/20 text-blue-700 dark:text-blue-100'
+                  : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
               )}
               onClick={() => {
                 onChange(option.value)

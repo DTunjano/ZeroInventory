@@ -54,7 +54,7 @@ Si se guarda el producto y falla la carga opcional posterior de una imagen, la i
 
 ## Reportes y estado de la etapa
 
-Los reportes avanzados se excluyeron de la primera entrega por decisión del usuario. Se retiraron del menú; la ruta antigua explica el aplazamiento y enlaza al dashboard existente. No se anunciaron fechas de disponibilidad.
+Inicialmente los reportes avanzados se excluyeron por decisión del usuario. Una petición posterior de completar los pendientes incorporó REP-01 al cierre: ahora existe el módulo administrativo de reportes operativos, de solo lectura y con CSV. Sus definiciones y límites están en [reportes.md](reportes.md).
 
 Esta decisión cierra el acuerdo de alcance de usuarios/reportes y catálogo, no la etapa 1 completa. Su matriz y casos pendientes continúan en [revision-funcional-mvp.md](revision-funcional-mvp.md). La etapa 2 y la pasarela siguen sin iniciarse.
 
@@ -65,4 +65,4 @@ Esta decisión cierra el acuerdo de alcance de usuarios/reportes y catálogo, no
 - Las imágenes de producto aceptan PNG/JPEG/WebP de hasta 5 MB, con firma/MIME comprobados y límite Multer. La imagen nueva se persiste antes de retirar la anterior; al fallar la DB se limpia solo el recurso recién creado. Para videos se comprueba firma MP4/WebM y se retiran con el tipo de recurso video.
 - La vista de proveedores refresca sus datos al guardar y consulta su trazabilidad. Eliminar lógicamente asigna `isActive: false`, incluso si ya estaba inactivo; no alterna el estado.
 - El formato COP compartido muestra los centavos admitidos por el servidor, en vez de redondearlos visualmente a cero. Configuración usa una suscripción explícita al estado del formulario para habilitar guardar con cambios válidos.
-- Los recorridos de registro, direcciones, carrito, pedidos, proveedores, empleados, perfil y auditoría están documentados en la matriz. Videos reales, modo claro y las limitaciones indicadas aún requieren acordar/completar aceptación antes de cerrar etapa 1.
+- Los recorridos de registro, direcciones, carrito, pedidos, proveedores, empleados, perfil y auditoría están documentados en la matriz. Video real autorizado, modo claro, ordenamiento y reportes ya se validaron; resta la acción personal de contraseña desde UI y aceptación para cerrar etapa 1.

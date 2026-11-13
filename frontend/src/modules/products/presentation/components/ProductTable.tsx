@@ -47,7 +47,7 @@ export function ProductTable({
 
   if (!products.length && totalItems === 0) {
     return (
-      <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
+      <div className="rounded-lg border border-border bg-muted/50 backdrop-blur-sm overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -62,7 +62,7 @@ export function ProductTable({
           </TableHeader>
           <TableBody>
             <TableRow>
-              <td colSpan={7} className="py-12 text-center text-sm text-white/60">
+              <td colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
                 Sin productos aún
               </td>
             </TableRow>
@@ -75,10 +75,10 @@ export function ProductTable({
   return (
     <div className="space-y-4">
       {/* Tabla */}
-      <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
+      <div className="rounded-lg border border-border bg-muted/50 backdrop-blur-sm overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="border-white/5 hover:bg-transparent">
+            <TableRow className="border-border hover:bg-transparent">
               <TableHead className="w-12">Imagen</TableHead>
               <TableHead>Producto</TableHead>
               <TableHead>Categoría</TableHead>
@@ -114,8 +114,8 @@ export function ProductTable({
 
       {/* Paginación */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm">
-          <div className="text-sm text-white/60">
+        <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg border border-border bg-muted/50 backdrop-blur-sm">
+          <div className="text-sm text-muted-foreground">
             Mostrando {startIndex} a {endIndex} de {totalItems} productos
           </div>
 
@@ -159,7 +159,7 @@ export function ProductTable({
                     <div key={page} className="flex items-center gap-1">
                       {/* Puntos suspensivos si hay brecha */}
                       {prevPage && page - prevPage > 1 && (
-                        <span className="px-2 text-white/40">…</span>
+                        <span className="px-2 text-muted-foreground">…</span>
                       )}
 
                       <Button

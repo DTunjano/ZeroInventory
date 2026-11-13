@@ -31,8 +31,8 @@ export function AdminInventoryPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-4xl font-bold tracking-tight text-white">Inventario</h1>
-        <p className="mt-2 text-lg text-zinc-300">
+        <h1 className="text-4xl font-bold tracking-tight text-foreground">Inventario</h1>
+        <p className="mt-2 text-lg text-muted-foreground">
           Visualización analítica y gestión del stock
         </p>
       </div>

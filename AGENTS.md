@@ -39,7 +39,7 @@ El usuario pidió avanzar en orden por seis etapas. Solo está activa la **etapa
 
 La pasarela de pagos está aplazada explícitamente. Puede documentarse la posibilidad de simulación, pero no deben añadirse integraciones, SDKs, endpoints, webhooks, claves, migraciones ni métodos de pago de un proveedor hasta una autorización posterior específica.
 
-Registra en la matriz qué se probó desde la interfaz, qué solo tiene evidencia API y qué continúa pendiente. Usuarios/roles forman parte del MVP y ya tienen pantalla funcional; los reportes avanzados se aplazaron por decisión del usuario. No declares la etapa cerrada con casos del alcance aún sin ejecutar. Las reglas aprobadas están en `docs/usuarios-y-productos.md`.
+Registra en la matriz qué se probó desde la interfaz, qué solo tiene evidencia API y qué continúa pendiente. Usuarios/roles forman parte del MVP y ya tienen pantalla funcional; REP-01 se incorporó al cierre por una petición posterior del usuario; ver `docs/reportes.md`. No declares la etapa cerrada con casos del alcance aún sin ejecutar. Las reglas aprobadas están en `docs/usuarios-y-productos.md`.
 
 ## Arquitectura real
 
@@ -250,6 +250,7 @@ Si cambian esquema, movimientos o adopción de datos, añade `pnpm test:upgrade`
 cd frontend
 pnpm typecheck
 pnpm lint
+pnpm test:unit
 pnpm build
 ```
 
@@ -285,3 +286,12 @@ Publica solamente cuando el usuario lo haya autorizado, y cumple las validacione
 ## Cierre de una tarea
 
 Entrega el cambio concreto, sus pruebas y cualquier límite material. Para una corrección de operación, incluye comandos exactos y el directorio de ejecución. Reporta rama y commit cuando se haya hecho control de versiones. No declares todo funcionando si quedan pruebas fallidas, una migración pendiente o un push rechazado.
+
+## Reportes y apariencia
+
+- `ReportsModule` publica `GET /admin/reports` solo para ADMIN. Mantén controlador/caso de uso/puerto/adaptador separados y la transacción READ ONLY + REPEATABLE READ. Ejecuta sus consultas secuencialmente sobre el mismo manager. No mezcles joins de detalles/pagos para sumar pedidos.
+- Fechas inclusivas válidas y máximo 366 días. Pedidos usan `fecha`, pagos `fecha_pago`; inventario es actual e independiente del rango. Las sumas admiten más que una fila numeric(14,2), conservando centavos enteros seguros; no reutilices el límite monetario de escritura para agregados.
+- CSV exporta el período aplicado y protege nombres/SKU contra fórmulas, incluyendo prefijos con espacios. Conserva BOM UTF-8, escapes y pruebas con `pnpm test:unit`. No exportes perfiles personales.
+- La preferencia de apariencia vive en el servidor y `ThemeSync` la restaura por usuario; React Query incluye usuario en claves de configuración. Conserva claro/oscuro y color-scheme nativo. El CSS carga el config Tailwind y define dark por clase. Usa tokens semánticos para superficies, texto, bordes y etiquetas; reserva blanco fijo para botones de fondo sólido o las pantallas de marca explícitamente oscuras.
+- El catálogo prioriza disponibilidad solo en el orden predeterminado. Nombre/stock ascendente o descendente deben incluir agotados en su posición correcta. No vuelvas a ordenar por disponibilidad antes de un criterio explícito.
+- Desactivar un medio lo oculta de listados y lectura pública por ID; el administrador conserva la gestión en `/media/admin/all`. La desactivación de la aplicación no revoca por sí sola una URL previamente conocida del CDN.

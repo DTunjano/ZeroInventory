@@ -121,7 +121,7 @@ export function MediaUploader({ onUpload, accept = 'video/*,image/*', className 
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70"
+            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-foreground/5 text-foreground hover:bg-foreground/5"
             onClick={() => {
               setPreview(null)
               if (inputRef.current) inputRef.current.value = ''

@@ -32,7 +32,7 @@ export function MediaCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Preview */}
-      <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900">
+      <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-card via-card to-card">
         {media.tipo === 'video' ? (
           <video
             src={media.url}
@@ -52,7 +52,7 @@ export function MediaCard({
         )}
 
         {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+        <div className="absolute inset-0 bg-foreground/5 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
 
         {/* Status Badges */}
         <div className="absolute top-3 left-3 flex gap-2">
@@ -62,7 +62,7 @@ export function MediaCard({
               'text-[10px] font-medium',
               media.estado === 'activo'
                 ? 'border-sky-500/25 bg-sky-500/15 text-sky-200'
-                : 'bg-slate-500/20 text-slate-300 border-slate-500/30',
+                : 'bg-slate-500/20 text-muted-foreground border-slate-500/30',
             )}
           >
             {media.estado === 'activo' ? 'Activo' : 'Inactivo'}
@@ -70,7 +70,7 @@ export function MediaCard({
         </div>
 
         <div className="absolute top-3 right-3 flex items-center gap-2">
-          <div className="rounded-full bg-white/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/90 backdrop-blur-sm">
+          <div className="rounded-full bg-muted/50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground backdrop-blur-sm">
             Video
           </div>
         </div>
@@ -91,7 +91,7 @@ export function MediaCard({
         {isAdmin && (
           <div className="flex items-center justify-between gap-2 border-t border-border/50 pt-3">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {media.estado === 'activo' ? <Eye className="h-4 w-4 text-sky-400" /> : <EyeOff className="h-4 w-4 text-slate-400" />}
+              {media.estado === 'activo' ? <Eye className="h-4 w-4 text-sky-400" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
               {media.estado === 'activo' ? 'Visible' : 'Oculto'}
             </div>
             <MediaActionsDropdown

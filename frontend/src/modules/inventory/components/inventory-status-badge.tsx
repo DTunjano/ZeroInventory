@@ -21,10 +21,10 @@ const iconMap: Record<InventoryStatusType, React.ComponentType<{ className?: str
 }
 
 const colorMap: Record<InventoryStatusType, string> = {
-  HEALTHY: 'border-green-500/30 bg-green-500/20 text-green-300 hover:bg-green-500/20',
-  LOW_STOCK: 'border-yellow-500/30 bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20',
-  CRITICAL: 'border-red-500/30 bg-red-500/20 text-red-300 hover:bg-red-500/20',
-  OUT_OF_STOCK: 'border-gray-500/30 bg-gray-500/20 text-gray-300 hover:bg-gray-500/20',
+  HEALTHY: 'border-green-500/30 bg-green-500/20 text-green-700 dark:text-green-300 hover:bg-green-500/20',
+  LOW_STOCK: 'border-yellow-500/30 bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/20',
+  CRITICAL: 'border-red-500/30 bg-red-500/20 text-red-700 dark:text-red-300 hover:bg-red-500/20',
+  OUT_OF_STOCK: 'border-gray-500/30 bg-gray-500/20 text-muted-foreground hover:bg-gray-500/20',
 }
 
 export function InventoryStatusBadge({

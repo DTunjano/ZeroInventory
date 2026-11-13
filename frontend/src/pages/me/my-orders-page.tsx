@@ -93,14 +93,14 @@ function StatCard(props: {
   const { label, value, description, icon } = props
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_40px_rgba(15,23,42,0.18)] backdrop-blur-sm">
+    <div className="rounded-2xl border border-border bg-muted/50 p-4 shadow-[0_12px_40px_rgba(15,23,42,0.18)] backdrop-blur-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/55">{label}</p>
-          <p className="text-xl font-semibold text-white">{value}</p>
-          <p className="text-sm text-white/60">{description}</p>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+          <p className="text-xl font-semibold text-foreground">{value}</p>
+          <p className="text-sm text-muted-foreground">{description}</p>
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-200 ring-1 ring-inset ring-blue-500/20">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-700 dark:text-blue-200 ring-1 ring-inset ring-blue-500/20">
           {icon}
         </div>
       </div>
@@ -122,7 +122,7 @@ function OrderDetailCard(props: { order: Order }) {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/15 bg-blue-500/10 px-3 py-1 text-sm font-medium text-blue-100">
+              <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/15 bg-blue-500/10 px-3 py-1 text-sm font-medium text-blue-700 dark:text-blue-100">
                 <Package className="h-4 w-4" />
                 Pedido #{order.numeroPedidoUsuario}
               </span>
@@ -142,7 +142,7 @@ function OrderDetailCard(props: { order: Order }) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border/70 bg-gradient-to-br from-slate-950 via-card to-card p-4 shadow-[0_16px_50px_rgba(15,23,42,0.08)] lg:min-w-56 lg:text-right">
+          <div className="rounded-2xl border border-border/70 bg-gradient-to-br from-card via-card to-card p-4 shadow-[0_16px_50px_rgba(15,23,42,0.08)] lg:min-w-56 lg:text-right">
             <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Total del pedido</p>
             <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatPrice(order.total)}</p>
             <p className="mt-1 text-sm text-muted-foreground">Método de pago: {order.pago ? getPaymentLabel(order.pago.metodoPago) : 'Sin registrar'}</p>
@@ -340,10 +340,10 @@ export function MyOrdersPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <Card className="overflow-hidden border-border/70 bg-gradient-to-br from-slate-950 via-card to-card shadow-[0_24px_80px_rgba(15,23,42,0.12)]">
+      <Card className="overflow-hidden border-border/70 bg-gradient-to-br from-card via-card to-card shadow-[0_24px_80px_rgba(15,23,42,0.12)]">
         <CardContent className="grid gap-5 p-6 lg:grid-cols-[minmax(0,1.35fr)_repeat(3,minmax(0,1fr))] lg:items-center lg:p-8">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/15 bg-blue-500/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-blue-100">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/15 bg-blue-500/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-blue-700 dark:text-blue-100">
               <Sparkles className="h-3.5 w-3.5" />
               Historial de compras
             </div>
@@ -400,10 +400,10 @@ export function MyOrdersPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="rounded-2xl border border-border bg-muted/50 p-4">
             <div className="grid gap-3 sm:grid-cols-4">
               <div>
-                <label className="text-xs text-white/70">Estado</label>
+                <label className="text-xs text-muted-foreground">Estado</label>
                 <div className="mt-1">
                   <DropdownSelect
                     value={statusFilter}
@@ -421,17 +421,17 @@ export function MyOrdersPage() {
               </div>
 
               <div>
-                <label htmlFor="orders-date-from" className="text-xs text-white/70">Desde</label>
+                <label htmlFor="orders-date-from" className="text-xs text-muted-foreground">Desde</label>
                 <Input id="orders-date-from" type="date" value={dateFrom ?? ''} onChange={(e) => setDateFrom(e.target.value || null)} className="mt-1" />
               </div>
 
               <div>
-                <label htmlFor="orders-date-to" className="text-xs text-white/70">Hasta</label>
+                <label htmlFor="orders-date-to" className="text-xs text-muted-foreground">Hasta</label>
                 <Input id="orders-date-to" type="date" value={dateTo ?? ''} onChange={(e) => setDateTo(e.target.value || null)} className="mt-1" />
               </div>
 
               <div>
-                <label className="text-xs text-white/70">Ordenar</label>
+                <label className="text-xs text-muted-foreground">Ordenar</label>
                 <div className="mt-1">
                   <DropdownSelect
                     value={sortBy}

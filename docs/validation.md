@@ -104,3 +104,13 @@ El acceso comprueba roles y cuenta activa en cada solicitud; no se añadieron se
 - La aceptación de etapa 1 permanece pendiente; el trabajo de etapa 2 y la pasarela siguen aplazados.
 
 La retirada del PNG QA fue posteriormente autorizada expresamente y completada. Se comprobó ausencia del recurso en Cloudinary y cero referencias en la DB temporal; después se retiró esa DB y se detuvieron los procesos. El diagnóstico final de la DB habitual no encontró migraciones pendientes ni inconsistencias de stock/duplicados. No se eliminaron recursos anteriores ni datos de negocio reales.
+
+## Validación de REP-01, MED-02 y CFG-01 — 12 de noviembre de 2026
+
+- Backend: tipos, lint, build y 24 unitarias correctos. Integración PostgreSQL aislada: 38 casos, incluyendo reportes/permisos/rangos/agregados sin duplicación y ocultación pública de medios inactivos. Las consultas del reporte se secuenciaron dentro de su snapshot para evitar el aviso de concurrencia del cliente pg.
+- Frontend: tipos, lint, build y 7 unitarias correctos. Dos regresiones de CSV (fórmulas/estructura) y cinco de orden de catálogo que incluyen agotados y conservación de la lista original. CI ejecuta `pnpm test:unit`.
+- Navegador: reportes con 2 pedidos ficticios/$31.000, pagos aprobados $19.000 y pendientes $12.000; CSV descargado y leído con esos mismos valores; vacío y rango excesivo; tema claro/oscuro persistidos tras recarga; vistas móviles de 390 px y controles/etiquetas legibles. Catálogo por nombre/stock en ambas direcciones validado después de corregir la prioridad de disponibilidad.
+- Cloudinary real: único MP4 ficticio autorizado de 57.919 bytes, 2 s, 320×180, sin audio; creado vía API de DB temporal, reproducción real desde Home, edición y desactivación/reactivación desde UI. Se retiró exclusivamente ese recurso, se validaron dimensiones/duración/tipo antes del borrado y 404 después. No se modificaron recursos anteriores.
+- `pnpm db:check`: sin migraciones pendientes, diferencias de stock ni números duplicados. El sandbox no permitió una primera ejecución/conexión; repetir con acceso autorizado a PostgreSQL produjo el diagnóstico correcto. No se modificó la DB habitual.
+- Sin esquema nuevo; prueba de actualización previa conserva su validez sobre las mismas migraciones. Build muestra avisos informativos de Browserslist antiguo y tiempo de Babel; no se añadieron dependencias de aplicación.
+- Contraseña desde UI pendiente de acción del usuario según la política de control del navegador. Aceptación final pendiente; la DB temporal se conserva para ese único recorrido. El agente no cambió una credencial mediante UI ni declaró cierre de etapa 1/avance a etapa 2 anticipadamente.

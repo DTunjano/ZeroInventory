@@ -44,11 +44,11 @@ export function InventoryFilterBar({
           placeholder="Buscar por nombre o código SKU…"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          className={cn('h-10 rounded-lg px-3 text-sm', isDark ? 'border-white/10 bg-zinc-950/70 text-white placeholder:text-zinc-500' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400')}
+          className={cn('h-10 rounded-lg px-3 text-sm', isDark ? 'border-border bg-card text-foreground placeholder:text-muted-foreground' : 'border-slate-300 bg-white text-slate-900 placeholder:text-muted-foreground')}
         />
       </div>
 
-      <div className={cn('inline-flex rounded-lg border p-1', isDark ? 'border-white/10 bg-zinc-900/70' : 'border-slate-200 bg-slate-100')}>
+      <div className={cn('inline-flex rounded-lg border p-1', isDark ? 'border-border bg-card' : 'border-slate-200 bg-slate-100')}>
         {statusOptions.map(({ label, value }) => (
           <button
             key={value}
@@ -58,7 +58,7 @@ export function InventoryFilterBar({
               statusFilter === value
                 ? 'bg-blue-600 text-white'
                 : isDark
-                  ? 'text-zinc-300 hover:bg-white/10 hover:text-white'
+                  ? 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                   : 'text-slate-600 hover:bg-white hover:text-slate-900'
             }`}
           >
@@ -67,7 +67,7 @@ export function InventoryFilterBar({
         ))}
       </div>
 
-      <div className={cn('inline-flex rounded-lg border p-1', isDark ? 'border-white/10 bg-zinc-900/70' : 'border-slate-200 bg-slate-100')}>
+      <div className={cn('inline-flex rounded-lg border p-1', isDark ? 'border-border bg-card' : 'border-slate-200 bg-slate-100')}>
         {activeOptions.map(({ label, value }) => (
           <button
             key={String(value)}
@@ -77,7 +77,7 @@ export function InventoryFilterBar({
               isActiveFilter === value
                 ? 'bg-blue-600 text-white'
                 : isDark
-                  ? 'text-zinc-300 hover:bg-white/10 hover:text-white'
+                  ? 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                   : 'text-slate-600 hover:bg-white hover:text-slate-900'
             }`}
           >

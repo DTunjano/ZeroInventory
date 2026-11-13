@@ -20,7 +20,7 @@ export function ViewToggle({ value, onChange, className }: ViewToggleProps) {
     <div
       className={cn(
         'flex items-center gap-2 p-1.5 rounded-lg',
-        'bg-white/5 border border-white/10',
+        'bg-muted/50 border border-border',
         'backdrop-blur-sm',
         className,
       )}
@@ -32,7 +32,7 @@ export function ViewToggle({ value, onChange, className }: ViewToggleProps) {
           'transition-all duration-200',
           value === 'grid'
             ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
-            : 'text-white/60 hover:text-white/80 hover:bg-white/5',
+            : 'text-muted-foreground hover:text-muted-foreground hover:bg-muted/50',
         )}
         aria-label="Grid view"
         title="Vista de cuadrícula"
@@ -47,7 +47,7 @@ export function ViewToggle({ value, onChange, className }: ViewToggleProps) {
           'transition-all duration-200',
           value === 'list'
             ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
-            : 'text-white/60 hover:text-white/80 hover:bg-white/5',
+            : 'text-muted-foreground hover:text-muted-foreground hover:bg-muted/50',
         )}
         aria-label="List view"
         title="Vista de lista"

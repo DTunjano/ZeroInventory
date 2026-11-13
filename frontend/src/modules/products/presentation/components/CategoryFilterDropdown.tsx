@@ -62,24 +62,24 @@ export function CategoryFilterDropdown({
       <button
         type="button"
         onClick={() => onOpenChange(!isOpen)}
-        className="h-10 flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/70 transition-all hover:bg-white/8"
+        className="h-10 flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-muted/50"
         style={{ width: 'auto', minWidth: '224px' }}
       >
-        <span className={selectedIds.length ? 'text-white' : 'text-white/50'}>
+        <span className={selectedIds.length ? 'text-foreground' : 'text-muted-foreground'}>
           {selectedIds.length ? `${selectedIds.length} seleccionada(s)` : placeholder}
         </span>
         <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-[calc(100%+0.5rem)] z-50 rounded-lg border border-white/10 bg-gray-950/95 p-2 shadow-xl shadow-black/50 backdrop-blur-xl" style={{ width: '224px' }}>
+        <div className="absolute left-0 top-[calc(100%+0.5rem)] z-50 rounded-lg border border-border bg-card p-2 shadow-xl shadow-black/50 backdrop-blur-xl" style={{ width: '224px' }}>
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 border-white/10 bg-white/5 pl-9 text-white placeholder:text-white/30"
+              className="h-9 border-border bg-muted/50 pl-9 text-foreground placeholder:text-muted-foreground"
             />
           </div>
           <div className="mt-2 max-h-56 overflow-auto space-y-0.5">
@@ -89,16 +89,16 @@ export function CategoryFilterDropdown({
                 <button
                   key={c.categoriaId}
                   type="button"
-                  className={`flex w-full items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-colors ${selected ? 'bg-blue-500/20 text-blue-100' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}
+                  className={`flex w-full items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-colors ${selected ? 'bg-blue-500/20 text-blue-700 dark:text-blue-100' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
                   onClick={() => toggleCategory(c.categoriaId)}
                 >
                   <span>{c.nombre}</span>
-                  {selected ? <Check className="h-4 w-4 text-blue-300" /> : <span className="h-4 w-4" />}
+                  {selected ? <Check className="h-4 w-4 text-blue-700 dark:text-blue-300" /> : <span className="h-4 w-4" />}
                 </button>
               )
             })}
             {filteredCategories.length === 0 && (
-              <div className="px-2 py-4 text-center text-xs text-white/40">Sin resultados</div>
+              <div className="px-2 py-4 text-center text-xs text-muted-foreground">Sin resultados</div>
             )}
           </div>
         </div>
