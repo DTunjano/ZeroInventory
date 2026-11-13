@@ -83,7 +83,7 @@ La política de control del navegador exige que el usuario introduzca y confirme
 
 El usuario revisó y aceptó el cierre. No se requieren SQL, Git, Docker ni pruebas técnicas manuales adicionales.
 
-**Todos los casos funcionales están verificados; etapa 1 aceptada el 12/11/2026. Etapa 2 autorizada.** El agente comprobó el rechazo de la contraseña anterior y acceso con la nueva, por API y navegador. Después cerró sesión/pestaña, detuvo ambos procesos de QA y retiró exclusivamente su DB temporal; el diagnóstico de limpieza confirmó cero bases de esa sesión. El video remoto ya se había retirado. Evidencia privada adicional: `customer-password-login-validated.jpg`.
+**Todos los casos funcionales están verificados; etapa 1 aceptada el 12/11/2026. Etapa 2 autorizada.** El agente comprobó el rechazo de la contraseña anterior y acceso con la nueva, por API y navegador. Después cerró sesión/pestaña, detuvo ambos procesos de QA y retiró exclusivamente su DB temporal; el diagnóstico de limpieza confirmó cero bases de esa sesión. El video remoto ya se había retirado. El nuevo acceso se comprobó mediante el árbol de accesibilidad (Tienda) y las respuestas HTTP de autenticación. La captura inmediata durante la transición quedó vacía y no se utiliza como evidencia visual.
 
 ## Hallazgos y tratamiento
 
