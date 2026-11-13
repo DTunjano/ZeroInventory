@@ -35,7 +35,7 @@ No vuelvas a leer secretos para contestar preguntas que pueden resolverse con no
 
 ## Secuencia de trabajo actual
 
-El usuario pidió avanzar en orden por seis etapas. Solo está activa la **etapa 1: revisión funcional y usabilidad**. No inicies la etapa 2 sin documentar el cierre de la etapa 1 y su aceptación por el usuario. Ejecutar manualmente un recorrido existente no equivale a iniciar la implementación de una etapa futura.
+El usuario pidió avanzar en orden por seis etapas. La **etapa 1 quedó cerrada y aceptada el 12/11/2026** con el mensaje «Acepto el cierre y continuar con etapa 2». Está activa la **etapa 2: ciclo del inventario**. No inicies la etapa 3 sin documentar el cierre de la etapa 2 y su aceptación por el usuario. Ejecutar manualmente un recorrido existente no equivale a iniciar la implementación de una etapa futura.
 
 La pasarela de pagos está aplazada explícitamente. Puede documentarse la posibilidad de simulación, pero no deben añadirse integraciones, SDKs, endpoints, webhooks, claves, migraciones ni métodos de pago de un proveedor hasta una autorización posterior específica.
 

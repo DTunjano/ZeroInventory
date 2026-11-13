@@ -1,6 +1,6 @@
 # Etapa 1 — Revisión funcional y criterios de aceptación
 
-Fecha: 12 de noviembre de 2026. Estado: **todos los casos funcionales verificados; aceptación final del usuario pendiente**.
+Fecha: 12 de noviembre de 2026. Estado: **cerrada y aceptada por el usuario el 12/11/2026**.
 
 ## Alcance y evidencia
 
@@ -81,9 +81,9 @@ La política de control del navegador exige que el usuario introduzca y confirme
 2. Guardó y confirmó los cambios; después informó «Prueba realizada».
 3. El agente verificó rechazo de la anterior y acceso con la nueva, y retiró la DB temporal.
 
-Solo resta que el usuario revise la matriz y apruebe la etapa o indique ajustes. No se requieren SQL, Git, Docker ni pruebas técnicas manuales adicionales.
+El usuario revisó y aceptó el cierre. No se requieren SQL, Git, Docker ni pruebas técnicas manuales adicionales.
 
-**Todos los casos funcionales están verificados; cierre formal pendiente únicamente de aceptación del usuario. La etapa 2 sigue sin iniciar.** El agente comprobó el rechazo de la contraseña anterior y acceso con la nueva, por API y navegador. Después cerró sesión/pestaña, detuvo ambos procesos de QA y retiró exclusivamente su DB temporal; el diagnóstico de limpieza confirmó cero bases de esa sesión. El video remoto ya se había retirado. Evidencia privada adicional: `customer-password-login-validated.jpg`.
+**Todos los casos funcionales están verificados; etapa 1 aceptada el 12/11/2026. Etapa 2 autorizada.** El agente comprobó el rechazo de la contraseña anterior y acceso con la nueva, por API y navegador. Después cerró sesión/pestaña, detuvo ambos procesos de QA y retiró exclusivamente su DB temporal; el diagnóstico de limpieza confirmó cero bases de esa sesión. El video remoto ya se había retirado. Evidencia privada adicional: `customer-password-login-validated.jpg`.
 
 ## Hallazgos y tratamiento
 
@@ -170,4 +170,8 @@ El usuario confirmó la prueba personal de contraseña. AUT-06 y CFG-01 ya no ti
 
 Validación del último recorrido: contraseña anterior rechazada (HTTP 401) y nueva aceptada (HTTP 201); ambos resultados repetidos en navegador, con entrada a Tienda. Sesión de QA cerrada y base temporal inexistente. No se cambiaron datos habituales ni quedaron medios externos de QA.
 
-Implementación guardada en `008c921`; esta actualización documental registra el último recorrido. `dev` todavía no incorpora esta revisión. Se solicita al responsable aceptar los resultados o señalar ajustes; la publicación/integración y la etapa 2 respetan ese cierre.
+Implementación guardada en `008c921`; esta actualización documental registra el último recorrido. `dev` todavía no incorpora esta revisión. El responsable aceptó después el cierre y autorizó publicar e iniciar la etapa 2.
+
+## Aceptación registrada
+
+El 12/11/2026 el usuario respondió «Acepto el cierre y continuar con etapa 2» a la solicitud de aceptación que detallaba todos los casos verificados, los resultados de pruebas y la limpieza de QA. La etapa 1 queda cerrada; se autoriza integrar en `dev` y continuar con el ciclo del inventario. Las menciones de pendientes en las rondas anteriores conservan únicamente valor histórico.

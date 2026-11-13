@@ -114,3 +114,7 @@ La retirada del PNG QA fue posteriormente autorizada expresamente y completada. 
 - `pnpm db:check`: sin migraciones pendientes, diferencias de stock ni números duplicados. El sandbox no permitió una primera ejecución/conexión; repetir con acceso autorizado a PostgreSQL produjo el diagnóstico correcto. No se modificó la DB habitual.
 - Sin esquema nuevo; prueba de actualización previa conserva su validez sobre las mismas migraciones. Build muestra avisos informativos de Browserslist antiguo y tiempo de Babel; no se añadieron dependencias de aplicación.
 - El usuario completó personalmente el cambio de contraseña desde UI y confirmó «Prueba realizada». El agente comprobó contraseña anterior rechazada (401) y nueva aceptada (201), además de ambos recorridos de login en navegador; entrada a Tienda correcta. La sesión y pestaña se cerraron, los procesos de QA se detuvieron y la DB temporal fue retirada (cero bases de esa sesión). Aceptación final pendiente; etapa 2 sin iniciar. Esta última comprobación no cambió código de aplicación ni requiere repetir las pruebas técnicas ya aprobadas.
+
+## Aceptación del cierre funcional
+
+El 12/11/2026 el usuario aceptó expresamente el cierre de la etapa 1 y autorizó integrar en `dev` y continuar con la etapa 2. Todas las pruebas y limpiezas indicadas arriba se completaron antes de esa aceptación. No hubo cambios adicionales de código por registrar esta decisión.

@@ -4,14 +4,14 @@ Actualizado: 12 de noviembre de 2026.
 
 ## Regla de avance
 
-Las seis etapas se trabajan en orden. **Solo está activa la etapa 1.** La etapa siguiente comienza cuando la anterior tiene evidencia suficiente, pendientes explícitos y aceptación del responsable del proyecto. Un build correcto no equivale a la aceptación funcional del MVP.
+Las seis etapas se trabajan en orden. **La etapa 1 está cerrada; está activa la etapa 2.** La etapa siguiente comienza cuando la anterior tiene evidencia suficiente, pendientes explícitos y aceptación del responsable del proyecto. Un build correcto no equivale a la aceptación funcional del MVP.
 
 La pasarela de pagos está **aplazada por instrucción del usuario**. La consulta de opciones de simulación no autoriza añadir SDKs, endpoints, webhooks, credenciales, métodos de pago, migraciones ni conexiones a un proveedor.
 
 | Etapa | Estado | Trabajo técnico | Condición para cerrar |
 | --- | --- | --- | --- |
-| 1. Revisión funcional y usabilidad | **Validada; pendiente aceptación final** | Inventario de pantallas y permisos, recorridos con datos ficticios, revisión móvil/escritorio, matriz de aceptación y corrección de fallos del alcance actual | Matriz revisada; casos del alcance ejecutados; bloqueos corregidos o excluidos expresamente; aprobación del alcance y resultados por el usuario |
-| 2. Ciclo del inventario | Pendiente, sin iniciar | Compras, recepción, entradas, ajustes y bajas coherentes con Kardex y auditoría | Operaciones y reglas aprobadas; pruebas de integridad, concurrencia y reversión correctas |
+| 1. Revisión funcional y usabilidad | **Cerrada y aceptada — 12/11/2026** | Inventario de pantallas y permisos, recorridos con datos ficticios, revisión móvil/escritorio, matriz de aceptación y corrección de fallos del alcance actual | Matriz revisada; casos del alcance ejecutados; bloqueos corregidos o excluidos expresamente; aprobación del alcance y resultados por el usuario |
+| 2. Ciclo del inventario | **En curso** | Compras, recepción, entradas, ajustes y bajas coherentes con Kardex y auditoría | Operaciones y reglas aprobadas; pruebas de integridad, concurrencia y reversión correctas |
 | 3. Pedidos y pagos internos | Pendiente, sin iniciar | Reglas de transición, responsables, cancelaciones, devoluciones y efectos sobre stock | Transiciones autorizadas, efectos una sola vez y pruebas correctas. La pasarela requiere una autorización posterior separada |
 | 4. Pruebas automáticas de interfaz | Pendiente, sin iniciar | Convertir los recorridos acordados en regresión ejecutable e integrarlos a CI | Casos críticos estables y resultado verificable en CI |
 | 5. Entorno publicado de pruebas | Pendiente, sin iniciar | Preparar despliegue, HTTPS, secretos, CORS, monitoreo y restauración | Acceso externo aprobado, servicios elegidos por el usuario y recuperación probada |
@@ -46,11 +46,11 @@ Documento de referencia: [revisión funcional del MVP](revision-funcional-mvp.md
 - [x] Completar cambio de contraseña desde UI por el usuario; contraseña anterior rechazada y nueva aceptada, por API y navegador.
 - [x] Acordar los requisitos de catálogo y el tratamiento de usuarios/reportes: usuarios/roles incluidos y REP-01 incorporado por petición posterior, imagen opcional, proveedor/categoría/precio positivo obligatorios en altas.
 - [x] Validar PNG y MP4 ficticios autorizados en Cloudinary, verificar render/reproducción y retirar únicamente sus recursos QA.
-- [ ] Obtener aceptación del usuario sobre el resultado de la etapa 1.
+- [x] Obtener aceptación del usuario sobre el resultado de la etapa 1: «Acepto el cierre y continuar con etapa 2», 12/11/2026.
 
-**La etapa 1 tiene todos los recorridos validados y solo espera aceptación final del usuario. No se ha comenzado la etapa 2.**
+**Etapa 1 cerrada y aceptada. El usuario autorizó continuar con la etapa 2 el 12/11/2026.**
 
-La sesión ficticia se cerró, los procesos de QA se detuvieron y la DB temporal fue retirada. No se requiere otra prueba técnica manual por parte del usuario para este cierre; debe aprobar los resultados o indicar ajustes.
+La sesión ficticia se cerró, los procesos de QA se detuvieron y la DB temporal fue retirada. Todos los casos de la matriz están verificados y el responsable aceptó el resultado.
 
 ## Simulación de pagos: decisión futura
 
