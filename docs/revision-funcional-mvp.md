@@ -1,6 +1,6 @@
 # Etapa 1 — Revisión funcional y criterios de aceptación
 
-Fecha: 12 de noviembre de 2026. Estado: **validación técnica de los pendientes completada; prueba personal de contraseña y aceptación funcional pendientes**.
+Fecha: 12 de noviembre de 2026. Estado: **todos los casos funcionales verificados; aceptación final del usuario pendiente**.
 
 ## Alcance y evidencia
 
@@ -26,7 +26,7 @@ Estados:
 | AUT-03 | Cliente | Cerrar sesión elimina el acceso autenticado | **Verificado:** regreso al formulario de login |
 | AUT-04 | Cliente | Un acceso directo al dashboard administrativo se rechaza | **Verificado:** redirección a tienda |
 | AUT-05 | Empleado | Un acceso directo a gestión de empleados se rechaza | **Verificado:** redirección a tienda; navegación sin módulos exclusivos de admin |
-| AUT-06 | Cuenta | Expiración, renovación y cambio de contraseña | **Verificado por API:** token expirado rechazado, cookie renueva sesión, contraseña propia cambia con validación de actual/confirmación; login anterior rechazado. No se completó un cambio de contraseña desde UI |
+| AUT-06 | Cuenta | Expiración, renovación y cambio de contraseña | **Verificado por API e interfaz:** token expirado rechazado y cookie renueva sesión. El usuario completó el cambio desde Configuración → Seguridad y confirmó «Prueba realizada»; el agente comprobó rechazo de la anterior (401), acceso con la nueva (201) y repitió ambos inicios desde UI |
 | REG-01 | Público | Registro completo, duplicados y regreso a compra | **Verificado:** contraseñas distintas y usuario duplicado informados; cuenta ficticia entra a tienda. API prueba registro concurrente sin cuentas huérfanas |
 | CAT-01 | Público | Ver catálogo; intentar comprar solicita autenticación | **Verificado** |
 | CAT-02 | Cliente | Buscar un producto oculta los que no coinciden | **Verificado:** búsqueda de Vaso QA |
@@ -55,7 +55,7 @@ Estados:
 | DAS-01 | Admin | Dashboard carga datos del escenario de prueba | **Verificado:** 1 pedido, 3 productos y 3 usuarios; ingresos aprobados 0 porque el pago sigue pendiente |
 | MED-01 | Admin | Listar medios y comunicar ausencia de registros sin errores | **Verificado:** lista vacía; se corrigió la paginación que mostraba 1 / 0 |
 | MED-02 | Admin | Crear, editar, desactivar y reproducir videos promocionales  | **Verificado con video real autorizado:** MP4 ficticio de 2 s y 320×180, carga vía API, reproducción real en Home, edición desde UI, desactivación/ocultación y reactivación desde UI. Recurso QA retirado y ausencia remota comprobada; medios anteriores conservados. Lectura pública de inactivo por ID devuelve 404, con integración |
-| CFG-01 | Cuenta | Perfil, apariencia y seguridad respetan permisos  | **Perfil y apariencia verificados:** claro/oscuro funcionales y persistidos por cuenta, recarga e inicio de sesión; empleado solo ve Apariencia. Seguridad verificada por API; pendiente acción personal final de cambio de contraseña desde UI (instrucciones en la sección de cierre) |
+| CFG-01 | Cuenta | Perfil, apariencia y seguridad respetan permisos  | **Verificado:** perfil persistido, claro/oscuro funcionales por cuenta tras recarga/inicio de sesión; empleado solo ve Apariencia. Cambio de contraseña realizado personalmente por el usuario y verificado con rechazo de la anterior y acceso con la nueva, por API e interfaz |
 | NAV-01 | Móvil | El contenido usa el ancho disponible y el menú permite cambiar de módulo | **Verificado tras corrección:** contenido de ~390 px en viewport de 390 px y navegación a proveedores desde el menú |
 | NAV-02 | Escritorio | El menú conserva opciones según rol y admite colapsar/expandir | **Verificado:** navegación de roles y control de sidebar |
 | NAV-03 | Accesibilidad | Cierre de menú con teclado, regreso del foco y controles identificables | **Verificado para el menú móvil:** Escape oculta el diálogo y devuelve el foco a “Abrir menú de navegación”; no representa una auditoría completa de accesibilidad |
@@ -73,16 +73,17 @@ Esta sección y la matriz anterior reflejan el estado actual. Las rondas descrit
 - Backend: tipos, lint, build y 24 unitarias. Integración: 38 pruebas PostgreSQL aisladas (ver última ejecución en `docs/validation.md`). Frontend: tipos, lint, build y 7 unitarias de CSV/orden. Sin migraciones nuevas. DB habitual: cero pendientes, diferencias de stock y duplicados.
 - Evidencias privadas: `reports-light-validated.jpg`, `reports-mobile-light-validated.jpg`, `reports-mobile-dark-validated.jpg`, `customer-catalog-sorting-validated.jpg`, `customer-store-mobile-light-validated.jpg`, `cloudinary-video-playback-validated.jpg`, `password-ui-handoff.jpg` en `.local/functional-evidence`.
 
-### Acción personal de AUT-06 / CFG-01
+### Prueba personal completada de AUT-06 / CFG-01
 
-La política de control del navegador exige que el usuario introduzca y confirme una nueva contraseña. Se dejó abierta Configuración → Seguridad en la cuenta ficticia `qa_customer` de la DB temporal, con campos vacíos. Las credenciales de QA se entregaron en el chat, no se deben usar en instalaciones habituales.
+La política de control del navegador exige que el usuario introduzca y confirme una nueva contraseña. El usuario realizó el cambio en Configuración → Seguridad con la cuenta ficticia `qa_customer` y confirmó «Prueba realizada». Las credenciales de QA se entregaron únicamente en el chat; no se usan en instalaciones habituales. El recorrido completado fue:
 
-1. Completar contraseña actual, nueva contraseña de QA y confirmación siguiendo las instrucciones del chat.
-2. Guardar cambios → Aplicar cambios; comprobar «Contraseña actualizada correctamente».
-3. Informar el resultado. El agente verifica después rechazo de la anterior y acceso con la nueva, y retira la DB temporal.
-4. Revisar la matriz y las capturas; aprobar la etapa o indicar ajustes. No se requieren SQL, Git, Docker ni pruebas técnicas manuales por parte del usuario.
+1. El usuario introdujo contraseña actual, nueva y confirmación en la cuenta de QA.
+2. Guardó y confirmó los cambios; después informó «Prueba realizada».
+3. El agente verificó rechazo de la anterior y acceso con la nueva, y retiró la DB temporal.
 
-**Cierre formal pendiente de esta acción y de la aceptación del usuario. La etapa 2 sigue sin iniciar.** La sesión temporal se conserva únicamente para completar esta prueba; el video remoto ya se retiró.
+Solo resta que el usuario revise la matriz y apruebe la etapa o indique ajustes. No se requieren SQL, Git, Docker ni pruebas técnicas manuales adicionales.
+
+**Todos los casos funcionales están verificados; cierre formal pendiente únicamente de aceptación del usuario. La etapa 2 sigue sin iniciar.** El agente comprobó el rechazo de la contraseña anterior y acceso con la nueva, por API y navegador. Después cerró sesión/pestaña, detuvo ambos procesos de QA y retiró exclusivamente su DB temporal; el diagnóstico de limpieza confirmó cero bases de esa sesión. El video remoto ya se había retirado. Evidencia privada adicional: `customer-password-login-validated.jpg`.
 
 ## Hallazgos y tratamiento
 
@@ -105,7 +106,7 @@ La política de control del navegador exige que el usuario introduzca y confirme
 | D-04 | Regla resuelta | Precio mayor que cero | Aprobado; API rechaza precio cero en altas y cuando se envía un precio nuevo; UI comprobada |
 | D-05 | Resuelto | Ayuda, Ofertas y Notificaciones eran controles sin acción | Retirados del encabezado para no publicar acciones vacías; sin crear funcionalidades futuras |
 | D-06 | Resuelto | Formatos de precio distintos y centavos redondeados a cero | Formato COP compartido, máximo dos decimales; 0.10 se muestra como $0,1 en administración y tienda, comprobado desde UI |
-| D-07 | Validación técnica completada | Registro, direcciones, proveedores, empleados, perfil y pendientes técnicos de catálogo/medios/tema/reportes | Resta cambio de contraseña personal desde UI y aceptación del usuario |
+| D-07 | Validación técnica completada | Registro, direcciones, proveedores, empleados, perfil y pendientes técnicos de catálogo/medios/tema/reportes | Cambio de contraseña desde UI completado y acceso verificado; resta aceptación final del usuario |
 
 Las reglas de estados de pedido, fecha efectiva de pago, cancelación y devolución pertenecen a la etapa 3. Esta revisión registra lo observado, sin introducir dichas reglas anticipadamente.
 
@@ -162,3 +163,11 @@ La etapa 1 continúa abierta con las limitaciones de la matriz y sin aceptación
 Tras la autorización expresa de retirada, se eliminó únicamente el PNG QA recién creado. Se verificaron cero referencias de imagen en la DB temporal y respuesta de recurso inexistente de Cloudinary. Los medios anteriores se conservaron. Se cerraron sesiones, pestañas y procesos de revisión y se comprobó que la última base temporal ya no existe.
 
 El diagnóstico final de la DB habitual volvió a mostrar cero migraciones pendientes, cero diferencias de stock y cero números de pedido duplicados. La etapa 1 permanece abierta por las limitaciones y aceptación indicadas; esta limpieza no autoriza iniciar la etapa 2.
+
+## Estado final para aceptación — 12 de noviembre de 2026
+
+El usuario confirmó la prueba personal de contraseña. AUT-06 y CFG-01 ya no tienen recorridos pendientes. Los casos de la matriz están verificados con el alcance y los límites de evidencia descritos en cada fila; esto no equivale a una auditoría completa de accesibilidad ni a la implantación de las etapas 2–6.
+
+Validación del último recorrido: contraseña anterior rechazada (HTTP 401) y nueva aceptada (HTTP 201); ambos resultados repetidos en navegador, con entrada a Tienda. Sesión de QA cerrada y base temporal inexistente. No se cambiaron datos habituales ni quedaron medios externos de QA.
+
+Implementación guardada en `008c921`; esta actualización documental registra el último recorrido. `dev` todavía no incorpora esta revisión. Se solicita al responsable aceptar los resultados o señalar ajustes; la publicación/integración y la etapa 2 respetan ese cierre.

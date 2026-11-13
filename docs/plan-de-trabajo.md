@@ -10,7 +10,7 @@ La pasarela de pagos está **aplazada por instrucción del usuario**. La consult
 
 | Etapa | Estado | Trabajo técnico | Condición para cerrar |
 | --- | --- | --- | --- |
-| 1. Revisión funcional y usabilidad | **En curso** | Inventario de pantallas y permisos, recorridos con datos ficticios, revisión móvil/escritorio, matriz de aceptación y corrección de fallos del alcance actual | Matriz revisada; casos del alcance ejecutados; bloqueos corregidos o excluidos expresamente; aprobación del alcance y resultados por el usuario |
+| 1. Revisión funcional y usabilidad | **Validada; pendiente aceptación final** | Inventario de pantallas y permisos, recorridos con datos ficticios, revisión móvil/escritorio, matriz de aceptación y corrección de fallos del alcance actual | Matriz revisada; casos del alcance ejecutados; bloqueos corregidos o excluidos expresamente; aprobación del alcance y resultados por el usuario |
 | 2. Ciclo del inventario | Pendiente, sin iniciar | Compras, recepción, entradas, ajustes y bajas coherentes con Kardex y auditoría | Operaciones y reglas aprobadas; pruebas de integridad, concurrencia y reversión correctas |
 | 3. Pedidos y pagos internos | Pendiente, sin iniciar | Reglas de transición, responsables, cancelaciones, devoluciones y efectos sobre stock | Transiciones autorizadas, efectos una sola vez y pruebas correctas. La pasarela requiere una autorización posterior separada |
 | 4. Pruebas automáticas de interfaz | Pendiente, sin iniciar | Convertir los recorridos acordados en regresión ejecutable e integrarlos a CI | Casos críticos estables y resultado verificable en CI |
@@ -43,12 +43,14 @@ Documento de referencia: [revisión funcional del MVP](revision-funcional-mvp.md
 - [x] Identificar pantallas provisionales y requisitos contradictorios.
 - [x] Detectar y corregir el bloqueo de navegación móvil.
 - [x] Completar reportes, tema claro, orden visual y video real de la matriz.
-- [ ] Completar cambio de contraseña desde UI por el usuario; API ya verificada.
+- [x] Completar cambio de contraseña desde UI por el usuario; contraseña anterior rechazada y nueva aceptada, por API y navegador.
 - [x] Acordar los requisitos de catálogo y el tratamiento de usuarios/reportes: usuarios/roles incluidos y REP-01 incorporado por petición posterior, imagen opcional, proveedor/categoría/precio positivo obligatorios en altas.
 - [x] Validar PNG y MP4 ficticios autorizados en Cloudinary, verificar render/reproducción y retirar únicamente sus recursos QA.
 - [ ] Obtener aceptación del usuario sobre el resultado de la etapa 1.
 
-**La etapa 1 no está cerrada. No se ha comenzado la etapa 2.**
+**La etapa 1 tiene todos los recorridos validados y solo espera aceptación final del usuario. No se ha comenzado la etapa 2.**
+
+La sesión ficticia se cerró, los procesos de QA se detuvieron y la DB temporal fue retirada. No se requiere otra prueba técnica manual por parte del usuario para este cierre; debe aprobar los resultados o indicar ajustes.
 
 ## Simulación de pagos: decisión futura
 
