@@ -1,6 +1,6 @@
+import { UsuarioPageDTO } from '../../application/dto/usuario-response.dto';
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CreateUsuarioDTO } from '../../application/dto/create-usuario-dto';
 
 export function GetAllUsuariosSwagger() {
   return applyDecorators(
@@ -12,7 +12,7 @@ export function GetAllUsuariosSwagger() {
     ApiResponse({
       status: 200,
       description: 'Lista de usuarios obtenida exitosamente',
-      type: [CreateUsuarioDTO],
+      type: UsuarioPageDTO,
     }),
   );
 }

@@ -15,7 +15,7 @@ export class CarritoDetalleMapper {
 
   static toPersistence(domain: CarritoDetalle): CarritoDetalleEntityORM {
     const entity = new CarritoDetalleEntityORM();
-    entity.carritoDetalleId = domain.carritoDetalleId;
+    if (domain.carritoDetalleId > 0) entity.carritoDetalleId = domain.carritoDetalleId;
     entity.carritoId = domain.carritoId;
     entity.productoId = domain.productoId;
     entity.cantidad = domain.cantidad;

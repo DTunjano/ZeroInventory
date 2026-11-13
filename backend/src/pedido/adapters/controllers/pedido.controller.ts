@@ -9,6 +9,8 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreatePedidoUseCase } from '../../application/use-cases/create-pedido.use-case';
@@ -25,8 +27,17 @@ import { GetAllPedidoSwagger } from '../documentation/get-all-pedido.swagger';
 import { UpdatePedidoSwagger } from '../documentation/update-pedido.swagger';
 import { DeletePedidoSwagger } from '../documentation/delete-pedido.swagger';
 import { GetPedidoByIdSwagger } from '../documentation/get-pedido-by-id.swagger';
+import { GetOrdersByClienteUseCase, OrderView } from '../../application/use-cases/get-orders-by-cliente.use-case';
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
+import { JwtAccessPayload } from '../../../auth/infrastructure/strategies/jwt.strategy';
+import { ClienteRepository } from '../../../cliente/domain/repository/cliente.repository';
+import { FiltersMyOrdersDTO } from '../../application/dto/filters-my-orders.dto';
 
 @ApiTags('Pedidos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('pedidos')
 export class PedidoController {
   constructor(
@@ -35,9 +46,22 @@ export class PedidoController {
     private readonly getAllPedidosUseCase: GetAllPedidosUseCase,
     private readonly updatePedidoUseCase: UpdatePedidoUseCase,
     private readonly deletePedidoUseCase: DeletePedidoUseCase,
+    private readonly getOrdersByClienteUseCase: GetOrdersByClienteUseCase,
+    private readonly clienteRepo: ClienteRepository,
   ) {}
 
+  @Get('me')
+  @Roles(RolNombreEnum.CUSTOMER)
+  async getMyOrders(@Req() req: { user: JwtAccessPayload }, @Query() filters: FiltersMyOrdersDTO): Promise<OrderView[]> {
+    const cliente = await this.clienteRepo.getByUsuarioId(req.user.sub);
+    if (!cliente) {
+      return [];
+    }
+    return this.getOrdersByClienteUseCase.ejecutar(cliente.clienteId, filters);
+  }
+
   @Post()
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @CreatePedidoSwagger()
   async create(@Body() body: CreatePedidoDTO): Promise<Pedido> {
     const pedido = await this.createPedidoUseCase.ejecutar(body);
@@ -48,6 +72,7 @@ export class PedidoController {
   }
 
   @Get()
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetAllPedidoSwagger()
   async getAll(@Query() filters?: FiltersPedidoDTO): Promise<{
     data: Pedido[];
@@ -60,6 +85,7 @@ export class PedidoController {
   }
 
   @Get(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetPedidoByIdSwagger()
   async getById(@Param('id', ParseIntPipe) pedidoId: number): Promise<Pedido> {
     const pedido = await this.getPedidoByIdUseCase.ejecutar(pedidoId);
@@ -70,6 +96,7 @@ export class PedidoController {
   }
 
   @Put(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UpdatePedidoSwagger()
   async update(
     @Param('id', ParseIntPipe) pedidoId: number,
@@ -83,6 +110,7 @@ export class PedidoController {
   }
 
   @Delete(':id')
+  @Roles(RolNombreEnum.ADMIN)
   @DeletePedidoSwagger()
   async remove(@Param('id', ParseIntPipe) pedidoId: number): Promise<void> {
     return this.deletePedidoUseCase.ejecutar(pedidoId);

@@ -24,5 +24,6 @@ import { DeleteClienteUseCase } from './application/use-cases/delete-cliente.use
       useClass: ClienteRepositoryImpl,
     },
   ],
+  exports: [ClienteRepository],
 })
 export class ClienteModule {}

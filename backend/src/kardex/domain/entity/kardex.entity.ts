@@ -1,6 +1,7 @@
 export enum TipoMovimientoEnum {
   ENTRADA = 'ENTRADA',
   SALIDA = 'SALIDA',
+  AJUSTE = 'AJUSTE',
 }
 
 export enum TipoReferenciaEnum {

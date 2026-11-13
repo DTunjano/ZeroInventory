@@ -13,7 +13,7 @@ export class CategoriaMapper {
 
   static toPersistence(domain: Categoria): CategoriaEntityORM {
     const entity = new CategoriaEntityORM();
-    entity.categoriaId = domain.categoriaId;
+    if (domain.categoriaId > 0) entity.categoriaId = domain.categoriaId;
     entity.nombre = domain.nombre;
     entity.createdAt = domain.createdAt;
     entity.updatedAt = domain.updatedAt;

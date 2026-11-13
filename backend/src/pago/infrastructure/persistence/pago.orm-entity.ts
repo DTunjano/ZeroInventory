@@ -23,7 +23,7 @@ export class PagoEntityORM {
   @Column({ name: 'metodo_pago', type: 'enum', enum: MetodoPagoEnum })
   metodoPago!: MetodoPagoEnum;
 
-  @Column({ name: 'monto', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'monto', precision: 14, scale: 2, type: 'numeric' })
   monto!: number;
 
   @Column({ name: 'estado', type: 'enum', enum: EstadoPagoEnum })

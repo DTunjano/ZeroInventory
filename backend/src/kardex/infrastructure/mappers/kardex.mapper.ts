@@ -18,7 +18,7 @@ export class KardexMapper {
 
   static toPersistence(kardex: Kardex): KardexEntityORM {
     const kardexORM = new KardexEntityORM();
-    kardexORM.kardexId = kardex.kardexId;
+    if (kardex.kardexId > 0) kardexORM.kardexId = kardex.kardexId;
     kardexORM.productoId = kardex.productoId;
     kardexORM.tipoMovimiento = kardex.tipoMovimiento;
     kardexORM.cantidad = kardex.cantidad;

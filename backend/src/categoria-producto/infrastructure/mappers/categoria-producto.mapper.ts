@@ -14,7 +14,7 @@ export class CategoriaProductoMapper {
 
   static toPersistence(domain: CategoriaProducto): CategoriaProductoEntityORM {
     const entity = new CategoriaProductoEntityORM();
-    entity.categoriaProductoId = domain.categoriaProductoId;
+    if (domain.categoriaProductoId > 0) entity.categoriaProductoId = domain.categoriaProductoId;
     entity.categoriaId = domain.categoriaId;
     entity.productoId = domain.productoId;
     entity.createdAt = domain.createdAt;

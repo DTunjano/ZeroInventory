@@ -12,6 +12,7 @@ export class Pedido {
   direccionId: number = 0;
   estado: EstadoPedidoEnum = EstadoPedidoEnum.CONFIRMADO;
   total: number = 0;
+  numeroPedidoUsuario: number = 0;
   fecha: Date = new Date();
 
   constructor(
@@ -20,6 +21,7 @@ export class Pedido {
     direccionId: number,
     estado: EstadoPedidoEnum,
     total: number,
+    numeroPedidoUsuario: number,
     fecha: Date,
   ) {
     this.pedidoId = pedidoId;
@@ -27,6 +29,7 @@ export class Pedido {
     this.direccionId = direccionId;
     this.estado = estado;
     this.total = total;
+    this.numeroPedidoUsuario = numeroPedidoUsuario;
     this.fecha = fecha;
   }
 }

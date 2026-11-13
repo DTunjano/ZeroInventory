@@ -14,8 +14,10 @@ export class UpdateProveedorUseCase {
     proveedorId: number,
     cambios: {
       nombre?: string;
+      nombreTitular?: string;
       telefono?: string;
       email?: string;
+      isActive?: boolean;
     },
   ): Promise<Proveedor> {
     const actual = await this.proveedorRepo.getById(proveedorId);
@@ -38,8 +40,14 @@ export class UpdateProveedorUseCase {
     const proveedor = new Proveedor(
       actual.proveedorId,
       cambios.nombre ?? actual.nombre,
-      cambios.telefono ?? actual.telefono,
-      cambios.email ?? actual.email,
+      cambios.nombreTitular !== undefined
+        ? cambios.nombreTitular
+        : actual.nombreTitular,
+      cambios.telefono !== undefined
+        ? cambios.telefono
+        : actual.telefono,
+      cambios.email !== undefined ? cambios.email : actual.email,
+      cambios.isActive !== undefined ? cambios.isActive : actual.isActive,
     );
     return this.proveedorRepo.update(proveedor);
   }

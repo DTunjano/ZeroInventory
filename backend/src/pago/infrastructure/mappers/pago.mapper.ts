@@ -15,7 +15,7 @@ export class PagoMapper {
 
   static toPersistence(domain: Pago): PagoEntityORM {
     const entity = new PagoEntityORM();
-    entity.pagoId = domain.pagoId;
+    if (domain.pagoId > 0) entity.pagoId = domain.pagoId;
     entity.pedidoId = domain.pedidoId;
     entity.metodoPago = domain.metodoPago;
     entity.monto = domain.monto;

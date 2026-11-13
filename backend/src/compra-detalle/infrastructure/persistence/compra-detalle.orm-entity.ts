@@ -22,10 +22,10 @@ export class CompraDetalleEntityORM {
   @Column({ name: 'cantidad', type: 'int' })
   cantidad!: number;
 
-  @Column({ name: 'costo_unitario', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'costo_unitario', precision: 14, scale: 2, type: 'numeric' })
   costoUnitario!: number;
 
-  @Column({ name: 'subtotal', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'subtotal', precision: 14, scale: 2, type: 'numeric' })
   subtotal!: number;
 
   @ManyToOne(() => CompraEntityORM, (compra) => compra.detalles)

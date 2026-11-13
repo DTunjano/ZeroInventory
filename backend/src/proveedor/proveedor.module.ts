@@ -9,6 +9,8 @@ import { GetAllProveedoresUseCase } from './application/use-cases/get-all-provee
 import { GetProveedorByIdUseCase } from './application/use-cases/get-proveedor-by-id.use-case';
 import { UpdateProveedorUseCase } from './application/use-cases/update-proveedor.use-case';
 import { DeleteProveedorUseCase } from './application/use-cases/delete-proveedor.use-case';
+import { ToggleProveedorUseCase } from './application/use-cases/toggle-proveedor.use-case';
+import { GetSuppliedProductCountUseCase } from './application/use-cases/get-supplied-product-count.use-case';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ProveedorEntityORM])],
@@ -19,10 +21,13 @@ import { DeleteProveedorUseCase } from './application/use-cases/delete-proveedor
     DeleteProveedorUseCase,
     GetAllProveedoresUseCase,
     GetProveedorByIdUseCase,
+    ToggleProveedorUseCase,
+    GetSuppliedProductCountUseCase,
     {
       provide: ProveedorRepository,
       useClass: ProveedorRepositoryImpl,
     },
   ],
+  exports: [ProveedorRepository],
 })
 export class ProveedorModule {}

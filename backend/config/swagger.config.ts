@@ -13,7 +13,8 @@ export const swaggerConfig = new DocumentBuilder()
       bearerFormat: 'JWT',
       description: 'Token JWT obtenido del endpoint /auth/login',
     },
-    'JWT-auth',
+    'bearer',
   )
+  .addTag('Auth', 'Autenticación y sesión')
   .addTag('Productos', 'Gestión de productos')
   .build();

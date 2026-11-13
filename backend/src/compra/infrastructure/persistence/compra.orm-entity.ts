@@ -22,7 +22,7 @@ export class CompraEntityORM {
   @Column({ name: 'usuario_id', type: 'int' })
   usuarioId!: number;
 
-  @Column({ name: 'total', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'total', precision: 14, scale: 2, type: 'numeric' })
   total!: number;
 
   @CreateDateColumn({ name: 'fecha_compra', type: 'timestamp' })

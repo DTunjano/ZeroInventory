@@ -30,10 +30,10 @@ export class KardexEntityORM {
   @Column({ name: 'cantidad', type: 'int' })
   cantidad!: number;
 
-  @Column({ name: 'costo_unitario', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'costo_unitario', precision: 14, scale: 2, type: 'numeric' })
   costoUnitario!: number;
 
-  @Column({ name: 'valor_total', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'valor_total', precision: 14, scale: 2, type: 'numeric' })
   valorTotal!: number;
 
   @Column({ name: 'referencia_id', type: 'int' })
@@ -45,3 +45,5 @@ export class KardexEntityORM {
   @CreateDateColumn({ name: 'fecha_movimiento', type: 'timestamp' })
   fechaMovimiento!: Date;
 }
+
+export { TipoMovimientoEnum, TipoReferenciaEnum } from '../../domain/entity/kardex.entity';

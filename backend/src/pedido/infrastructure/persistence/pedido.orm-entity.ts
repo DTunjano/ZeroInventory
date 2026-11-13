@@ -28,8 +28,15 @@ export class PedidoEntityORM {
   @Column({ name: 'estado', type: 'enum', enum: EstadoPedidoEnum })
   estado!: EstadoPedidoEnum;
 
-  @Column({ name: 'total', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'total', precision: 14, scale: 2, type: 'numeric' })
   total!: number;
+
+  @Column({ name: 'numero_pedido_usuario', type: 'int', default: 0 })
+  numeroPedidoUsuario!: number;
+
+  // Only populated when a historical zero/duplicate was reconciled by migration.
+  @Column({ name: 'numero_pedido_usuario_legacy', type: 'int', nullable: true })
+  numeroPedidoUsuarioLegacy!: number | null;
 
   @CreateDateColumn({ name: 'fecha', type: 'timestamp' })
   fecha!: Date;
@@ -48,3 +55,4 @@ export class PedidoEntityORM {
   @OneToMany(() => PagoEntityORM, (pago) => pago.pedido)
   pagos!: PagoEntityORM[];
 }
+

@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsOptional, Max, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class FiltersUsuarioDTO {
   @ApiPropertyOptional({
@@ -9,6 +9,7 @@ export class FiltersUsuarioDTO {
     example: 'WILDKILL',
   })
   @IsOptional()
+  @IsString()
   username?: string;
 
   @ApiPropertyOptional({
@@ -33,7 +34,8 @@ export class FiltersUsuarioDTO {
     example: true,
   })
   @IsOptional()
-  @Type(() => Boolean)
+  @Transform(({ value }: { value: unknown }) => value === 'true' ? true : value === 'false' ? false : value)
+  @IsBoolean()
   isActive?: boolean;
 
   //Pagination
@@ -44,6 +46,7 @@ export class FiltersUsuarioDTO {
   })
   @IsOptional()
   @Type(() => Number)
+  @IsInt()
   @Min(1)
   page: number = 1;
 
@@ -54,6 +57,7 @@ export class FiltersUsuarioDTO {
   })
   @IsOptional()
   @Type(() => Number)
+  @IsInt()
   @Min(1)
   @Max(100)
   limit: number = 10;

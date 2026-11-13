@@ -33,7 +33,8 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/prefer-promise-reject-errors': 'off',
-      "prettier/prettier": ["error", { endOfLine: "auto" }],
+      // Formatting is provided by pnpm format; lint checks code correctness.
+      'prettier/prettier': 'off',
     },
   },
 );

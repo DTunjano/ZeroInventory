@@ -1,16 +1,29 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { KardexEntityORM } from '../../../kardex/infrastructure/persistence/kardex.orm-entity';
 import { CategoriaProductoEntityORM } from '../../../categoria-producto/infrastructure/persistence/categoria-producto.orm-entity';
 import { CarritoDetalleEntityORM } from '../../../carrito-detalle/infrastructure/persistence/carrito-detalle.orm-entity';
+
+import { CompraDetalleEntityORM } from '../../../compra-detalle/infrastructure/persistence/compra-detalle.orm-entity';
+import { AjusteInventarioEntityORM } from '../../../ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity';
 import { ProductoImagenEntityORM } from '../../../producto-imagen/infrastructure/persistence/producto-imagen.orm-entity';
 import { PedidoDetalleEntityORM } from '../../../pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity';
-import { AjusteInventarioEntityORM } from '../../../ajuste-inventario/infrastructure/persistence/ajuste-inventario.orm-entity';
-import { CompraDetalleEntityORM } from '../../../compra-detalle/infrastructure/persistence/compra-detalle.orm-entity';
-import { KardexEntityORM } from '../../../kardex/infrastructure/persistence/kardex.orm-entity';
+import { ProveedorEntityORM } from '../../../proveedor/infrastructure/persistence/proveedor.orm-entity';
+
 
 @Entity({ name: 'producto' })
 export class ProductoEntityORM {
   @PrimaryGeneratedColumn({ name: 'producto_id' })
   productoId!: number;
+
+  @Column({ name: 'proveedor_id', type: 'int', nullable: true })
+  proveedorId!: number | null;
 
   @Column({ name: 'nombre', type: 'varchar' })
   nombre!: string;
@@ -18,13 +31,13 @@ export class ProductoEntityORM {
   @Column({ name: 'cantidad', type: 'int' })
   cantidad!: number;
 
-  @Column({ name: 'precio', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'precio', precision: 14, scale: 2, type: 'numeric' })
   precio!: number;
 
   @Column({ name: 'descripcion', type: 'text', nullable: true })
   descripcion!: string | null;
 
-  @Column({ name: 'sku', type: 'varchar', unique: true })
+  @Column({ name: 'sku', type: 'varchar', nullable: false, unique: true })
   sku!: string;
 
   @Column({ name: 'marca', type: 'varchar', nullable: true })
@@ -47,6 +60,12 @@ export class ProductoEntityORM {
 
   @Column({ name: 'updated_at', type: 'timestamp' })
   updatedAt!: Date;
+
+  @ManyToOne(() => ProveedorEntityORM, (proveedor) => proveedor.productos, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'proveedor_id' })
+  proveedor!: ProveedorEntityORM;
 
   @OneToMany(() => KardexEntityORM, (kardex) => kardex.producto)
   kardexMovimientos!: KardexEntityORM[];

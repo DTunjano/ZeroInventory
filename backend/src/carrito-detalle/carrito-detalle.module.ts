@@ -24,5 +24,6 @@ import { DeleteCarritoDetalleUseCase } from './application/use-cases/delete-carr
       useClass: CarritoDetalleRepositoryImpl,
     },
   ],
+  exports: [CarritoDetalleRepository],
 })
 export class CarritoDetalleModule {}

@@ -8,8 +8,10 @@ export class CreateProveedorUseCase {
 
   async ejecutar(data: {
     nombre: string;
+    nombreTitular?: string;
     telefono?: string;
     email?: string;
+    isActive?: boolean;
   }): Promise<Proveedor> {
     const existingProveedorByNombre = await this.proveedorRepo.getByNombre(
       data.nombre,
@@ -21,8 +23,10 @@ export class CreateProveedorUseCase {
     const proveedor = new Proveedor(
       0,
       data.nombre,
+      data.nombreTitular ?? null,
       data.telefono ?? null,
       data.email ?? null,
+      data.isActive ?? true,
     );
     return this.proveedorRepo.create(proveedor);
   }

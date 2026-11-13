@@ -11,6 +11,11 @@ backend/tsconfig.build.tsbuildinfo
 
 # Environment variables
 .env
+.env.*
+!.env.example
+.local/
+*.dump
+backend/coverage/
 .env.development.local
 .env.test.local
 .env.production.local

@@ -19,19 +19,30 @@ import { CarritoModule } from './carrito/carrito.module';
 import { CarritoDetalleModule } from './carrito-detalle/carrito-detalle.module';
 import { ProveedorModule } from './proveedor/proveedor.module';
 import { CompraModule } from './compra/compra.module';
-import { CompraDetalleModule } from './compra-detalle/compra-detalle.module';
-import { AjusteInventarioModule } from './ajuste-inventario/ajuste-inventario.module';
-import { KardexModule } from './kardex/kardex.module';
+import { EmpleadoModule } from './empleado/empleado.module';
+import { AuthModule } from './auth/auth.module';
+import { SettingsModule } from './settings/settings.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { MediaModule } from './media/media.module';
+import { validateEnvironment } from '../config/environment';
+import { APP_GUARD } from '@nestjs/core';
+import { ApiAccessGuard } from './auth/adapters/guards/api-access.guard';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
+  providers: [{ provide: APP_GUARD, useClass: ApiAccessGuard }],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env', '../.env'],
       load: [databaseConfig],
+      validate: validateEnvironment,
     }),
     DatabaseModule,
     CloudinaryModule,
+    AuthModule,
+    InventoryModule,
     ProductoModule,
     UsuarioModule,
     ClienteModule,
@@ -46,11 +57,13 @@ import { KardexModule } from './kardex/kardex.module';
     UsuarioRolModule,
     CarritoModule,
     CarritoDetalleModule,
+    EmpleadoModule,
     ProveedorModule,
     CompraModule,
-    CompraDetalleModule,
-    AjusteInventarioModule,
-    KardexModule,
+    DashboardModule,
+    SettingsModule,
+    MediaModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}

@@ -9,17 +9,19 @@ export class PedidoMapper {
       entity.direccionId,
       entity.estado,
       entity.total,
+      entity.numeroPedidoUsuario,
       entity.fecha,
     );
   }
 
   static toPersistence(domain: Pedido): PedidoEntityORM {
     const entity = new PedidoEntityORM();
-    entity.pedidoId = domain.pedidoId;
+    if (domain.pedidoId > 0) entity.pedidoId = domain.pedidoId;
     entity.clienteId = domain.clienteId;
     entity.direccionId = domain.direccionId;
     entity.estado = domain.estado;
     entity.total = domain.total;
+    entity.numeroPedidoUsuario = domain.numeroPedidoUsuario;
     entity.fecha = domain.fecha;
     return entity;
   }

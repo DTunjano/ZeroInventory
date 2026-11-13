@@ -19,8 +19,12 @@ import { UsuarioEntityORM } from '../src/usuario/infrastructure/persistence/usua
 import { ProductoEntityORM } from '../src/producto/infrastructure/persistence/producto.orm-entity';
 import { ProductoImagenEntityORM } from '../src/producto-imagen/infrastructure/persistence/producto-imagen.orm-entity';
 import { ClienteEntityORM } from '../src/cliente/infrastructure/persistence/cliente.orm-entity';
+import { MediaOrmEntity } from '../src/media/infrastructure/media.orm-entity';
+import { EmpleadoEntityORM } from '../src/empleado/infrastructure/adapters/persistence/empleado.orm-entity';
+import { InitialSchema1794441600000 } from '../src/migrations/1794441600000-InitialSchema';
+import { HardenInventory1794441601000 } from '../src/migrations/1794441601000-HardenInventory';
 
-export default registerAs('database', (): TypeOrmModuleOptions => {
+export function getDatabaseOptions(): TypeOrmModuleOptions {
   const databaseUrl = process.env.DATABASE_URL;
 
   const entities = [
@@ -43,30 +47,28 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     RolEntityORM,
     UsuarioRolEntityORM,
     UsuarioEntityORM,
+    EmpleadoEntityORM,
+    MediaOrmEntity,
   ];
 
-  // PRODUCCIÓN
-  if (process.env.NODE_ENV === 'production' && databaseUrl) {
-    return {
-      type: 'postgres',
-      url: databaseUrl,
-      entities,
-      synchronize: false,
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    };
-  }
-
-  // DESARROLLO
   return {
     type: 'postgres',
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432'),
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+    ...(databaseUrl ? { url: databaseUrl } : {}),
+    ...(!databaseUrl ? {
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT || 5432),
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+    } : {}),
     entities,
-    synchronize: true,
+    synchronize: false,
+    migrations: [InitialSchema1794441600000, HardenInventory1794441601000],
+    migrationsRun: false,
+    ssl: process.env.DB_SSL === 'true' || (process.env.NODE_ENV === 'production' && process.env.DB_SSL !== 'false')
+      ? { rejectUnauthorized: true, ...(process.env.DB_SSL_CA ? { ca: process.env.DB_SSL_CA.replace(/\\n/g, '\n') } : {}) }
+      : false,
   };
-});
+}
+
+export default registerAs('database', getDatabaseOptions);

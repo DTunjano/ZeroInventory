@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateCompraUseCase } from '../../application/use-cases/create-compra.use-case';
@@ -25,8 +26,13 @@ import { GetAllComprasSwagger } from '../documentation/get-all-compra.swagger';
 import { GetCompraByIdSwagger } from '../documentation/get-compra-by-id.swagger';
 import { UpdateCompraSwagger } from '../documentation/update-compra.swagger';
 import { DeleteCompraSwagger } from '../documentation/delete-compra.swagger';
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 
 @ApiTags('Compras')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('compras')
 export class CompraController {
   constructor(
@@ -38,6 +44,7 @@ export class CompraController {
   ) {}
 
   @Post()
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @CreateCompraSwagger()
   async create(@Body() body: CreateCompraDTO): Promise<Compra> {
     const compra = await this.createCompraUseCase.ejecutar(body);
@@ -48,6 +55,7 @@ export class CompraController {
   }
 
   @Get()
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetAllComprasSwagger()
   async getAll(@Query() filters?: FilterCompraDTO): Promise<{
     data: Compra[];
@@ -60,6 +68,7 @@ export class CompraController {
   }
 
   @Get(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetCompraByIdSwagger()
   async getById(@Param('id', ParseIntPipe) compraId: number): Promise<Compra> {
     const compra = await this.getCompraByIdUseCase.ejecutar(compraId);
@@ -70,6 +79,7 @@ export class CompraController {
   }
 
   @Put(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UpdateCompraSwagger()
   async update(
     @Param('id', ParseIntPipe) compraId: number,
@@ -83,6 +93,7 @@ export class CompraController {
   }
 
   @Delete(':id')
+  @Roles(RolNombreEnum.ADMIN)
   @DeleteCompraSwagger()
   async remove(@Param('id', ParseIntPipe) compraId: number): Promise<void> {
     return this.deleteCompraUseCase.ejecutar(compraId);

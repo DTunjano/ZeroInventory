@@ -1,11 +1,17 @@
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
+
 export class Usuario {
+  roles: RolNombreEnum[] = [];
   readonly usuarioId: number = 0;
   username: string = '';
+  email: string | null = null;
+  telefono: string | null = null;
   password: string = '';
   primerNombre: string | null = null;
   segundoNombre: string | null = null;
   primerApellido: string | null = null;
   segundoApellido: string | null = null;
+  theme: string = 'dark';
   isActive: boolean = true;
   createdAt: Date = new Date();
   updatedAt: Date = new Date();
@@ -13,22 +19,28 @@ export class Usuario {
   constructor(
     usuarioId: number,
     username: string,
+    email: string | null,
+    telefono: string | null,
     password: string,
     primerNombre: string | null,
     segundoNombre: string | null,
     primerApellido: string | null,
     segundoApellido: string | null,
+    theme: string,
     isActive: boolean,
     createdAt: Date,
     updatedAt: Date,
   ) {
     this.usuarioId = usuarioId;
     this.username = username;
+    this.email = email;
+    this.telefono = telefono;
     this.password = password;
     this.primerNombre = primerNombre;
     this.segundoNombre = segundoNombre;
     this.primerApellido = primerApellido;
     this.segundoApellido = segundoApellido;
+    this.theme = theme;
     this.isActive = isActive;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;

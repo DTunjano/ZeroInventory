@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { RolRepository } from '../../domain/repository/rol.repository';
 import { Rol, RolNombreEnum } from '../../domain/entity/rol.entity';
 
@@ -14,7 +14,7 @@ export class UpdateRolUseCase {
   ): Promise<Rol> {
     const rol = await this.rolRepo.getById(rolId);
     if (!rol) {
-      throw new Error('Rol no encontrado');
+      throw new NotFoundException('Rol no encontrado');
     }
 
     const updated = new Rol(rol.rolId, data.nombre ?? rol.nombre);

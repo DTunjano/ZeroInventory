@@ -24,5 +24,6 @@ import { UsuarioRolController } from './adapters/controllers/usuario-rol.control
       useClass: UsuarioRolRepositoryImpl,
     },
   ],
+  exports: [UsuarioRolRepository],
 })
 export class UsuarioRolModule {}
