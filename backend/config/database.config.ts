@@ -23,6 +23,10 @@ import { MediaOrmEntity } from '../src/media/infrastructure/media.orm-entity';
 import { EmpleadoEntityORM } from '../src/empleado/infrastructure/adapters/persistence/empleado.orm-entity';
 import { InitialSchema1794441600000 } from '../src/migrations/1794441600000-InitialSchema';
 import { HardenInventory1794441601000 } from '../src/migrations/1794441601000-HardenInventory';
+import { PurchaseLifecycle1794528000000 } from '../src/migrations/1794528000000-PurchaseLifecycle';
+import { PurchaseTimestamps1794528001000 } from '../src/migrations/1794528001000-PurchaseTimestamps';
+import { InventoryAuditInstant1794528002000 } from '../src/migrations/1794528002000-InventoryAuditInstant';
+import { CompraEventoEntityORM } from '../src/compra/infrastructure/persistence/compra-evento.orm-entity';
 
 export function getDatabaseOptions(): TypeOrmModuleOptions {
   const databaseUrl = process.env.DATABASE_URL;
@@ -49,6 +53,7 @@ export function getDatabaseOptions(): TypeOrmModuleOptions {
     UsuarioEntityORM,
     EmpleadoEntityORM,
     MediaOrmEntity,
+    CompraEventoEntityORM,
   ];
 
   return {
@@ -63,7 +68,7 @@ export function getDatabaseOptions(): TypeOrmModuleOptions {
     } : {}),
     entities,
     synchronize: false,
-    migrations: [InitialSchema1794441600000, HardenInventory1794441601000],
+    migrations: [InitialSchema1794441600000, HardenInventory1794441601000, PurchaseLifecycle1794528000000, PurchaseTimestamps1794528001000, InventoryAuditInstant1794528002000],
     migrationsRun: false,
     ssl: process.env.DB_SSL === 'true' || (process.env.NODE_ENV === 'production' && process.env.DB_SSL !== 'false')
       ? { rejectUnauthorized: true, ...(process.env.DB_SSL_CA ? { ca: process.env.DB_SSL_CA.replace(/\\n/g, '\n') } : {}) }

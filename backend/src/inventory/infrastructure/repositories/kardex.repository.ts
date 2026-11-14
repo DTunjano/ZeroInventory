@@ -18,6 +18,19 @@ export class KardexRepository implements IKardexRepository {
     this.repository = this.dataSource.getRepository(KardexEntityORM)
   }
 
+  getMovementsPage(productoId: number, page: number, limit: number) {
+    return this.dataSource.transaction('REPEATABLE READ', async manager => {
+      await manager.query('SET TRANSACTION READ ONLY');
+      const product = await manager.findOneBy(ProductoEntityORM, { productoId });
+      if (!product) throw new NotFoundException('Producto no encontrado');
+      const [rows, total] = await manager.findAndCount(KardexEntityORM, { where: { productoId }, order: { fechaMovimiento: 'DESC', kardexId: 'DESC' }, skip: (page - 1) * limit, take: limit });
+      const [balance] = await manager.query<{ balance: string }[]>(`SELECT COALESCE(SUM(CASE WHEN tipo_movimiento='ENTRADA' THEN cantidad WHEN tipo_movimiento='SALIDA' THEN -cantidad ELSE 0 END),0) AS balance FROM kardex WHERE producto_id=$1`, [productoId]);
+      return { data: rows.map(row => ({ kardexId: row.kardexId, productoId: row.productoId, tipoMovimiento: row.tipoMovimiento, cantidad: row.cantidad,
+        costoUnitario: Number(row.costoUnitario), valorTotal: Number(row.valorTotal), referenciaId: row.referenciaId, tipoReferencia: row.tipoReferencia, fechaMovimiento: row.registradoEn ?? row.fechaMovimiento })),
+        total, page, limit, totalPages: Math.ceil(total / limit), stockActual: product.cantidad, saldoKardex: Number(balance.balance) };
+    });
+  }
+
   async createMovement(data: CreateKardexMovementData): Promise<KardexMovement> {
     const entity = this.repository.create({
       productoId: data.productoId,
@@ -72,7 +85,7 @@ export class KardexRepository implements IKardexRepository {
       valorTotal: Number(e.valorTotal),
       referenciaId: e.referenciaId,
       tipoReferencia: e.tipoReferencia,
-      fechaMovimiento: e.fechaMovimiento,
+      fechaMovimiento: e.registradoEn ?? e.fechaMovimiento,
     }))
   }
 

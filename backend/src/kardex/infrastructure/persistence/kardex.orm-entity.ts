@@ -44,6 +44,8 @@ export class KardexEntityORM {
 
   @CreateDateColumn({ name: 'fecha_movimiento', type: 'timestamp' })
   fechaMovimiento!: Date;
+  @Column({ name: 'registrado_en', type: 'timestamptz', nullable: true })
+  registradoEn!: Date | null;
 }
 
 export { TipoMovimientoEnum, TipoReferenciaEnum } from '../../domain/entity/kardex.entity';

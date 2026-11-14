@@ -10,6 +10,7 @@ import type {
 export function listProducts(filters?: ProductFilters): Promise<PaginatedResult<Product>> {
   return productRepository.list(filters)
 }
+export function getProduct(id: number): Promise<Product> { return productRepository.getById(id) }
 
 export function createProduct(input: CreateProductInput): Promise<Product> {
   return productRepository.create(input)

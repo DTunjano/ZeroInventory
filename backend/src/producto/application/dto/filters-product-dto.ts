@@ -3,6 +3,9 @@ import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class FiltersProductDTO {
+  @ApiPropertyOptional({ description: 'Proveedor del producto' })
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(2147483647)
+  proveedorId?: number;
   @ApiPropertyOptional({
     description: 'Filtrar productos por SKU',
     type: String,

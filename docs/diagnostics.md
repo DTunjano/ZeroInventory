@@ -64,6 +64,18 @@ La prueba de actualización, ya corregida, confirmó que las 21 tablas de negoci
 
 El análisis inicial solo había examinado el `.env` raíz, que contenía nombres JWT antiguos. `backend/.env` sí contenía las variables de acceso y renovación correctas. No era evidencia de secretos faltantes. La revisión operativa comprobó ambos archivos, mantuvo su precedencia y agregó plantillas y validación para evitar ambigüedad en otras instalaciones.
 
+## Hallazgos del ciclo de inventario — 14/11/2026
+
+La compra publicada anteriormente era un CRUD de cabecera, sin recepción transaccional ni vínculo verificable a entradas. La escritura genérica de Kardex permitía registrar referencias sin pasar por el ciclo de compra. Se sustituyó la composición activa por borrador/recepción completa con líneas, versión e historial; las vías genéricas de escritura quedaron retiradas con 410. No se activaron los módulos históricos de detalles ni se eliminaron sus datos.
+
+La comprobación de UI detectó cinco horas de diferencia al serializar timestamps sin zona. Se añadieron instantes nuevos en compras, Kardex y auditoría; las fechas antiguas se conservan sin atribuirles una zona no demostrada. También se corrigió la lectura de actividad/agregados del dashboard para que consuma esos instantes. Una regresión modifica solo la fecha antigua en DB temporal y comprueba que prevalece el instante registrado.
+
+El contador de proveedor sumaba existencias/movimientos que no representaban entregas recibidas. Ahora suma únicamente detalles de compras RECIBIDA por el proveedor de su cabecera. Los ajustes compensatorios no lo inflan y cambiar el proveedor actual del producto no reasigna su recepción anterior.
+
+Al generar 16 ajustes ficticios se comprobó que la auditoría mostraba 16 filas aunque solicitaba 15: la consulta con joins y `getRawMany` no aplicaba la paginación `skip/take`. Se usa `offset/limit` sobre las filas seleccionadas; la regresión PostgreSQL solicita tres páginas de una fila y comprueba que son distintas. Los filtros de fecha se verificaron con el control nativo de calendario; la primera carga automática del campo cambiaba su valor visible sin emitir el cambio de React, lo que era una limitación de esa interacción de prueba.
+
+Al reanudar la sesión Docker Desktop estaba detenido: faltaba el pipe del motor y la primera prueba de actualización no pudo conectar. Tras arrancarlo, la misma prueba pasó conservando las 22 tablas. Este incidente era del entorno; no requirió borrar datos ni modificar el esquema para conseguir conexión.
+
 ## Datos y secretos
 
 El respaldo previo está en `.local/backups/zero-inventory-before-fixes.dump` y se excluye de Git. Los archivos de entorno también se excluyen. No se incluyen contraseñas, tokens, datos de clientes ni contenido del dump en este diagnóstico. Las credenciales de volúmenes ya inicializados deben administrarse en su servicio; editar una variable de inicialización no cambia una contraseña persistida.

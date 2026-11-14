@@ -100,6 +100,9 @@ export class GetAdminDashboardUseCase {
   async ejecutar(): Promise<AdminDashboardResponse> {
     const periods = getLastPeriods(12)
     const completedOrderConditions = getCompletedOrderConditions()
+    const movementCalendar = "COALESCE(kardex.registradoEn AT TIME ZONE 'America/Bogota', kardex.fechaMovimiento)"
+    // Legacy timestamps keep their previous UTC interpretation in API responses.
+    const movementInstant = "COALESCE(kardex.registradoEn, kardex.fechaMovimiento AT TIME ZONE 'UTC')"
 
     const [
       totalPedidos,
@@ -164,12 +167,12 @@ export class GetAdminDashboardUseCase {
       this.dataSource
         .getRepository(KardexEntityORM)
         .createQueryBuilder('kardex')
-        .select("TO_CHAR(DATE_TRUNC('month', kardex.fechaMovimiento), 'YYYY-MM')", 'period')
+        .select(`TO_CHAR(DATE_TRUNC('month', ${movementCalendar}), 'YYYY-MM')`, 'period')
         .addSelect("COALESCE(SUM(CASE WHEN kardex.tipoMovimiento = 'ENTRADA' THEN kardex.cantidad ELSE 0 END), 0)", 'entradas')
         .addSelect("COALESCE(SUM(CASE WHEN kardex.tipoMovimiento = 'SALIDA' THEN kardex.cantidad ELSE 0 END), 0)", 'salidas')
-        .where(`kardex.fechaMovimiento >= (CURRENT_DATE - INTERVAL '5 months')`)
-        .groupBy("DATE_TRUNC('month', kardex.fechaMovimiento)")
-        .orderBy("DATE_TRUNC('month', kardex.fechaMovimiento)", 'ASC')
+        .where(`${movementCalendar} >= (CURRENT_DATE - INTERVAL '5 months')`)
+        .groupBy(`DATE_TRUNC('month', ${movementCalendar})`)
+        .orderBy(`DATE_TRUNC('month', ${movementCalendar})`, 'ASC')
         .getRawMany<RawInventoryRow>(),
       this.dataSource
         .getRepository(PedidoDetalleEntityORM)
@@ -234,8 +237,9 @@ export class GetAdminDashboardUseCase {
         .addSelect('kardex.tipoMovimiento', 'typeMovement')
         .addSelect('kardex.cantidad', 'quantity')
         .addSelect('kardex.referenciaId', 'referenceId')
-        .addSelect('kardex.fechaMovimiento', 'date')
-        .orderBy('kardex.fechaMovimiento', 'DESC')
+        .addSelect(movementInstant, 'date')
+        .orderBy(movementInstant, 'DESC')
+        .addOrderBy('kardex.kardexId', 'DESC')
         .limit(8)
         .getRawMany<RawActivityRow>(),
     ])

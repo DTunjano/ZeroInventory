@@ -53,6 +53,8 @@ export class AjusteInventarioEntityORM {
 
   @CreateDateColumn({ name: 'fecha', type: 'timestamp' })
   fecha!: Date;
+  @Column({ name: 'registrado_en', type: 'timestamptz', nullable: true })
+  registradoEn!: Date | null;
 
   @ManyToOne(() => ProductoEntityORM, (producto) => producto.ajustesInventario)
   @JoinColumn({ name: 'producto_id' })

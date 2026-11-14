@@ -144,7 +144,7 @@ export function SupplierCard({ proveedor, onEdit, onToggleStatus, onDelete }: Su
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <Building className="h-4 w-4 text-muted-foreground" />
             {typeof suppliedCount === 'number' ? (
-              <span>{suppliedCount} productos suministrados</span>
+              <span>{suppliedCount} unidades recibidas en compras</span>
             ) : (
               <span className="italic">{suppliedQuery.isPending ? 'Calculando trazabilidad…' : 'Trazabilidad no disponible'}</span>
             )}

@@ -24,6 +24,10 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
   let categoryId: number;
   let sequence = 0;
   const password = 'Integration123!';
+  const timestamp = (value: unknown): number => {
+    if (typeof value !== 'string' || !Number.isFinite(Date.parse(value))) throw new Error('Se esperaba un instante ISO válido');
+    return Date.parse(value);
+  };
   const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
   const api = () => request(app.getHttpServer());
 
@@ -76,7 +80,7 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
   it('migrates a fresh database and is idempotent', async () => {
     expect(await db.showMigrations()).toBe(false);
     expect(await db.runMigrations()).toHaveLength(0);
-    expect((await db.query(`SELECT tablename FROM pg_tables WHERE schemaname='public'`)).length).toBe(22);
+    expect((await db.query(`SELECT tablename FROM pg_tables WHERE schemaname='public'`)).length).toBe(23);
   });
   it('allows public catalogues and blocks unauthenticated private data', async () => {
     await api().get('/productos').expect(200);
@@ -370,13 +374,176 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
     const [audit] = await db.query('SELECT count(*)::int AS count FROM ajuste_inventario WHERE producto_id=$1', [p.productoId]);
     expect(audit.count).toBe(1);
   });
-  it('applies stock movements atomically and prevents overdraw', async () => {
+  it('rejects loose stock writes that bypass purchase reception and adjustment audit', async () => {
     const p = await product(2);
     const payload = { productoId: p.productoId, tipoMovimiento: 'SALIDA', cantidad: 1, costoUnitario: 100, valorTotal: 100, referenciaId: p.productoId, tipoReferencia: 'AJUSTE' };
-    await api().post('/inventory/kardex/movements').set(auth(adminToken)).send(payload).expect(201);
+    await api().post('/inventory/kardex/movements').set(auth(adminToken)).send(payload).expect(410);
+    expect(await balance(p.productoId)).toBe(2);
+    await api().post('/inventory/kardex/movements').set(auth(adminToken)).send({ ...payload, cantidad: 2, valorTotal: 200 }).expect(410);
+    expect(await balance(p.productoId)).toBe(2);
+  });
+  const purchaseInput = (id: number, quantity = 2, cost = 10.15) => ({ proveedorId: supplierId, lineas: [{ productoId: id, cantidad: quantity, costoUnitario: cost }] });
+  async function draftPurchase(id: number, quantity = 2, cost = 10.15) {
+    return api().post('/compras').set(auth(adminToken)).send(purchaseInput(id, quantity, cost)).expect(201);
+  }
+  it('requires staff roles and rejects trusted actor/totals, duplicates and invalid purchase queries', async () => {
+    const p = await product(1); const c = await customer(); const body = purchaseInput(p.productoId);
+    await api().get('/compras').expect(401);
+    await api().post('/compras').set(auth(c.token)).send(body).expect(403);
+    await api().post('/compras').set(auth(adminToken)).send({ ...body, usuarioId: adminId, total: 1 }).expect(400);
+    await api().post('/compras').set(auth(adminToken)).send({ ...body, lineas: [...body.lineas, ...body.lineas] }).expect(400);
+    for (const query of [{ page: -1 }, { page: 1.5 }, { limit: 101 }, { estado: 'INVENTADO' }, { proveedorId: 'bad' }]) await api().get('/compras').set(auth(adminToken)).query(query).expect(400);
+  });
+  it('saves purchase lines and authenticated actor without changing stock and preserves version snapshots', async () => {
+    const p = await product(5); const created = await draftPurchase(p.productoId, 3, 0.1); const id = created.body.compraId;
+    expect(created.body).toMatchObject({ estado: 'BORRADOR', version: 1, total: 0.3, usuarioId: adminId, recibidaPor: null });
+    expect(created.body.historial).toHaveLength(1); expect(created.body.lineas[0].subtotal).toBe(0.3); expect(await balance(p.productoId)).toBe(5);
+    const updated = await api().put(`/compras/${id}`).set(auth(adminToken)).send({ ...purchaseInput(p.productoId, 4, 0.2), version: 1 }).expect(200);
+    expect(updated.body).toMatchObject({ version: 2, total: 0.8 });
+    expect(updated.body.historial.map((e: { snapshot: { total: number } }) => e.snapshot.total)).toEqual([0.3, 0.8]);
+    await api().put(`/compras/${id}`).set(auth(adminToken)).send({ ...purchaseInput(p.productoId), version: 1 }).expect(409);
+    await api().post(`/compras/${id}/receive`).set(auth(adminToken)).send({ version: 1 }).expect(409);
+    expect(await balance(p.productoId)).toBe(5);
+  });
+  it('receives complete purchases once under concurrent confirmations and preserves received lines', async () => {
+    const a = await product(1); const b = await product(0);
+    const body = { proveedorId: supplierId, lineas: [{ productoId: b.productoId, cantidad: 3, costoUnitario: 0.1 }, { productoId: a.productoId, cantidad: 2, costoUnitario: 10 }] };
+    const created = await api().post('/compras').set(auth(adminToken)).send(body).expect(201); const id = created.body.compraId;
+    const receive = () => api().post(`/compras/${id}/receive`).set(auth(adminToken)).send({ version: 1 });
+    const responses = await Promise.all([receive(), receive()]); expect(responses.map(r => r.status)).toEqual([200, 200]);
+    expect(await balance(a.productoId)).toBe(3); expect(await balance(b.productoId)).toBe(3);
+    const detail = await api().get(`/compras/${id}`).set(auth(adminToken)).expect(200);
+    expect(detail.body).toMatchObject({ estado: 'RECIBIDA', version: 2, recibidaPor: adminId, total: 20.3 });
+    expect(detail.body.recibidaEn).toBeTruthy(); expect(detail.body.historial).toHaveLength(2);
+    expect(timestamp(detail.body.recibidaEn)).toBeGreaterThanOrEqual(timestamp(detail.body.fechaCompra));
+    expect(Math.abs(timestamp(detail.body.historial[1].fecha) - timestamp(detail.body.recibidaEn))).toBeLessThan(5000);
+    const [ledger] = await db.query("SELECT count(*)::int AS count,sum(cantidad)::int AS quantity,sum(valor_total)::text AS total FROM kardex WHERE tipo_referencia='RECEPCION_COMPRA' AND referencia_id=$1", [id]);
+    expect(ledger).toEqual({ count: 2, quantity: 5, total: '20.30' });
+    await receive().expect(200);
+    await api().put(`/compras/${id}`).set(auth(adminToken)).send({ ...body, version: 2 }).expect(409);
+    await api().patch(`/compras/${id}/cancel`).set(auth(adminToken)).send({ version: 2, motivo: 'No puede cancelar una recibida' }).expect(409);
+    await api().delete(`/compras/${id}`).set(auth(adminToken)).expect(410);
+    expect((await api().get(`/compras/${id}`).set(auth(adminToken))).body.lineas).toHaveLength(2);
+  });
+  it('serializes a draft edit racing with receipt without using stale quantities', async () => {
+    const p = await product(0); const created = await draftPurchase(p.productoId, 1); const id = created.body.compraId;
+    const results = await Promise.all([
+      api().put(`/compras/${id}`).set(auth(adminToken)).send({ ...purchaseInput(p.productoId, 5), version: 1 }),
+      api().post(`/compras/${id}/receive`).set(auth(adminToken)).send({ version: 1 }),
+    ]);
+    expect(results.map(r => r.status).sort()).toEqual([200, 409]);
+    const detail = (await api().get(`/compras/${id}`).set(auth(adminToken))).body;
+    expect(detail.version).toBe(2);
+    expect(await balance(p.productoId)).toBe(detail.estado === 'RECIBIDA' ? 1 : 0);
+    expect(detail.lineas[0].cantidad).toBe(detail.estado === 'RECIBIDA' ? 1 : 5);
+  });
+  it('rolls back receipt stock, ledger and state when the final event fails', async () => {
+    const p = await product(1); const created = await draftPurchase(p.productoId); const id = created.body.compraId;
+    await db.query("CREATE FUNCTION qa_fail_purchase_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.accion='RECIBIDA' THEN RAISE EXCEPTION 'QA receipt event failure'; END IF; RETURN NEW; END $$");
+    await db.query('CREATE TRIGGER qa_purchase_event BEFORE INSERT ON compra_evento FOR EACH ROW EXECUTE FUNCTION qa_fail_purchase_event()');
+    try { await api().post(`/compras/${id}/receive`).set(auth(adminToken)).send({ version: 1 }).expect(500); }
+    finally { await db.query('DROP TRIGGER qa_purchase_event ON compra_evento'); await db.query('DROP FUNCTION qa_fail_purchase_event()'); }
     expect(await balance(p.productoId)).toBe(1);
-    await api().post('/inventory/kardex/movements').set(auth(adminToken)).send({ ...payload, cantidad: 2, valorTotal: 200 }).expect(400);
+    const detail = (await api().get(`/compras/${id}`).set(auth(adminToken))).body;
+    expect(detail).toMatchObject({ estado: 'BORRADOR', version: 1, recibidaPor: null, recibidaEn: null }); expect(detail.historial).toHaveLength(1);
+    const [ledger] = await db.query("SELECT count(*)::int AS count FROM kardex WHERE tipo_referencia='RECEPCION_COMPRA' AND referencia_id=$1", [id]); expect(ledger.count).toBe(0);
+  });
+  it('rolls back all receipt lines when a later ledger entry fails', async () => {
+    const a = await product(1); const b = await product(2);
+    const created = await api().post('/compras').set(auth(adminToken)).send({ proveedorId: supplierId, lineas: [{ productoId: b.productoId, cantidad: 1, costoUnitario: 1 }, { productoId: a.productoId, cantidad: 1, costoUnitario: 1 }] }).expect(201); const id = created.body.compraId;
+    await db.query("CREATE FUNCTION qa_fail_second_receipt() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.tipo_referencia='RECEPCION_COMPRA' AND EXISTS(SELECT 1 FROM kardex WHERE tipo_referencia=NEW.tipo_referencia AND referencia_id=NEW.referencia_id) THEN RAISE EXCEPTION 'QA later receipt line failure'; END IF; RETURN NEW; END $$");
+    await db.query('CREATE TRIGGER qa_second_receipt BEFORE INSERT ON kardex FOR EACH ROW EXECUTE FUNCTION qa_fail_second_receipt()');
+    try { await api().post(`/compras/${id}/receive`).set(auth(adminToken)).send({ version: 1 }).expect(500); }
+    finally { await db.query('DROP TRIGGER qa_second_receipt ON kardex'); await db.query('DROP FUNCTION qa_fail_second_receipt()'); }
+    expect(await balance(a.productoId)).toBe(1); expect(await balance(b.productoId)).toBe(2);
+    expect((await api().get(`/compras/${id}`).set(auth(adminToken))).body.estado).toBe('BORRADOR');
+  });
+  it('rejects inactive or mismatched purchase references and rechecks product state on receipt', async () => {
+    const p = await product(1);
+    const [supplier] = await db.query("INSERT INTO proveedor(nombre,is_active) VALUES('Otro proveedor QA',true) RETURNING proveedor_id");
+    await api().post('/compras').set(auth(adminToken)).send({ ...purchaseInput(p.productoId), proveedorId: supplier.proveedor_id }).expect(400);
+    const created = await draftPurchase(p.productoId); const id = created.body.compraId;
+    await api().delete(`/productos/${p.productoId}`).set(auth(adminToken)).expect(200);
+    await api().post(`/compras/${id}/receive`).set(auth(adminToken)).send({ version: 1 }).expect(400);
     expect(await balance(p.productoId)).toBe(1);
+    const filtered = await api().get('/productos').query({ proveedorId: supplier.proveedor_id }).expect(200); expect(filtered.body.data).toHaveLength(0);
+  });
+  it('lets employees receive but restricts cancellation to admin and preserves cancelled history', async () => {
+    const username = `purchase_employee_${++sequence}`;
+    await api().post('/usuarios').set(auth(adminToken)).send({ username, password, roles: ['EMPLOYEE'] }).expect(201);
+    const employee = (await api().post('/auth/login').send({ username, password }).expect(201)).body.accessToken as string;
+    const p = await product(0); const created = await api().post('/compras').set(auth(employee)).send(purchaseInput(p.productoId)).expect(201); const id = created.body.compraId;
+    await api().patch(`/compras/${id}/cancel`).set(auth(employee)).send({ version: 1, motivo: 'No autorizado' }).expect(403);
+    await api().patch(`/compras/${id}/cancel`).set(auth(adminToken)).send({ version: 1, motivo: '   ' }).expect(400);
+    const cancelled = await api().patch(`/compras/${id}/cancel`).set(auth(adminToken)).send({ version: 1, motivo: '  Duplicado de prueba  ' }).expect(200);
+    expect(cancelled.body).toMatchObject({ estado: 'CANCELADA', canceladaPor: adminId, motivoCancelacion: 'Duplicado de prueba' }); expect(cancelled.body.lineas).toHaveLength(1);
+    await api().post(`/compras/${id}/receive`).set(auth(employee)).send({ version: 2 }).expect(409);
+    const second = await draftPurchase(p.productoId, 1); await api().post(`/compras/${second.body.compraId}/receive`).set(auth(employee)).send({ version: 1 }).expect(200);
+    expect(await balance(p.productoId)).toBe(1);
+    const page = await api().get('/compras').set(auth(adminToken)).query({ estado: 'CANCELADA', page: 1, limit: 1 }).expect(200); expect(page.body.data[0].estado).toBe('CANCELADA');
+  });
+  it('keeps legacy purchase headers read-only without inventing receipt stock', async () => {
+    const p = await product(0); const [legacy] = await db.query("INSERT INTO compra(proveedor_id,usuario_id,total,estado) VALUES($1,$2,10,'LEGACY') RETURNING compra_id", [supplierId, adminId]);
+    await db.query('INSERT INTO compra_detalle(compra_id,producto_id,cantidad,costo_unitario,subtotal) VALUES($1,$2,1,10,10)', [legacy.compra_id, p.productoId]);
+    const detail = await api().get(`/compras/${legacy.compra_id}`).set(auth(adminToken)).expect(200); expect(detail.body.historial).toEqual([]);
+    await api().post(`/compras/${legacy.compra_id}/receive`).set(auth(adminToken)).send({ version: 1 }).expect(409);
+    await api().put(`/compras/${legacy.compra_id}`).set(auth(adminToken)).send({ ...purchaseInput(p.productoId), version: 1 }).expect(409);
+    await api().patch(`/compras/${legacy.compra_id}/cancel`).set(auth(adminToken)).send({ version: 1, motivo: 'Histórico' }).expect(409);
+    expect(await balance(p.productoId)).toBe(0);
+  });
+  it('serves paginated read-only Kardex with receipt references and consistent current balance', async () => {
+    const p = await product(3); const created = await draftPurchase(p.productoId, 2, 0.1); const id = created.body.compraId;
+    const receipt = await api().post(`/compras/${id}/receive`).set(auth(adminToken)).send({ version: 1 }).expect(200);
+    await api().post('/inventory/adjustments').set(auth(adminToken)).send({ productoId: p.productoId, stockAnterior: 5, stockNuevo: 4, cantidad: 1, motivo: 'Baja auditada tras recepción' }).expect(201);
+    const path = `/inventory/products/${p.productoId}/movements`;
+    await api().get(path).expect(401); const c = await customer(); await api().get(path).set(auth(c.token)).expect(403);
+    await api().get(path).set(auth(adminToken)).query({ page: 0 }).expect(400);
+    const first = await api().get(path).set(auth(adminToken)).query({ page: 1, limit: 1 }).expect(200);
+    expect(first.body).toMatchObject({ total: 3, totalPages: 3, stockActual: 4, saldoKardex: 4 }); expect(first.body.data).toHaveLength(1);
+    const second = await api().get(path).set(auth(adminToken)).query({ page: 2, limit: 1 }).expect(200);
+    expect(second.body.data[0]).toMatchObject({ tipoReferencia: 'RECEPCION_COMPRA', referenciaId: id, cantidad: 2, costoUnitario: 0.1, valorTotal: 0.2 });
+    expect(Math.abs(timestamp(second.body.data[0].fechaMovimiento) - timestamp(receipt.body.recibidaEn))).toBeLessThan(5000);
+    await api().delete(`/productos/${p.productoId}`).set(auth(adminToken)).expect(200);
+    await api().get(path).set(auth(adminToken)).expect(200);
+    await api().get('/inventory/products/2147483647/movements').set(auth(adminToken)).expect(404);
+  });
+  it('counts supplied units only from received purchases and keeps the original supplier attribution', async () => {
+    const [supplier] = await db.query("INSERT INTO proveedor(nombre,is_active) VALUES('Proveedor de recepción QA',true) RETURNING proveedor_id");
+    const supplierRef = supplier.proveedor_id as number; const p = await product(2);
+    await api().put(`/productos/${p.productoId}`).set(auth(adminToken)).send({ proveedorId: supplierRef }).expect(200);
+    const supplied = () => api().get(`/proveedores/${supplierRef}/productos-suministrados`).set(auth(adminToken));
+    expect((await supplied().expect(200)).body.total).toBe(0);
+    const created = await api().post('/compras').set(auth(adminToken)).send({ proveedorId: supplierRef, lineas: [{ productoId: p.productoId, cantidad: 3, costoUnitario: 1 }] }).expect(201);
+    expect((await supplied()).body.total).toBe(0);
+    await api().post(`/compras/${created.body.compraId}/receive`).set(auth(adminToken)).send({ version: 1 }).expect(200);
+    expect((await supplied()).body.total).toBe(3);
+    await api().post('/inventory/adjustments').set(auth(adminToken)).send({ productoId: p.productoId, stockAnterior: 5, stockNuevo: 7, cantidad: 2, motivo: 'Ajuste que no es una entrega de proveedor' }).expect(201);
+    await api().put(`/productos/${p.productoId}`).set(auth(adminToken)).send({ proveedorId: supplierId }).expect(200);
+    expect((await supplied()).body.total).toBe(3);
+  });
+  it('filters new adjustment instants by Bogota calendar while preserving legacy dates', async () => {
+    const p = await product(1);
+    const created = await api().post('/inventory/adjustments').set(auth(adminToken)).send({ productoId: p.productoId, stockAnterior: 1, stockNuevo: 2, cantidad: 1, motivo: 'Prueba de límite calendario' }).expect(201);
+    await db.query("UPDATE ajuste_inventario SET fecha='1900-01-01',registrado_en='2026-11-13T04:30:00Z' WHERE ajuste_inventario_id=$1", [created.body.ajusteInventarioId]);
+    const route = '/inventory/adjustments';
+    const day = await api().get(route).set(auth(adminToken)).query({ productoId: p.productoId, startDate: '2026-11-12', endDate: '2026-11-12' }).expect(200);
+    expect(day.body.total).toBe(1); expect(timestamp(day.body.data[0].fecha)).toBe(Date.parse('2026-11-13T04:30:00Z'));
+    const other = await api().get(route).set(auth(adminToken)).query({ productoId: p.productoId, startDate: '2026-11-13', endDate: '2026-11-13' }).expect(200); expect(other.body.total).toBe(0);
+    await api().get(route).set(auth(adminToken)).query({ startDate: '2026-02-30' }).expect(400);
+    await api().get(route).set(auth(adminToken)).query({ startDate: '2026-11-13', endDate: '2026-11-12' }).expect(400);
+  });
+  it('paginates raw adjustment rows without repeating records across pages', async () => {
+    const p = await product(1);
+    for (let stock = 1; stock < 4; stock++) {
+      await api().post('/inventory/adjustments').set(auth(adminToken)).send({ productoId: p.productoId, stockAnterior: stock, stockNuevo: stock + 1, cantidad: 1, motivo: 'Paginación de auditoría' }).expect(201);
+    }
+    const ids: number[] = [];
+    for (let page = 1; page <= 3; page++) {
+      const result = await api().get('/inventory/adjustments').set(auth(adminToken)).query({ productoId: p.productoId, limit: 1, page }).expect(200);
+      expect(result.body.total).toBe(3); expect(result.body.data).toHaveLength(1);
+      ids.push(result.body.data[0].ajusteInventarioId as number);
+    }
+    expect(new Set(ids).size).toBe(3);
   });
   it('allows only one of two customers to buy the final unit', async () => {
     const p = await product(1); const first = await customer(); const second = await customer();
@@ -441,6 +608,19 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
   it('serves dashboard and adjustments with real database queries', async () => {
     await api().get('/admin/dashboard').set(auth(adminToken)).expect(200);
     await api().get('/inventory/adjustments').set(auth(adminToken)).expect(200);
+  });
+  it('uses recorded movement instants for dashboard activity and calendar aggregates', async () => {
+    const route = '/admin/dashboard';
+    const before = await api().get(route).set(auth(adminToken)).expect(200);
+    const p = await product(7);
+    const instant = new Date(Date.now() + 60000).toISOString();
+    const [movement] = await db.query("WITH changed AS (UPDATE kardex SET fecha_movimiento='1900-01-01',registrado_en=$1 WHERE producto_id=$2 RETURNING kardex_id) SELECT kardex_id FROM changed", [instant, p.productoId]);
+    const result = await api().get(route).set(auth(adminToken)).expect(200);
+    const activity = result.body.recentActivity as { movementId: number; date: string }[];
+    expect(activity.find(row => row.movementId === movement.kardex_id)?.date).toBe(instant);
+    const [period] = await db.query("SELECT TO_CHAR($1::timestamptz AT TIME ZONE 'America/Bogota','YYYY-MM') AS value", [instant]);
+    const rows = (body: { inventoryMovements: { period: string; entradas: number }[] }) => body.inventoryMovements.find(row => row.period === period.value)?.entradas ?? 0;
+    expect(rows(result.body as Parameters<typeof rows>[0]) - rows(before.body as Parameters<typeof rows>[0])).toBe(7);
   });
   it('soft-deletes a product without removing inventory history', async () => {
     const p = await product(2);

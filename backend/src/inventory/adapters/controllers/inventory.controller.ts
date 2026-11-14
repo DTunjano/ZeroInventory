@@ -1,15 +1,16 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common'
+import { Controller, Get, Post, Body, Param, ParseIntPipe, Query, UseGuards, HttpCode, HttpStatus, BadRequestException, GoneException } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
 
-import { CreateKardexMovementUseCase } from '../../application/use-cases/create-kardex-movement.use-case'
 import { ValidateStockUseCase } from '../../application/use-cases/validate-stock.use-case'
-import { CreateKardexMovementDto, RegisterStockAdjustmentDto } from '../../application/dtos/inventory.dto'
+import { RegisterStockAdjustmentDto } from '../../application/dtos/inventory.dto'
 import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard'
 import { RolesGuard } from '../../../auth/adapters/guards/roles.guard'
 import { Roles } from '../../../auth/adapters/decorators/roles.decorator'
 import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity'
 import { CurrentUser } from '../../../auth/adapters/decorators/current-user.decorator'
 import { RegisterStockAdjustmentUseCase } from '../../application/use-cases/register-stock-adjustment.use-case'
+import { GetProductMovementsUseCase } from '../../application/use-cases/get-product-movements.use-case'
+import { MovementPageDTO } from '../../application/dtos/movement-page.dto'
 
 @ApiTags('Inventario / Kardex')
 @Controller('inventory')
@@ -17,50 +18,24 @@ import { RegisterStockAdjustmentUseCase } from '../../application/use-cases/regi
 @ApiBearerAuth()
 export class InventoryController {
   constructor(
-    private readonly createKardexMovementUseCase: CreateKardexMovementUseCase,
     private readonly validateStockUseCase: ValidateStockUseCase,
     private readonly registerStockAdjustmentUseCase: RegisterStockAdjustmentUseCase,
+    private readonly getProductMovements: GetProductMovementsUseCase,
   ) {}
 
-  /**
-   * Crear movimiento en Kardex
-   * Registra ENTRADA, SALIDA o AJUSTE de inventario
-   */
+  @Get('products/:productoId/movements')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
+  @ApiOperation({ summary: 'Consultar Kardex paginado y saldo conciliado en un snapshot de solo lectura' })
+  listMovements(@Param('productoId', ParseIntPipe) id: number, @Query() query: MovementPageDTO) {
+    return this.getProductMovements.execute(id, query.page, query.limit)
+  }
+
   @Post('kardex/movements')
   @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({
-    summary: 'Crear movimiento en Kardex',
-    description: 'Registra un movimiento de inventario (ENTRADA, SALIDA, AJUSTE)',
-  })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Movimiento creado exitosamente',
-    schema: {
-      example: {
-        kardexId: 1,
-        productoId: 1,
-        tipoMovimiento: 'SALIDA',
-        cantidad: 10,
-        costoUnitario: 100,
-        valorTotal: 1000,
-        referenciaId: 42,
-        tipoReferencia: 'VENTA',
-        fechaMovimiento: '2026-05-13T10:30:00Z',
-      },
-    },
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Datos inválidos',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'No autenticado',
-  })
-  async createMovement(@Body() dto: CreateKardexMovementDto) {
-    const result = await this.createKardexMovementUseCase.ejecutar(dto)
-    return result
+  @ApiOperation({ summary: 'Retirado: usar recepción de compras o ajustes con motivo', deprecated: true })
+  @ApiResponse({ status: HttpStatus.GONE, description: 'Las escrituras sueltas no conservan la auditoría de la operación' })
+  createMovement(): never {
+    throw new GoneException('Registra entradas desde la recepción de compras y bajas desde ajustes con motivo; no se permiten referencias arbitrarias');
   }
 
   /**

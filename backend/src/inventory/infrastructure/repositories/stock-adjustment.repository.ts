@@ -36,7 +36,7 @@ export class StockAdjustmentRepository implements IStockAdjustmentRepository {
       stockNuevo: saved.stockNuevo,
       tipoCambio: saved.tipoCambio,
       motivo: saved.motivo,
-      fecha: saved.fecha,
+      fecha: saved.registradoEn ?? saved.fecha,
     } as StockAdjustment
   }
 
@@ -57,7 +57,7 @@ export class StockAdjustmentRepository implements IStockAdjustmentRepository {
       stockNuevo: e.stockNuevo,
       tipoCambio: e.tipoCambio,
       motivo: e.motivo,
-      fecha: e.fecha,
+      fecha: e.registradoEn ?? e.fecha,
     } as StockAdjustment))
   }
 
@@ -78,7 +78,7 @@ export class StockAdjustmentRepository implements IStockAdjustmentRepository {
       stockNuevo: e.stockNuevo,
       tipoCambio: e.tipoCambio,
       motivo: e.motivo,
-      fecha: e.fecha,
+      fecha: e.registradoEn ?? e.fecha,
     } as StockAdjustment))
   }
 }

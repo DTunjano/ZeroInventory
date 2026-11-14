@@ -6,7 +6,6 @@ import { ProveedorRepository } from '../../domain/repository/proveedor.repositor
 import { ProveedorMapper } from '../mappers/proveedor.mapper';
 import { Proveedor } from '../../domain/entity/proveedor.entity';
 import { FilterProveedorDTO } from '../../application/dto/filters-proveedor-dto';
-import { TipoMovimientoEnum } from '../../../kardex/domain/entity/kardex.entity';
 
 @Injectable()
 export class ProveedorRepositoryImpl implements ProveedorRepository {
@@ -110,11 +109,11 @@ export class ProveedorRepositoryImpl implements ProveedorRepository {
   async getSuppliedProductCount(proveedorId: number): Promise<number> {
     const result = await this.repo
       .createQueryBuilder('proveedor')
-      .innerJoin('proveedor.productos', 'producto')
-      .innerJoin('producto.kardexMovimientos', 'ajuste')
+      .innerJoin('proveedor.compras', 'compra')
+      .innerJoin('compra.detalles', 'detalle')
       .where('proveedor.proveedorId = :proveedorId', { proveedorId })
-      .andWhere('ajuste.tipoMovimiento = :tipo', { tipo: TipoMovimientoEnum.ENTRADA })
-      .select('COALESCE(SUM(ajuste.cantidad), 0)', 'total')
+      .andWhere('compra.estado = :estado', { estado: 'RECIBIDA' })
+      .select('COALESCE(SUM(detalle.cantidad), 0)', 'total')
       .getRawOne<{ total: string }>();
 
     return parseInt(result?.total || '0', 10);

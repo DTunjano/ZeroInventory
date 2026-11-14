@@ -41,6 +41,7 @@ export interface PaginatedResult<T> {
 }
 
 export interface ProductFilters {
+  proveedorId?: number
   sku?: string
   nombre?: string
   marca?: string

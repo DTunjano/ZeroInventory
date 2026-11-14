@@ -126,3 +126,30 @@ El cierre aceptado se publicó sin force push en `dev` y `codex/fix-inventory-co
 En `codex/inventory-lifecycle`, el cálculo de valoración de ajustes usa centavos y valida el total antes de persistir. Tipos/lint/build backend, 24 unitarias y 40 de integración correctos. Prueba de copia real: 21 tablas conservadas e idempotencia; diagnóstico habitual sin pendientes/inconsistencias/duplicados. No se aplicaron migraciones nuevas. Frontend sin cambios en este avance.
 
 La inspección de compras fue de solo lectura y devolvió únicamente columnas/restricciones y conteos agregados. Se documentaron las decisiones solicitadas y garantías pendientes en `docs/ciclo-inventario.md`; no se presume un modelo de recepción completa/parcial antes de la respuesta del responsable. La etapa 2 sigue abierta.
+
+## Entrega técnica de etapa 2 — 14 de noviembre de 2026
+
+El usuario aprobó el 13/11 borrador sin stock y recepción completa posterior. Se implementaron compras con líneas/versiones/snapshots, recepción transaccional e idempotente, cancelación de borrador con motivo, lectura paginada de Kardex y formulario de ajustes. Matriz y contrato en [ciclo-inventario.md](ciclo-inventario.md).
+
+| Validación | Resultado |
+| --- | --- |
+| Backend: tipos, ESLint y build | Correctos |
+| Backend: unitarias | 33 correctas en 9 suites |
+| HTTP/PostgreSQL aislado | 54 correctas: recepción concurrente, edición concurrente, rollback de entradas/eventos, roles, versiones, adopción LEGACY, fechas y páginas sin duplicación, además de regresiones existentes |
+| Frontend: tipos, ESLint, unitarias y build | Correctos; 7 unitarias de CSV/orden de catálogo; las nuevas pantallas tienen recorrido manual, no suite E2E automatizada todavía |
+| Copia de actualización | 22 tablas conservadas, saldos conciliados y segunda ejecución sin migraciones |
+| Instalación habitual | Tres migraciones nuevas aplicadas después de respaldo verificado y prueba aislada; diagnóstico final sin pendientes ni inconsistencias de stock, numeración, totales, recepción o versiones |
+| DB temporal con compras/ajustes | El mismo diagnóstico confirmó integridad después de crear, editar, recibir, cancelar y compensar ajustes |
+| UI: Compras | ADMIN/EMPLOYEE crean y reciben; ADMIN cancela con motivo; CUSTOMER sin acceso; filtros, vacío, páginas, historial y enlace directo comprobados |
+| UI: inventario | Bajas con motivo, rechazo de saldo obsoleto, refresco/reintento conservando motivo, Kardex en dos páginas y saldo 11 = stock 11; edición de descripción conserva cantidad |
+| UI: fechas y proveedor | Filtro de auditoría por día, actor/motivo/fecha; actividad nueva de dashboard con la misma hora de Kardex; proveedor suma solo 9 unidades recibidas |
+| UI: apariencia | Móvil 390 px, escritorio, claro/oscuro; etiquetas de auditoría legibles en claro; retirado filtro redundante que desenfocaba el contenido de diálogos |
+| Limpieza | Cuenta ficticia cerrada, viewport restaurado y pestaña de revisión cerrada; API/Vite de QA detenidos y DB de esa sesión retirada, verificado `reviewDatabaseRemaining: 0` |
+
+El último respaldo custom privado, previo a la migración de auditoría, tiene 83.359 bytes y su catálogo de archivo fue verificado. Se conservaron los respaldos anteriores. No se borraron filas de negocio, medios existentes ni volúmenes. No se hicieron nuevas cargas externas ni cambios en otros proyectos Docker; `postgres-zero-inventory` y pgAdmin quedan activos.
+
+Durante la verificación se corrigieron dos defectos adicionales: dashboard leía la fecha antigua pese a existir un instante nuevo, y auditoría no limitaba las filas de `getRawMany` usando `skip/take`. La regresión nueva comprueba el instante sobre una fecha antigua distinta, y tres páginas de una fila sin repetir IDs. Las primeras ejecuciones de esas pruebas detectaron problemas en su mock/lectura de RETURNING; se corrigieron y la suite final completa pasó. No se cuentan las ejecuciones fallidas como aprobadas.
+
+Límites: fechas históricas sin zona conservan el fallback previo; no se certifica su zona ni se calcula costo promedio contable. La DB habitual no tenía cabeceras de compra antiguas: LEGACY tiene evidencia de integración y copia preparada antes de aplicar el ciclo, no una operación manual sobre un documento real. El navegador emitió avisos iniciales de tamaño de Recharts; el panel renderizó correctamente. Build conserva avisos informativos de Browserslist antiguo y tiempo de Babel. No se añadieron dependencias ni se incorporó una pasarela.
+
+La entrega técnica no sustituye la aceptación del responsable. La etapa 2 espera esa aceptación; la etapa 3 permanece sin iniciar. El estado remoto/CI de la publicación debe comprobarse por el commit entregado, sin atribuir a esta entrega el CI previo de etapa 1.

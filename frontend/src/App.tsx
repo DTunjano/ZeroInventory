@@ -5,6 +5,7 @@ import { Route, Routes, BrowserRouter } from 'react-router-dom'
 import { AuthBootstrap } from '@/modules/auth/presentation/auth-bootstrap'
 import { ThemeSync } from '@/modules/settings/presentation/theme-sync'
 import { RequireAuth } from '@/modules/auth/presentation/require-auth'
+const PurchasesPage = lazy(() => import('@/modules/purchases/presentation/purchases-page').then(module => ({ default: module.PurchasesPage })))
 const AdminProductsPage = lazy(() => import('@/modules/products/presentation/admin-products-page').then((module) => ({ default: module.AdminProductsPage })))
 const AdminInventoryPage = lazy(() => import('@/modules/inventory/presentation/admin-inventory-page').then((module) => ({ default: module.AdminInventoryPage })))
 const AdminDashboardPage = lazy(() => import('@/pages/admin/admin-dashboard-page').then((module) => ({ default: module.AdminDashboardPage })))
@@ -58,6 +59,7 @@ export function App() {
               <Route path="admin/inventory" element={<AdminInventoryPage />} />
               <Route path="admin/inventory-adjustments" element={<AdminInventoryAdjustmentsPage />} />
               <Route path="admin/products" element={<AdminProductsPage />} />
+              <Route path="admin/purchases" element={<PurchasesPage />} />
               <Route path="admin/suppliers" element={<AdminSuppliersPage />} />
             </Route>
 

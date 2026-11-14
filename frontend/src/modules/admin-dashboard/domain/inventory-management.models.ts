@@ -32,6 +32,7 @@ export interface KardexMovementResponse {
 }
 
 export interface RegisterStockAdjustmentInput {
+  cantidad: number
   productoId: number
   stockAnterior: number
   stockNuevo: number

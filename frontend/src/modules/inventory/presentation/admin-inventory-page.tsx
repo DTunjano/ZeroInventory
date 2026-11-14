@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import { useInventory } from '../application/use-inventory'
-import type { InventoryStatusType } from '../domain/inventory.models'
+import type { InventoryStatusType, InventoryProduct } from '../domain/inventory.models'
+import { ProductMovements } from '../components/product-movements'
+import { StockAdjustmentForm } from '../components/stock-adjustment-form'
 import { StatCard } from '../components/stat-card'
 import { InventoryTable } from '../components/inventory-table'
 import { InventoryFilterBar } from '../components/inventory-filter-bar'
 
 export function AdminInventoryPage() {
+  const [movementProduct, setMovementProduct] = useState<InventoryProduct | null>(null)
+  const [adjustProduct, setAdjustProduct] = useState<InventoryProduct | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'ALL' | InventoryStatusType>('ALL')
   const [isActiveFilter, setIsActiveFilter] = useState<'ALL' | boolean>('ALL')
@@ -84,7 +88,11 @@ export function AdminInventoryPage() {
         products={filteredProducts}
         isLoading={isLoading || isFetching}
         isEmpty={filteredProducts.length === 0}
+        onViewMovements={setMovementProduct}
+        onAdjust={setAdjustProduct}
       />
+      {movementProduct && <ProductMovements key={movementProduct.productoId} product={movementProduct} onClose={() => setMovementProduct(null)} />}
+      {adjustProduct && <StockAdjustmentForm key={adjustProduct.productoId} product={adjustProduct} onClose={() => setAdjustProduct(null)} />}
     </div>
   )
 }

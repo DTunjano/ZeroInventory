@@ -24,6 +24,8 @@ type RawAdjustmentRow = {
   stockNuevo: string | number
   tipoCambio: string
   motivo: string
+  registradoEn?: Date | string | null
+  userRole?: string | null
   fecha: Date | string
 }
 
@@ -71,37 +73,24 @@ export class GetInventoryAdjustmentsUseCase {
       )
     }
 
-    // Fecha range filters
-    if (filters.startDate) {
-      const sd = new Date(filters.startDate)
-      if (!isNaN(sd.getTime())) {
-        // ensure start is at beginning of day (local)
-        sd.setHours(0, 0, 0, 0)
-        query.andWhere('ajuste.fecha >= :startDate', { startDate: sd.toISOString() })
-      }
+    // Calendar filters match the display zone for new instants; old naive dates
+    // retain their existing calendar values without inventing a historical zone.
+    const calendarDate = (value: string) => {
+      if (!/^[1-9]\d{3}-\d{2}-\d{2}(?:$|T)/.test(value)) throw new BadRequestException('Fecha ISO inválida');
+      const prefix = value.slice(0, 10)
+      const midnight = new Date(`${prefix}T00:00:00Z`)
+      if (!Number.isFinite(midnight.getTime()) || midnight.toISOString().slice(0, 10) !== prefix) throw new BadRequestException('Fecha inválida')
+      if (value.length === 10) return value
+      const instant = new Date(value)
+      if (!Number.isFinite(instant.getTime())) throw new BadRequestException('Fecha inválida')
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit' }).format(instant)
     }
-
-    if (filters.endDate) {
-      const ed = new Date(filters.endDate)
-      if (!isNaN(ed.getTime())) {
-        // include the entire day by setting time to end of day
-        ed.setHours(23, 59, 59, 999)
-        query.andWhere('ajuste.fecha <= :endDate', { endDate: ed.toISOString() })
-      }
-    }
-
-    // Validate range if both provided
-    if (filters.startDate && filters.endDate) {
-      const sd = new Date(filters.startDate)
-      const ed = new Date(filters.endDate)
-      if (!isNaN(sd.getTime()) && !isNaN(ed.getTime())) {
-        sd.setHours(0, 0, 0, 0)
-        ed.setHours(23, 59, 59, 999)
-        if (ed.getTime() < sd.getTime()) {
-          throw new BadRequestException('endDate must be greater than or equal to startDate')
-        }
-      }
-    }
+    const startDate = filters.startDate ? calendarDate(filters.startDate) : undefined
+    const endDate = filters.endDate ? calendarDate(filters.endDate) : undefined
+    if (startDate && endDate && endDate < startDate) throw new BadRequestException('La fecha final debe ser posterior o igual a la inicial')
+    const dateExpression = "COALESCE(ajuste.registradoEn AT TIME ZONE 'America/Bogota', ajuste.fecha)"
+    if (startDate) query.andWhere(`${dateExpression} >= :startDate::date`, { startDate })
+    if (endDate) query.andWhere(`${dateExpression} < :endDate::date + INTERVAL '1 day'`, { endDate })
 
     const total = await query.clone().getCount()
 
@@ -120,14 +109,16 @@ export class GetInventoryAdjustmentsUseCase {
       .addSelect('ajuste.tipoCambio', 'tipoCambio')
       .addSelect('ajuste.motivo', 'motivo')
       .addSelect('ajuste.fecha', 'fecha')
+      .addSelect('ajuste.registradoEn', 'registradoEn')
       // obtener rol del usuario (primer rol encontrado)
       .addSelect(
         `(SELECT r.nombre FROM usuario_rol ur JOIN rol r ON ur.rol_id = r.rol_id WHERE ur.usuario_id = usuario.usuario_id LIMIT 1)`,
         'userRole',
       )
-      .orderBy('ajuste.fecha', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit)
+      .orderBy(dateExpression, 'DESC')
+      .addOrderBy('ajuste.ajusteInventarioId', 'DESC')
+      .offset((page - 1) * limit)
+      .limit(limit)
       .getRawMany<RawAdjustmentRow>()
 
     const data: StockAdjustmentListItem[] = rows.map((row) => ({
@@ -139,11 +130,11 @@ export class GetInventoryAdjustmentsUseCase {
       stockNuevo: toNumber(row.stockNuevo),
       tipoCambio: row.tipoCambio as StockAdjustmentListItem['tipoCambio'],
       motivo: row.motivo,
-      fecha: new Date(row.fecha),
+      fecha: new Date(row.registradoEn ?? row.fecha),
       productoNombre: row.productName,
       productoSku: row.productSku,
       usuarioNombre: buildUserDisplayName(row.userFirstName, row.userLastName, row.userUsername),
-      userRole: (row as any).userRole ?? null,
+      userRole: row.userRole ?? null,
       userFirstName: row.userFirstName,
       userLastName: row.userLastName,
     }))

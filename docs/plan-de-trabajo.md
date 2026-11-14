@@ -1,6 +1,6 @@
 # Plan de trabajo y condiciones de cierre
 
-Actualizado: 12 de noviembre de 2026.
+Actualizado: 14 de noviembre de 2026.
 
 ## Regla de avance
 
@@ -54,7 +54,7 @@ La sesión ficticia se cerró, los procesos de QA se detuvieron y la DB temporal
 
 ## Inicio de la etapa 2
 
-Diagnóstico, decisiones de recepción y garantías de integridad en [ciclo-inventario.md](ciclo-inventario.md). El cierre aceptado de la etapa 1 está publicado en `dev` y su CI pasó. Se trabaja la etapa 2 en `codex/inventory-lifecycle`; su implementación de recepción espera las decisiones de negocio solicitadas.
+Diagnóstico, decisiones de recepción y garantías de integridad en [ciclo-inventario.md](ciclo-inventario.md). El cierre aceptado de la etapa 1 está publicado en `dev` y su CI pasó. El 13/11/2026 el usuario eligió borrador sin cambio de stock y recepción completa posterior. Se implementaron compras, historial, Kardex de lectura y ajustes con motivo en `codex/inventory-lifecycle`. La validación y aceptación final de esta entrega se registran en su matriz; no se iniciará la etapa 3 antes de la aceptación del usuario.
 
 ## Simulación de pagos: decisión futura
 

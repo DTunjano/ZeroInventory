@@ -30,6 +30,7 @@ export async function recordStockAdjustment(
     tipoMovimiento: TipoMovimientoEnum.AJUSTE,
     tipoCambio: difference > 0 ? TipoCambioEnum.AUMENTO : TipoCambioEnum.REDUCCION,
     motivo: reason.trim(),
+    registradoEn: new Date(),
   }));
   await manager.insert(KardexEntityORM, {
     productoId: product.productoId,
@@ -37,6 +38,7 @@ export async function recordStockAdjustment(
     cantidad: Math.abs(difference), costoUnitario: amount(unitCost),
     valorTotal: total,
     referenciaId: adjustment.ajusteInventarioId, tipoReferencia: TipoReferenciaEnum.AJUSTE,
+    registradoEn: new Date(),
   });
   product.cantidad = newStock;
   product.updatedAt = new Date();

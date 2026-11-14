@@ -293,13 +293,12 @@ export function AdminProductsPage() {
     form.reset(defaults)
   }, [editing, open, form])
 
-  const invalidateProducts = () => Promise.all(['products', 'proveedores', 'providers', 'product-images', 'all-product-images', 'product-category-ids', 'category-ids-by-products', 'store-products', 'inventory-products', 'inventory-summary', 'inventory-adjustments', 'admin-dashboard', 'cart'].map((key) => qc.invalidateQueries({ queryKey: [key] })))
+  const invalidateProducts = () => Promise.all(['products', 'proveedores', 'providers', 'product-images', 'all-product-images', 'product-category-ids', 'category-ids-by-products', 'store-products', 'inventory-products', 'inventory-summary', 'inventory-movements', 'reports', 'inventory-adjustments', 'admin-dashboard', 'cart'].map((key) => qc.invalidateQueries({ queryKey: [key] })))
 
   const upsertMutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const basePayload = {
         nombre: values.nombre,
-        cantidad: values.cantidad,
         precio: values.precio,
         descripcion: values.descripcion,
         proveedorId: values.proveedorId,
@@ -308,7 +307,7 @@ export function AdminProductsPage() {
 
       const saved = editing
         ? await updateProduct(editing.productoId, { sku: editing.sku, ...basePayload })
-        : await createProduct(basePayload)
+        : await createProduct({ ...basePayload, cantidad: values.cantidad })
 
       let imageError: string | null = null
       try {
@@ -542,6 +541,7 @@ export function AdminProductsPage() {
               <Label htmlFor="cantidad">Stock</Label>
               <Input
                 id="cantidad"
+                readOnly={!!editing}
                 inputMode="numeric"
                 {...form.register('cantidad', {
                   onChange: (e) => {
@@ -550,6 +550,7 @@ export function AdminProductsPage() {
                   },
                 })}
               />
+              {editing && <p className="text-xs text-muted-foreground">Para modificar existencias, usa Inventario → Ajustar stock y registra el motivo.</p>}
               {form.formState.errors.cantidad?.message ? (
                 <p className="text-xs text-destructive">
                   {String(form.formState.errors.cantidad.message)}

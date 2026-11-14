@@ -6,6 +6,7 @@ export enum TipoMovimientoEnum {
 
 export enum TipoReferenciaEnum {
   COMPRA = 'COMPRA',
+  RECEPCION_COMPRA = 'RECEPCION_COMPRA',
   VENTA = 'VENTA',
   AJUSTE = 'AJUSTE',
 }

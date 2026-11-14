@@ -56,6 +56,7 @@ const sharedNav: AppLayoutNavItem[] = [
   { to: '/home', label: 'Home', icon: House },
   { to: '/admin/inventory', label: 'Inventario', icon: Archive },
   { to: '/admin/inventory-adjustments', label: 'Ajustes de inventario', icon: SlidersHorizontal },
+  { to: '/admin/purchases', label: 'Compras', icon: Truck },
   { to: '/admin/products', label: 'Productos', icon: Package },
   { to: '/admin/suppliers', label: 'Proveedores', icon: Truck },
   { to: '/settings', label: 'Configuración', icon: Settings },

@@ -164,11 +164,12 @@ Ver `docs/database-schema.md` para nombres físicos, tipos y nulabilidad. Revisa
 | `carrito`, `carrito_detalle` | Carrito de usuario y líneas vinculadas a productos |
 | `pedido`, `pedido_detalle` | Pedido de cliente/dirección y sus cantidades/precios persistidos |
 | `pago` | Pagos internos asociados a pedido, método, monto y estado |
-| `compra`, `compra_detalle` | Compras de proveedores registradas por usuario y sus líneas |
+| `compra`, `compra_detalle` | Borradores/recepciones de proveedores, versión, actor y líneas; históricos LEGACY de solo lectura |
+| `compra_evento` | Historial por compra/usuario/versión con snapshots inmutables |
 | `kardex` | Movimientos por producto; referencia polimórfica mediante tipo e ID |
 | `ajuste_inventario` | Auditoría por producto y usuario, saldo anterior/nuevo, dirección, motivo y fecha |
 | `media` | Contenido promocional independiente almacenado en Cloudinary |
-| `migrations` | Historial técnico de TypeORM, ajeno a las 21 tablas de negocio |
+| `migrations` | Historial técnico de TypeORM, ajeno a las 22 tablas de negocio |
 
 Las referencias polimórficas del Kardex no son FKs a una sola tabla. No asumas que `referencia_id` siempre es un pedido. `tipo_referencia` define su interpretación.
 
@@ -295,3 +296,21 @@ Entrega el cambio concreto, sus pruebas y cualquier límite material. Para una c
 - La preferencia de apariencia vive en el servidor y `ThemeSync` la restaura por usuario; React Query incluye usuario en claves de configuración. Conserva claro/oscuro y color-scheme nativo. El CSS carga el config Tailwind y define dark por clase. Usa tokens semánticos para superficies, texto, bordes y etiquetas; reserva blanco fijo para botones de fondo sólido o las pantallas de marca explícitamente oscuras.
 - El catálogo prioriza disponibilidad solo en el orden predeterminado. Nombre/stock ascendente o descendente deben incluir agotados en su posición correcta. No vuelvas a ordenar por disponibilidad antes de un criterio explícito.
 - Desactivar un medio lo oculta de listados y lectura pública por ID; el administrador conserva la gestión en `/media/admin/all`. La desactivación de la aplicación no revoca por sí sola una URL previamente conocida del CDN.
+
+## Compras y recepción — etapa 2
+
+- Reglas elegidas por el usuario el 13/11/2026: borrador sin stock y recepción completa posterior. No añadas recepciones parciales como supuesto ni recibas al crear.
+- `CompraModule` compone `CompraWorkflowUseCase` y el puerto `CompraWorkflowRepository`, implementado por TypeOrmCompraWorkflowRepository. Los CRUD de cabecera antiguos y el módulo histórico de detalles no están registrados; no los reactives como vía de escritura independiente.
+- ADMIN/EMPLOYEE operan borradores y recepción; solo ADMIN cancela borradores con motivo. Actor de sesión, totales calculados en centavos; cuerpo no acepta actor/total/subtotal confiables.
+- Cabecera FOR UPDATE, versión vigente para cambios, proveedor activo y productos activos de ese proveedor; productos bloqueados por ID ascendente. Revalidar dentro de la transacción al recibir.
+- Stock, una ENTRADA por producto, estado RECIBIDA y evento usan el mismo manager. La referencia es RECEPCION_COMPRA con ID de compra; no reutilices COMPRA histórica ni abras otra transacción con el repositorio genérico de movimientos.
+- Reintentar una recepción completada devuelve el mismo documento, sin nuevo stock, evento, actor o fecha. Recibidas/canceladas/LEGACY no se editan ni se borran. No implementes cancelación de recibidas como borrado o reversión silenciosa.
+- `compra_evento` conserva snapshots y tiene unicidad compra/versión. Fallar al escribir un evento debe revertir toda la operación. No expongas endpoints de modificación/eliminación de eventos.
+- `POST /inventory/kardex/movements` y DELETE de compras devuelven 410. Las escrituras genéricas antiguas ya no se exportan desde InventoryModule. Entradas por recepción; bajas/aumentos manuales por ajuste con motivo y auditoría.
+- Kardex de lectura paginado en `/inventory/products/:productoId/movements`, snapshot READ ONLY/REPEATABLE READ con stock y saldo. Usa parámetros y conserva historial de productos inactivos. La UI enlaza RECEPCION_COMPRA a `/admin/purchases?purchase=<id>`.
+- Nuevas compras usan `registrada_en`, nuevas entradas/salidas `registrado_en`, y recepción/cancelación/eventos usan timestamptz. No conviertas timestamps históricos sin evidencia de zona. Las fechas antiguas se conservan como fallback; los eventos nuevos llevan Date del servidor explícita.
+- El CLI db:check incluye totales, recepción vs Kardex e historial por versión; una migración pendiente hace fallar el diagnóstico. `test:upgrade` puede encontrar tablas nuevas aún ausentes en la copia: conserva los conteos de las existentes y verifica la adopción LEGACY sin inventar recepción.
+- Tras recibir o ajustar invalida productos, catálogo, inventario, Kardex, dashboard, carrito y reportes relacionados. Una recepción no cambia precio de venta ni representa un pago bancario.
+- El formulario de Inventario → Ajustar stock exige motivo y envía saldo esperado/nuevo/diferencia. Un 409 conserva los campos; actualizar saldo reinicia la cantidad y conserva el motivo para que el operador lo revise. La edición de metadatos de Productos omite cantidad y la muestra de solo lectura; el alta mantiene stock inicial atómico.
+- `InventoryAuditInstant1794528002000` añade `ajuste_inventario.registrado_en` sin reinterpretar `fecha` histórica. Auditoría, Kardex y actividad del dashboard usan el instante nuevo cuando existe. Los filtros calendario y agregados nuevos usan America/Bogota; conserva el fallback histórico sin certificar su zona.
+- Proveedores suma unidades de detalles de compras RECIBIDA por el proveedor de la cabecera. No cuentes stock inicial, borradores, canceladas ni ajustes, ni reasignes una recepción histórica cuando cambia el proveedor actual del producto.

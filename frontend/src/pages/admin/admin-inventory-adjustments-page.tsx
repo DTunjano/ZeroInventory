@@ -60,7 +60,7 @@ function AdjustmentsTable({
                     <Badge
                       variant="secondary"
                       className={cn(
-                        row.userRole === 'ADMIN' ? 'bg-purple-600 text-foreground border-purple-700 dark:bg-purple-500' : 'bg-blue-600 text-white border-blue-700 dark:bg-blue-500',
+                        row.userRole === 'ADMIN' ? 'bg-purple-600 text-white border-purple-700 dark:bg-purple-500' : 'bg-blue-600 text-white border-blue-700 dark:bg-blue-500',
                         'uppercase text-xs',
                       )}
                     >

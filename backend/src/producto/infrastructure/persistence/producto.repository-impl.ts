@@ -40,7 +40,7 @@ export class ProductoRepositoryImpl implements ProductoRepository {
       if (saved.cantidad > 0) {
         await manager.insert(KardexEntityORM, {
           productoId: saved.productoId, tipoMovimiento: TipoMovimientoEnum.ENTRADA,
-          cantidad: saved.cantidad, costoUnitario: saved.precio,
+          cantidad: saved.cantidad, costoUnitario: saved.precio, registradoEn: new Date(),
           valorTotal: saved.cantidad * saved.precio, referenciaId: saved.productoId,
           tipoReferencia: TipoReferenciaEnum.AJUSTE,
         });
@@ -98,6 +98,10 @@ export class ProductoRepositoryImpl implements ProductoRepository {
     totalPages: number;
   }> {
     const query = this.repo.createQueryBuilder('producto');
+
+    if (filters?.proveedorId !== undefined) {
+      query.andWhere('producto.proveedorId = :proveedorId', { proveedorId: filters.proveedorId });
+    }
 
     if (filters?.isActive !== undefined) {
       query.andWhere('producto.is_active = :isActive', {

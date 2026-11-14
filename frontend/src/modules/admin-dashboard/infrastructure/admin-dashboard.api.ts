@@ -2,8 +2,6 @@ import { http } from '@/infrastructure/http/http'
 
 import type { AdminDashboardResponse } from '../domain/admin-dashboard.models'
 import type {
-  CreateKardexMovementInput,
-  KardexMovementResponse,
   RegisterStockAdjustmentInput,
   StockAdjustmentResponse,
   StockValidationResponse,
@@ -25,10 +23,7 @@ export class AdminDashboardApi {
     return data
   }
 
-  async createKardexMovement(payload: CreateKardexMovementInput): Promise<KardexMovementResponse> {
-    const { data } = await http.post<KardexMovementResponse>('/inventory/kardex/movements', payload)
-    return data
-  }
+
 }
 
 export const adminDashboardApi = new AdminDashboardApi()

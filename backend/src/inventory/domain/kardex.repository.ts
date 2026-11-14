@@ -1,10 +1,11 @@
-import type { CreateKardexMovementData, KardexMovement } from './inventory.types'
+import type { CreateKardexMovementData, KardexMovement, KardexMovementPage } from './inventory.types'
 
 /**
  * Interfaz de repositorio para operaciones de Kárdex
  * Implementa patrón Repository del DDD
  */
 export interface IKardexRepository {
+  getMovementsPage(productoId: number, page: number, limit: number): Promise<KardexMovementPage>
   /**
    * Crea un movimiento en el Kárdex
    * @param data Datos del movimiento

@@ -2,7 +2,7 @@
 
 Diccionario generado desde las entidades ORM canónicas. Incluye el estado esperado después de aplicar las migraciones; no contiene registros ni credenciales.
 
-Hay 21 tablas de negocio y la tabla técnica `migrations`. Todas usan claves primarias numéricas generadas. Las relaciones que se muestran abajo son claves foráneas declaradas en TypeORM. `empleado.usuario_id` es una referencia lógica opcional que actualmente no tiene una FK declarada.
+Hay 22 tablas de negocio y la tabla técnica `migrations`. Todas usan claves primarias numéricas generadas. Las relaciones que se muestran abajo son claves foráneas declaradas en TypeORM. `empleado.usuario_id` es una referencia lógica opcional que actualmente no tiene una FK declarada.
 
 ## Reglas adicionales de las migraciones
 
@@ -10,6 +10,10 @@ Hay 21 tablas de negocio y la tabla técnica `migrations`. Todas usan claves pri
 - Producto: `cantidad >= 0`; líneas de carrito y pedido y movimientos de Kardex: `cantidad > 0`.
 - Importes de producto, compra, pedido, detalles, pago y Kardex: `numeric(14,2)`.
 - El saldo materializado de producto debe coincidir con entradas menos salidas del Kardex. Los ajustes se documentan por separado y sus efectos se reflejan en movimientos firmados por dirección.
+- Compras: estados BORRADOR/RECIBIDA/CANCELADA/LEGACY, versión positiva y metadatos de recepción/cancelación coherentes; índice ix_compra_estado_fecha.
+- compra_evento: FK a compra y usuario, acción válida, snapshot JSON objeto y unicidad (compra_id, version). Sin borrado en cascada.
+- Nuevos instantes de compras/Kardex y fechas de recepción, cancelación y eventos usan timestamptz; fechas históricas sin zona se conservan sin reinterpretar.
+- RECEPCION_COMPRA distingue entradas de compras confirmadas de referencias históricas COMPRA/AJUSTE.
 - No hay eliminaciones en cascada del historial de ventas o inventario. Los maestros con estado se desactivan; las restricciones de otras relaciones se responden como HTTP 409.
 
 ## Relaciones principales
@@ -36,6 +40,8 @@ erDiagram
   proveedor ||--o{ compra : recibe
   usuario ||--o{ compra : registra
   compra ||--o{ compra_detalle : contiene
+  compra ||--o{ compra_evento : historial
+  usuario ||--o{ compra_evento : registra
   producto ||--o{ compra_detalle : comprado
   producto ||--o{ kardex : movimientos
   producto ||--o{ ajuste_inventario : ajusta
@@ -58,6 +64,7 @@ El contenido multimedia (`media`) es independiente. La relación empleado–usua
 | `tipo_cambio` | enum: AUMENTO, REDUCCION | Sí |  |
 | `motivo` | text | No |  |
 | `fecha` | timestamp | No |  |
+| `registrado_en` | timestamptz | Sí |  |
 
 ## carrito
 
@@ -119,6 +126,15 @@ El contenido multimedia (`media`) es independiente. La relación empleado–usua
 | `usuario_id` | Number | No | FK → usuario(usuario_id) |
 | `total` | numeric(14,2) | No |  |
 | `fecha_compra` | timestamp | No |  |
+| `estado` | varchar(16) | No |  |
+| `version` | int | No |  |
+| `observaciones` | text | Sí |  |
+| `registrada_en` | timestamptz | Sí |  |
+| `recibida_por` | Number | Sí | FK → usuario(usuario_id) |
+| `recibida_en` | timestamptz | Sí |  |
+| `cancelada_por` | Number | Sí | FK → usuario(usuario_id) |
+| `cancelada_en` | timestamptz | Sí |  |
+| `motivo_cancelacion` | text | Sí |  |
 
 ## compra_detalle
 
@@ -130,6 +146,19 @@ El contenido multimedia (`media`) es independiente. La relación empleado–usua
 | `cantidad` | int | No |  |
 | `costo_unitario` | numeric(14,2) | No |  |
 | `subtotal` | numeric(14,2) | No |  |
+
+## compra_evento
+
+| Columna | Tipo | NULL | Observación |
+| --- | --- | --- | --- |
+| `evento_id` | Number | No | PK generada |
+| `compra_id` | Number | No | FK → compra(compra_id) |
+| `usuario_id` | Number | No | FK → usuario(usuario_id) |
+| `accion` | varchar(20) | No |  |
+| `version` | int | No |  |
+| `motivo` | text | Sí |  |
+| `snapshot` | jsonb | No |  |
+| `fecha` | timestamptz | No |  |
 
 ## direccion
 
@@ -170,8 +199,9 @@ El contenido multimedia (`media`) es independiente. La relación empleado–usua
 | `costo_unitario` | numeric(14,2) | No |  |
 | `valor_total` | numeric(14,2) | No |  |
 | `referencia_id` | int | No |  |
-| `tipo_referencia` | enum: COMPRA, VENTA, AJUSTE | No |  |
+| `tipo_referencia` | enum: COMPRA, RECEPCION_COMPRA, VENTA, AJUSTE | No |  |
 | `fecha_movimiento` | timestamp | No |  |
+| `registrado_en` | timestamptz | Sí |  |
 
 ## media
 

@@ -14,6 +14,7 @@ function createQueryBuilderMock() {
     groupBy: jest.fn(),
     addGroupBy: jest.fn(),
     orderBy: jest.fn(),
+    addOrderBy: jest.fn(),
     limit: jest.fn(),
     skip: jest.fn(),
     take: jest.fn(),
@@ -32,6 +33,7 @@ function createQueryBuilderMock() {
   chain.groupBy.mockReturnValue(chain)
   chain.addGroupBy.mockReturnValue(chain)
   chain.orderBy.mockReturnValue(chain)
+  chain.addOrderBy.mockReturnValue(chain)
   chain.limit.mockReturnValue(chain)
   chain.skip.mockReturnValue(chain)
   chain.take.mockReturnValue(chain)

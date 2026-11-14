@@ -9,17 +9,22 @@ import {
 import { useSettingsStore } from '@/modules/settings/application/settings.store'
 import type { InventoryProduct } from '../domain/inventory.models'
 import { InventoryStatusBadge } from './inventory-status-badge'
+import { Button } from '@/shared/ui/button'
 
 interface InventoryTableProps {
   products: InventoryProduct[]
   isLoading?: boolean
   isEmpty?: boolean
+  onViewMovements: (product: InventoryProduct) => void
+  onAdjust: (product: InventoryProduct) => void
 }
 
 export function InventoryTable({
   products,
   isLoading = false,
   isEmpty = false,
+  onViewMovements,
+  onAdjust,
 }: InventoryTableProps) {
   const theme = useSettingsStore((state) => state.theme)
   const isDark = theme === 'dark'
@@ -50,6 +55,7 @@ export function InventoryTable({
             <TableHead className={isDark ? 'text-muted-foreground' : 'text-muted-foreground'}>Categoría</TableHead>
             <TableHead className={`text-right ${isDark ? 'text-muted-foreground' : 'text-muted-foreground'}`}>Stock</TableHead>
             <TableHead className={isDark ? 'text-muted-foreground' : 'text-muted-foreground'}>Estado</TableHead>
+            <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -69,6 +75,7 @@ export function InventoryTable({
               <TableCell>
                 <InventoryStatusBadge status={product.estado} />
               </TableCell>
+              <TableCell><div className="flex gap-2"><Button variant="outline" size="sm" aria-label={`Ver Kardex de ${product.nombre}`} onClick={() => onViewMovements(product)}>Ver movimientos</Button><Button variant="outline" size="sm" aria-label={`Ajustar stock de ${product.nombre}`} onClick={() => onAdjust(product)}>Ajustar stock</Button></div></TableCell>
             </TableRow>
           ))}
         </TableBody>

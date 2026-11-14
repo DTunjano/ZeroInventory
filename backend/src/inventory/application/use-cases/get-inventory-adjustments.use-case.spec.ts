@@ -11,8 +11,9 @@ function createQueryBuilderMock() {
     where: jest.fn(),
     andWhere: jest.fn(),
     orderBy: jest.fn(),
-    skip: jest.fn(),
-    take: jest.fn(),
+    addOrderBy: jest.fn(),
+    offset: jest.fn(),
+    limit: jest.fn(),
     clone: jest.fn(),
     getCount: jest.fn(),
     getRawMany: jest.fn(),
@@ -24,8 +25,9 @@ function createQueryBuilderMock() {
   chain.where.mockReturnValue(chain)
   chain.andWhere.mockReturnValue(chain)
   chain.orderBy.mockReturnValue(chain)
-  chain.skip.mockReturnValue(chain)
-  chain.take.mockReturnValue(chain)
+  chain.addOrderBy.mockReturnValue(chain)
+  chain.offset.mockReturnValue(chain)
+  chain.limit.mockReturnValue(chain)
   chain.clone.mockReturnValue(chain)
 
   return chain

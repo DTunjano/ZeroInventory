@@ -301,3 +301,13 @@ No se configura automáticamente un proveedor de hosting, un dominio, ni un proc
 Configuración → Apariencia permite claro y oscuro en las tres clases de cuenta; la preferencia se guarda en el servidor y se restaura al iniciar sesión. Home, acceso y registro conservan su presentación de marca oscura. Las utilidades de color se generan cargando `frontend/tailwind.config.cjs` desde CSS; la variante `dark` sigue la clase del documento.
 
 ADMIN dispone de `/admin/reports` y exportación CSV. Empleado y cliente no acceden al reporte. `pnpm test:unit` desde `frontend` ejecuta las regresiones de exportación y orden global del catálogo; CI también ejecuta este comando.
+
+## Compras y recepción de proveedores
+
+La etapa 2 incorpora **Compras** (`/admin/purchases`) para ADMIN y EMPLOYEE. Crea un borrador con proveedor activo, productos de ese proveedor, cantidades y costos. Guardar/editar no cambia existencias; **Confirmar recepción → Recibir compra completa** suma todo el documento una sola vez y conserva su historial. Solo ADMIN cancela borradores con motivo. Una compra recibida no se borra ni se edita; las correcciones de stock usan ajustes auditados.
+
+Desde Inventario → Ver movimientos se consulta el Kardex paginado y su saldo, con enlace a cada recepción. Los reintentos no duplican entradas. Los registros anteriores se conservan como históricos LEGACY de solo lectura. Las migraciones se aplican con el mismo `pnpm start:dev` o mediante `pnpm db:migrate`; sigue siendo suficiente usar las dos consolas indicadas arriba.
+
+Para un recuento, pérdida o aumento manual usa **Inventario → Ajustar stock**: indica saldo nuevo y motivo. Si otro proceso cambió el saldo, actualízalo y revisa la cantidad antes de reintentar. Editar metadatos en Productos conserva el stock; ese campo es de solo lectura en edición. Proveedores muestra las unidades de compras efectivamente recibidas, excluyendo borradores y ajustes.
+
+Contrato HTTP, estados, límites, permisos, migraciones, fechas y validación: [docs/ciclo-inventario.md](docs/ciclo-inventario.md). La recepción registra inventario interno y no efectúa un pago al proveedor. No se añadió pasarela.

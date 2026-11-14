@@ -28,11 +28,32 @@ const client = new Client({ host: process.env.DB_HOST, port: Number(process.env.
     require('ts-node/register');
     ds = require('../config/data-source').default;
     await ds.initialize();
+    let legacyPurchase;
+    const schemaRunner = ds.createQueryRunner();
+    try {
+      if (!await schemaRunner.hasColumn('compra', 'estado')) {
+        // Disposable fixtures in the restored copy only; exercise historical adoption even if source has no purchases.
+        const [actor] = await ds.query('INSERT INTO usuario(username,password,is_active) VALUES($1,$2,true) RETURNING usuario_id', [`upgrade_qa_${Date.now()}`, 'fixture-never-used-for-authentication']);
+        const [supplier] = await ds.query("INSERT INTO proveedor(nombre,is_active) VALUES('Proveedor QA de actualización',true) RETURNING proveedor_id");
+        const [product] = await ds.query("INSERT INTO producto(proveedor_id,nombre,cantidad,precio,sku,is_active,created_at,updated_at) VALUES($1,'Producto QA de actualización',0,10,$2,true,NOW(),NOW()) RETURNING producto_id", [supplier.proveedor_id, `UPGRADE-QA-${Date.now()}`]);
+        const [purchase] = await ds.query('INSERT INTO compra(proveedor_id,usuario_id,total) VALUES($1,$2,20) RETURNING compra_id', [supplier.proveedor_id, actor.usuario_id]);
+        legacyPurchase = purchase.compra_id;
+        await ds.query('INSERT INTO compra_detalle(compra_id,producto_id,cantidad,costo_unitario,subtotal) VALUES($1,$2,2,10,20)', [legacyPurchase, product.producto_id]);
+      }
+    } finally { await schemaRunner.release(); }
     const before = {};
     for (const table of ds.entityMetadatas.map((m) => m.tableName)) {
+      const [{ exists }] = await ds.query('SELECT to_regclass($1) IS NOT NULL AS exists', [table]);
+      if (!exists) continue; // A new migration may add a table not present in the restored source.
       before[table] = Number((await ds.query(`SELECT count(*) AS n FROM "${table}"`))[0].n);
     }
     await ds.runMigrations({ transaction: 'all' });
+    if (legacyPurchase) {
+      const [adopted] = await ds.query('SELECT estado,version,total,recibida_por,recibida_en FROM compra WHERE compra_id=$1', [legacyPurchase]);
+      if (adopted.estado !== 'LEGACY' || adopted.version !== 1 || adopted.total !== '20.00' || adopted.recibida_por !== null || adopted.recibida_en !== null) throw new Error('La adopción de compras alteró el historial');
+      const [events] = await ds.query('SELECT count(*)::int AS n FROM compra_evento WHERE compra_id=$1', [legacyPurchase]);
+      if (events.n !== 0) throw new Error('Se inventaron eventos de una compra histórica');
+    }
     for (const [table, count] of Object.entries(before)) {
       const after = Number((await ds.query(`SELECT count(*) AS n FROM "${table}"`))[0].n);
       if (after < count || (!['kardex', 'rol'].includes(table) && after !== count)) throw new Error(`Cambió inesperadamente el número de filas de ${table}`);

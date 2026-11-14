@@ -68,7 +68,7 @@ export class CreateOrderUseCase {
           cantidad: detail.cantidad, precioUnitario, subtotal,
         });
         await manager.insert(KardexEntityORM, {
-          productoId: product.productoId, tipoMovimiento: TipoMovimientoEnum.SALIDA,
+          productoId: product.productoId, tipoMovimiento: TipoMovimientoEnum.SALIDA, registradoEn: new Date(),
           cantidad: detail.cantidad, costoUnitario: precioUnitario, valorTotal: subtotal,
           referenciaId: order.pedidoId, tipoReferencia: TipoReferenciaEnum.VENTA,
         });

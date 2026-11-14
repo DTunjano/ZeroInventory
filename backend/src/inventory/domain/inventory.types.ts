@@ -48,6 +48,11 @@ export interface KardexMovement {
   fechaMovimiento: Date
 }
 
+export interface KardexMovementPage {
+  data: KardexMovement[]; total: number; page: number; limit: number; totalPages: number;
+  stockActual: number; saldoKardex: number;
+}
+
 /** Ajuste de inventario (dominio) */
 export interface StockAdjustment {
   ajusteInventarioId: number
