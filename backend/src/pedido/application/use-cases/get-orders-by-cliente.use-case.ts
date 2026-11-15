@@ -10,7 +10,7 @@ export type OrderPaymentView = {
   pedidoId: number;
   metodoPago: 'EFECTIVO' | 'TRANSFERENCIA';
   monto: number;
-  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ANULADO';
   fechaPago: Date;
 };
 

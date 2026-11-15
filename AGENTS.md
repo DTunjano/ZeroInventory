@@ -164,12 +164,14 @@ Ver `docs/database-schema.md` para nombres físicos, tipos y nulabilidad. Revisa
 | `carrito`, `carrito_detalle` | Carrito de usuario y líneas vinculadas a productos |
 | `pedido`, `pedido_detalle` | Pedido de cliente/dirección y sus cantidades/precios persistidos |
 | `pago` | Pagos internos asociados a pedido, método, monto y estado |
+| `pedido_evento` | Historial de acciones por pedido/actor/versión, solicitud y snapshot inmutables |
+| `pedido_reembolso` | Un reembolso completo por pedido; PK/FK compartida, pendiente o registrado con actor/motivo/fecha |
 | `compra`, `compra_detalle` | Borradores/recepciones de proveedores, versión, actor y líneas; históricos LEGACY de solo lectura |
 | `compra_evento` | Historial por compra/usuario/versión con snapshots inmutables |
 | `kardex` | Movimientos por producto; referencia polimórfica mediante tipo e ID |
 | `ajuste_inventario` | Auditoría por producto y usuario, saldo anterior/nuevo, dirección, motivo y fecha |
 | `media` | Contenido promocional independiente almacenado en Cloudinary |
-| `migrations` | Historial técnico de TypeORM, ajeno a las 22 tablas de negocio |
+| `migrations` | Historial técnico de TypeORM, ajeno a las 24 tablas de negocio |
 
 Las referencias polimórficas del Kardex no son FKs a una sola tabla. No asumas que `referencia_id` siempre es un pedido. `tipo_referencia` define su interpretación.
 
@@ -291,7 +293,8 @@ Entrega el cambio concreto, sus pruebas y cualquier límite material. Para una c
 ## Reportes y apariencia
 
 - `ReportsModule` publica `GET /admin/reports` solo para ADMIN. Mantén controlador/caso de uso/puerto/adaptador separados y la transacción READ ONLY + REPEATABLE READ. Ejecuta sus consultas secuencialmente sobre el mismo manager. No mezcles joins de detalles/pagos para sumar pedidos.
-- Fechas inclusivas válidas y máximo 366 días. Pedidos usan `fecha`, pagos `fecha_pago`; inventario es actual e independiente del rango. Las sumas admiten más que una fila numeric(14,2), conservando centavos enteros seguros; no reutilices el límite monetario de escritura para agregados.
+- Fechas inclusivas válidas y máximo 366 días. Pedidos nuevos usan `registrada_en`; pagos nuevos, `decidido_en` o `registrado_en`; calendario America/Bogota. Conserva `fecha`/`fecha_pago` como fallback histórico sin reinterpretar zona. Inventario es actual e independiente del rango. Las sumas admiten más que una fila numeric(14,2), conservando centavos enteros seguros; no reutilices el límite monetario de escritura para agregados.
+- Los aprobados son brutos: un reembolso no elimina el pago original. El reporte añade `refunds.pending` por creación y `refunds.registered` por registro, también en CSV. No presentes total de pedidos o aprobados como ingresos netos certificados.
 - CSV exporta el período aplicado y protege nombres/SKU contra fórmulas, incluyendo prefijos con espacios. Conserva BOM UTF-8, escapes y pruebas con `pnpm test:unit`. No exportes perfiles personales.
 - La preferencia de apariencia vive en el servidor y `ThemeSync` la restaura por usuario; React Query incluye usuario en claves de configuración. Conserva claro/oscuro y color-scheme nativo. El CSS carga el config Tailwind y define dark por clase. Usa tokens semánticos para superficies, texto, bordes y etiquetas; reserva blanco fijo para botones de fondo sólido o las pantallas de marca explícitamente oscuras.
 - El catálogo prioriza disponibilidad solo en el orden predeterminado. Nombre/stock ascendente o descendente deben incluir agotados en su posición correcta. No vuelvas a ordenar por disponibilidad antes de un criterio explícito.
@@ -314,3 +317,20 @@ Entrega el cambio concreto, sus pruebas y cualquier límite material. Para una c
 - El formulario de Inventario → Ajustar stock exige motivo y envía saldo esperado/nuevo/diferencia. Un 409 conserva los campos; actualizar saldo reinicia la cantidad y conserva el motivo para que el operador lo revise. La edición de metadatos de Productos omite cantidad y la muestra de solo lectura; el alta mantiene stock inicial atómico.
 - `InventoryAuditInstant1794528002000` añade `ajuste_inventario.registrado_en` sin reinterpretar `fecha` histórica. Auditoría, Kardex y actividad del dashboard usan el instante nuevo cuando existe. Los filtros calendario y agregados nuevos usan America/Bogota; conserva el fallback histórico sin certificar su zona.
 - Proveedores suma unidades de detalles de compras RECIBIDA por el proveedor de la cabecera. No cuentes stock inicial, borradores, canceladas ni ajustes, ni reasignes una recepción histórica cuando cambia el proveedor actual del producto.
+
+## Pedidos y pagos internos — etapa 3
+
+- Política aprobada el 14/11/2026 y contrato/matriz en `docs/pedidos-y-pagos.md`. Entrega técnica validada, pendiente de aceptación; no iniciar etapa 4 sin esa aceptación. La pasarela continúa aplazada.
+- `PedidoModule` compone controlador/caso de uso/puerto de dominio/adaptador TypeORM del workflow. `PagoModule` y `PedidoDetalleModule` mantienen lecturas; sus escrituras genéricas, las de pedido y confirmación antigua responden 410. No reactives `ConfirmPagoUseCase` ni CRUD independientes de cabecera, pago o líneas.
+- Solo ADMIN aprueba/rechaza el intento pendiente vigente por el total del servidor. Aprobar no entrega. ADMIN/EMPLOYEE gestionan CONFIRMADO → ENVIADO → COMPLETADO; exige pago aprobado antes de enviar, incluido EFECTIVO. COMPLETADO significa entrega realizada.
+- Solo ADMIN reintenta un pago rechazado: crea otro PENDIENTE con total/método preservados y conserva el intento anterior. No permite parciales ni múltiples aprobados. Cancelar anula intentos pendientes, conserva rechazados/aprobados.
+- CUSTOMER cancela únicamente su CONFIRMADO por `/pedidos/me/:id/cancel`; ADMIN puede cancelar CONFIRMADO. EMPLOYEE no cancela. Solo ADMIN recibe devolución completa de COMPLETADO después de recepción física. Motivo obligatorio; no hay cancelación tras envío ni devolución parcial.
+- Cabecera FOR UPDATE antes de pagos/productos; estos últimos por ID ascendente. Versión esperada obligatoria. El mismo manager guarda estado, pagos, reembolso, evento, stock y Kardex; cualquier fallo revierte todo. Actor proviene de sesión y las entradas rechazan actor/importes arbitrarios.
+- Repetir exactamente acción, versión esperada, actor, motivo normalizado y pagoId ya registrados devuelve el documento actual sin otro efecto. Una operación distinta con versión obsoleta responde 409. La UI captura versión/pagoId al abrir, conserva motivo ante error y pide actualizar/revisar.
+- Cancelación/devolución valida líneas, total y cantidades agrupadas contra VENTA/SALIDA original. Reintegra una sola vez con ENTRADA de referencia CANCELACION_PEDIDO o DEVOLUCION_PEDIDO y precios persistidos; preserva salidas. Admite recibir productos inactivos sin reactivarlos. No modifiques movimientos históricos para habilitar una restitución.
+- Con pago aprobado crea un único reembolso PENDIENTE por el total completo. Solo ADMIN lo registra como REGISTRADO con motivo/referencia, actor y fecha; conserva el aprobado original. Es registro interno de operación externa verificada, sin mover dinero.
+- Checkout guarda versión 1 y evento CREADO en su misma transacción, después de líneas/pago/stock/carrito. Eventos tienen unicidad pedido/versión, solicitud y snapshot económico; nunca expongas CRUD para alterarlos.
+- `OrderLifecycle1794614400000` ya se aplicó: no reescribirla. Instantes nuevos en pedido/pago, tablas pedido_evento/pedido_reembolso y enums adicionales. Históricos tienen versión 0, solo lectura, sin eventos inventados. En la revisión había 30 históricos y 5 sin coincidencia de salida; `db:check` los informa aparte sin alterar stock conciliado.
+- Nuevos instantes se muestran/filtran en America/Bogota; conserva fallback antiguo. Regenera modelo si cambian entidades, incluidos PK/FK compartidos de reembolso. Tras mutaciones invalida pedidos, detalle, inventario, Kardex, catálogo, carrito, dashboard y reportes.
+- La gestión administrativa está en `/admin/orders?order=<pedido_id>` y el cliente ve su historial/cancelación en Mis pedidos. Protege también en API rol y propiedad; esconder botones no basta. Un documento ajeno responde 404.
+- Mantén regresiones de concurrencia cancelación/envío, idempotencia, rollback de evento/segunda línea/reembolso, propiedad, intentos vigentes, histórico de solo lectura y reporte bruto/reembolsos separados. Las pruebas no ejecutan transferencias reales.

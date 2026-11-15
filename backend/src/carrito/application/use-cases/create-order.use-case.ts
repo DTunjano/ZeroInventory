@@ -12,6 +12,8 @@ import { EstadoPagoEnum, MetodoPagoEnum } from '../../../pago/domain/entity/pago
 import { ValidatedCartStockItem } from './validate-cart-stock.use-case';
 import { StockInsufficientException } from '../errors/stock-insufficient.exception';
 import { amount, cents } from '../../../shared/money';
+import { ClienteEntityORM } from '../../../cliente/infrastructure/persistence/cliente.orm-entity';
+import { recordPedidoEvent } from '../../../pedido/infrastructure/persistence/pedido-workflow.helpers';
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -27,6 +29,8 @@ export class CreateOrderUseCase {
         where: { carritoId: params.carritoId }, lock: { mode: 'pessimistic_write' },
       });
       if (!cart) throw new NotFoundException('Carrito no encontrado');
+      const client = await manager.findOneBy(ClienteEntityORM,{clienteId:params.clienteId});
+      if(!client||client.usuarioId!==cart.usuarioId) throw new ConflictException('El carrito no pertenece al cliente');
       const details = await manager.find(CarritoDetalleEntityORM, {
         where: { carritoId: cart.carritoId }, order: { productoId: 'ASC', carritoDetalleId: 'ASC' },
         lock: { mode: 'pessimistic_write' },
@@ -58,6 +62,7 @@ export class CreateOrderUseCase {
       const order = await manager.save(PedidoEntityORM, manager.create(PedidoEntityORM, {
         clienteId: params.clienteId, direccionId: params.direccionId,
         estado: EstadoPedidoEnum.CONFIRMADO, total, numeroPedidoUsuario,
+        version: 1, registradaEn: new Date(),
       }));
       for (const detail of details) {
         const product = products.get(detail.productoId)!;
@@ -80,11 +85,12 @@ export class CreateOrderUseCase {
         await manager.save(ProductoEntityORM, product);
       }
       await manager.insert(PagoEntityORM, {
-        pedidoId: order.pedidoId, metodoPago: params.metodoPago, monto: total, estado: EstadoPagoEnum.PENDIENTE,
+        pedidoId: order.pedidoId, metodoPago: params.metodoPago, monto: total, estado: EstadoPagoEnum.PENDIENTE, registradoEn: new Date(),
       });
       for (const detail of details) await manager.delete(CarritoDetalleEntityORM, { carritoDetalleId: detail.carritoDetalleId });
       cart.updatedAt = new Date();
       await manager.save(CarritoEntityORM, cart);
+      await recordPedidoEvent(manager,order.pedidoId,cart.usuarioId,'CREADO','Pedido creado mediante checkout');
       return { pedidoId: order.pedidoId, total, numeroPedidoUsuario };
     });
   }

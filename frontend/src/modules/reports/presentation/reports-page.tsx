@@ -61,8 +61,9 @@ export function ReportsPage() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[
         ['Pedidos registrados', String(data.summary.orders)], ['Total de pedidos', formatCOP(data.summary.orderTotal)],
         ['Pagos aprobados registrados', formatCOP(data.summary.approvedPayments)], ['Pagos pendientes registrados', formatCOP(data.summary.pendingPayments)],
+        ['Reembolsos internos pendientes', formatCOP(data.refunds.pending)], ['Reembolsos internos registrados', formatCOP(data.refunds.registered)],
       ].map(([label, value]) => <div key={label} className="rounded-xl border bg-card p-4"><p className="text-sm text-muted-foreground">{label}</p><p className="mt-2 text-2xl font-semibold">{value}</p></div>)}</div>
-      <p className="text-sm text-muted-foreground">Pedidos según fecha de creación; pagos según fecha del registro de pago. El total de pedidos incluye todos sus estados y no equivale a ingresos.</p>
+      <p className="text-sm text-muted-foreground">Pedidos según creación; pagos nuevos según decisión, o creación si están pendientes, en America/Bogota. Los pagos aprobados son brutos y conservan el cobro original al reembolsar. Reembolsos pendientes según creación; realizados según registro. El total de pedidos incluye todos sus estados y no equivale a ingresos netos.</p>
       <div className="grid gap-4 lg:grid-cols-2">
         <ReportTable title="Pedidos por día" headers={['Fecha', 'Pedidos', 'Total']} rows={data.daily.map((row) => [row.date, row.orders, formatCOP(row.total)])} />
         <ReportTable title="Pedidos por estado" headers={['Estado', 'Pedidos', 'Total']} rows={data.states.map((row) => [stateNames[row.state] ?? row.state, row.orders, formatCOP(row.total)])} />

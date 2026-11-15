@@ -2,6 +2,7 @@ export interface ReportRange { dateFrom: string; dateTo: string }
 export interface ReportsSnapshot {
   period: ReportRange;
   summary: { orders: number; orderTotal: number; approvedPayments: number; pendingPayments: number };
+  refunds: { pending: number; registered: number };
   daily: { date: string; orders: number; total: number }[];
   states: { state: string; orders: number; total: number }[];
   methods: { method: string; payments: number; amount: number }[];

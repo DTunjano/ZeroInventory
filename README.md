@@ -163,13 +163,13 @@ La pantalla **Usuarios y roles** permite a ADMIN crear/editar cuentas, asignar l
 
 Las altas de producto exigen proveedor, al menos una categoría y precio mayor que cero; **la imagen es opcional** (PNG/JPEG/WebP de hasta 5 MB). Producto, categorías, SKU y movimiento inicial se guardan atómicamente. La edición conserva campos omitidos y los datos históricos existentes. Si falla una carga de imagen posterior, se informa que el producto sí quedó guardado para evitar creaciones duplicadas.
 
-Los contratos HTTP, transacciones y límites están en [docs/usuarios-y-productos.md](docs/usuarios-y-productos.md). No se añadieron servicios de arranque ni migraciones; se conservan las dos consolas habituales. Los filtros de pedidos por estado/fecha/orden están validados en la API y conservan controles para limpiar resultados vacíos. Esta entrega no integra pasarela de pagos.
+Los contratos HTTP, transacciones y límites del catálogo están en [docs/usuarios-y-productos.md](docs/usuarios-y-productos.md). Se conservan las dos consolas habituales. Los filtros de pedidos por estado/fecha/orden están validados en la API y conservan controles para limpiar resultados vacíos. No se integra pasarela de pagos.
 
 ## Roles y autenticación
 
-- `ADMIN`: gestión administrativa, usuarios y roles, empleados y contenido y reportes operativos de solo lectura.
-- `EMPLOYEE`: productos, proveedores, inventario y sus ajustes; las rutas con roles explícitos pueden restringir más.
-- `CUSTOMER`: carrito, pedidos y direcciones propios, configuración de su cuenta y catálogo.
+- `ADMIN`: gestión administrativa, usuarios/roles, empleados, contenido, reportes, pagos internos, cancelación y devolución completa de pedidos y registro de reembolsos.
+- `EMPLOYEE`: productos, proveedores, inventario, compras y ajustes; consulta pedidos y registra envío/entrega. No aprueba pagos, cancela pedidos ni registra devoluciones/reembolsos.
+- `CUSTOMER`: carrito, pedidos y direcciones propios; cancela su pedido antes de envío, configura su cuenta y consulta catálogo.
 - Público: login, registro, renovación de sesión, logout y lecturas de catálogo/medios marcadas con `@Public()`.
 
 El guard global exige autenticación en las rutas que no son públicas. Si una ruta no declara roles, admite por defecto `ADMIN` y `EMPLOYEE`. Roles y asignaciones de roles requieren `ADMIN`. La UI no sustituye los permisos del backend. Las direcciones de clientes validan propiedad antes de consultar, editar o eliminar.
@@ -187,6 +187,18 @@ La creación de producto guarda SKU definitivo y saldo inicial en una transacci�
 El checkout verifica cliente y dirección activa, bloquea el carrito y los productos, vuelve a leer cantidades y precios y calcula el total en centavos. Luego guarda pedido, detalles, pago pendiente y movimientos; descuenta stock y retira las líneas compradas. Todo ocurre en una transacción. Los bloqueos de productos tienen un orden estable; un bloqueo por cliente serializa la numeración de sus pedidos. La DB también exige números únicos por cliente y cantidades válidas.
 
 Los importes usan `numeric(14,2)`: el antiguo `numeric(10,2)` producía errores al superar cien millones. Los cálculos críticos de checkout usan centavos y validan el rango. Los pagos de este repositorio son registros y estados internos; no hay una integración de cobro bancario automático.
+
+### Pedidos y pagos internos — etapa 3
+
+En **Pedidos y pagos** (`/admin/orders`), ADMIN registra aprobación/rechazo del intento de pago y crea otro intento si fue rechazado. ADMIN/EMPLOYEE envían únicamente con pago aprobado y confirman después la entrega. Aprobar un pago no entrega el pedido. Esta regla se aplica también a EFECTIVO.
+
+CUSTOMER puede cancelar su pedido CONFIRMADO desde **Mis pedidos**; ADMIN también puede hacerlo antes del envío. Solo ADMIN confirma una devolución completa después de recibir físicamente todos los productos. Ambas operaciones exigen motivo, restituyen stock una sola vez y conservan las salidas originales. Si el pago estaba aprobado, queda un reembolso pendiente que ADMIN registra posteriormente como realizado fuera de la aplicación. No se efectúan cobros ni transferencias reales.
+
+Las acciones utilizan versión, bloqueo y evento en la misma transacción; las líneas y los importes permanecen inmutables. El historial muestra actor, motivo, fecha y snapshots. El Kardex enlaza ventas, cancelaciones y devoluciones al pedido. Los reportes separan aprobados brutos de reembolsos pendientes/registrados y exportan esas cifras en CSV.
+
+**Históricos:** los 30 pedidos existentes antes de esta migración tienen versión 0 y son de solo lectura. Cinco carecen de coincidencia completa entre sus líneas y salidas VENTA asociadas; el diagnóstico lo informa por separado. No se inventan movimientos ni se restituyen esas cantidades automáticamente. Adoptarlos al ciclo nuevo requeriría una revisión específica con evidencia por documento.
+
+Contrato, reglas aprobadas, migración y matriz de validación: [docs/pedidos-y-pagos.md](docs/pedidos-y-pagos.md). La entrega técnica de etapa 3 está validada; su aceptación y el comienzo de etapa 4 siguen pendientes del responsable.
 
 ## Base de datos y migraciones
 

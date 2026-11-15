@@ -40,6 +40,8 @@ export class PedidoEntityORM {
 
   @CreateDateColumn({ name: 'fecha', type: 'timestamp' })
   fecha!: Date;
+  @Column({ name: 'version', type: 'int', default: 0 }) version!: number;
+  @Column({ name: 'registrada_en', type: 'timestamptz', nullable: true }) registradaEn!: Date|null;
 
   @ManyToOne(() => ClienteEntityORM, (cliente) => cliente.pedidos)
   @JoinColumn({ name: 'cliente_id' })

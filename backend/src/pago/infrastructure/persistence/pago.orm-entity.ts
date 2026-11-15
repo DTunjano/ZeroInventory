@@ -31,6 +31,8 @@ export class PagoEntityORM {
 
   @CreateDateColumn({ name: 'fecha_pago', type: 'timestamp' })
   fechaPago!: Date;
+  @Column({name:'registrado_en',type:'timestamptz',nullable:true}) registradoEn!: Date|null;
+  @Column({name:'decidido_en',type:'timestamptz',nullable:true}) decididoEn!: Date|null;
 
   @ManyToOne(() => PedidoEntityORM, (pedido) => pedido.pagos)
   @JoinColumn({ name: 'pedido_id' })

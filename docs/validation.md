@@ -157,3 +157,34 @@ La entrega técnica no sustituye la aceptación del responsable. La etapa 2 espe
 ## Aceptación del ciclo de inventario — 14/11/2026
 
 El usuario aceptó «Acepto el cierre y continuar con etapa 3». Se cierra la etapa 2 sobre `99406e0603dccc827e097218421e0b04316d9ae4`, publicado en `dev` y `codex/fix-inventory-consistency`; ambos hashes remotos se comprobaron. [GitHub Actions](https://github.com/DTunjano/ZeroInventory/actions/runs/43655149323) terminó con `success` para ese commit (también pasó la ejecución 43655145545). Esta aceptación no cambia código ni esquema y no requiere repetir las suites ya aprobadas. Comienza la definición de la etapa 3; la pasarela sigue aplazada.
+
+## Entrega técnica de etapa 3 — pedidos y pagos internos
+
+Política aprobada el 14/11/2026: pago aprobado antes de enviar; cancelación antes de envío por ADMIN o cliente propietario; devolución completa por ADMIN. Implementación y matriz detalladas en [pedidos-y-pagos.md](pedidos-y-pagos.md). La etapa espera aceptación del responsable; etapa 4 y pasarela no iniciadas.
+
+| Control | Resultado comprobado |
+| --- | --- |
+| Backend | Typecheck, ESLint, build y 33 unitarias en 9 suites correctos |
+| Integración HTTP/PostgreSQL | 67 correctas, incluyendo 13 nuevas de ciclo, roles/propiedad, importe/actor rechazados, 410, versiones, reintentos, concurrencia, restitución e historial una sola vez y rollback |
+| Frontend | Typecheck, ESLint, 7 unitarias y build correctos; CSV incluye reembolsos; último chequeo posterior a los ajustes finales de botones/errores |
+| Actualización antes de migrar | Copia aislada: 22 tablas anteriores conservadas, adopción de pedidos como versión 0 sin inventar eventos e idempotencia |
+| Protección previa | Respaldo custom privado de 83.442 bytes y catálogo de archivo verificado; contenedor identificado por configuración/labels |
+| Instalación habitual | OrderLifecycle1794614400000 aplicada; 24 tablas de negocio; db:docs regenerado |
+| Actualización final | Nueva copia con esquema actual: 24 tablas conservadas, inventario conciliado y segunda ejecución sin cambios |
+| Diagnóstico final habitual | Sin migraciones pendientes, diferencias de stock, duplicados ni inconsistencias nuevas de compra/pedido/pago/reembolso/eventos/Kardex; aviso separado de 5 históricos sin coincidencia de salida |
+| UI ADMIN | Pedido 1 aprobado/enviado/entregado/devuelto/reembolsado, seis eventos; pedido 3 rechazado, reintentado, aprobado y cancelado con reembolso pendiente |
+| UI CUSTOMER | Pedido 2 cancelado; pago pendiente anulado; conflicto de versión en 390 px conserva motivo, refresco y reintento exitoso |
+| UI EMPLOYEE | Pedido 4 enviado y entregado en 390 px; no ofrece aprobación, rechazo, cancelación, devolución ni reembolso |
+| UI de consulta | Paginación de 12 pedidos, filtro vacío conserva controles, detalle por URL, histórico ficticio solo lectura sin acciones/eventos; temas claro/oscuro y escritorio/móvil |
+| UI Kardex | Vaso QA: stock 10 = saldo 10, salidas originales conservadas y entradas de cancelación/devolución; enlace abre el pedido devuelto versión 6 |
+| Reportes/CSV descargado | 12 pedidos/$69.009, aprobados brutos $50.001, pagos pendientes $8, reembolsos pendientes $12.000 y registrados $38.000; las tres métricas monetarias clave coinciden también al leer el archivo |
+| Diagnóstico QA | Inconsistencias nuevas cero; un histórico incompleto ficticio señalado como se esperaba, sin afectar el reporte de noviembre por tener fecha de 2020 |
+| Limpieza | Pestaña QA cerrada y viewport restaurado; procesos QA detenidos; DB temporal retirada, comprobado reviewDatabaseRemaining: 0; procesos habituales y contenedores ajenos preservados |
+
+Los casos de concurrencia y fallos inducidos se ejecutaron por API/PostgreSQL, no por navegador. Las pantallas nuevas se revisaron manualmente; no se afirma una suite automática E2E de interfaz antes de la etapa 4. Las primeras ejecuciones que detectaron el error SQL no se cuentan como aprobadas: la suite completa final pasó después de corregirlo.
+
+Las capturas privadas `phase3-return-refund-desktop-dark`, `phase3-employee-delivery-mobile-dark`, `phase3-reports-light` y `phase3-legacy-readonly-light` documentan estados finales. El escenario de conflicto móvil se capturó antes del ajuste final de separación del botón de refresco; el chequeo final frontend incluye ese ajuste y no se presenta aquella captura como aprobación visual del cambio posterior.
+
+Los 30 pedidos previos permanecen consultables sin modificación; las cinco diferencias de trazabilidad requieren revisión específica para adoptarlos al nuevo ciclo. No se hicieron cargas Cloudinary, transferencias, facturación real, cambios de dependencias ni nuevos servicios obligatorios. Continúa el arranque con dos consolas. Build mantiene los avisos informativos de Browserslist/tiempo de Babel; no impiden las validaciones.
+
+La publicación y el CI se registran por el commit concreto después de verificarlos; las ejecuciones previas de etapa 2 no certifican esta entrega.

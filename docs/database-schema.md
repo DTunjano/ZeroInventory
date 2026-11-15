@@ -2,7 +2,7 @@
 
 Diccionario generado desde las entidades ORM canónicas. Incluye el estado esperado después de aplicar las migraciones; no contiene registros ni credenciales.
 
-Hay 22 tablas de negocio y la tabla técnica `migrations`. Todas usan claves primarias numéricas generadas. Las relaciones que se muestran abajo son claves foráneas declaradas en TypeORM. `empleado.usuario_id` es una referencia lógica opcional que actualmente no tiene una FK declarada.
+Hay 24 tablas de negocio y la tabla técnica `migrations`. Las PK son numéricas; pedido_reembolso comparte la identidad del pedido, las demás se generan. Las relaciones que se muestran abajo son claves foráneas declaradas en TypeORM. `empleado.usuario_id` es una referencia lógica opcional que actualmente no tiene una FK declarada.
 
 ## Reglas adicionales de las migraciones
 
@@ -14,6 +14,10 @@ Hay 22 tablas de negocio y la tabla técnica `migrations`. Todas usan claves pri
 - compra_evento: FK a compra y usuario, acción válida, snapshot JSON objeto y unicidad (compra_id, version). Sin borrado en cascada.
 - Nuevos instantes de compras/Kardex y fechas de recepción, cancelación y eventos usan timestamptz; fechas históricas sin zona se conservan sin reinterpretar.
 - RECEPCION_COMPRA distingue entradas de compras confirmadas de referencias históricas COMPRA/AJUSTE.
+- Pedidos: versión 0 conserva históricos de solo lectura; nuevos pedidos comienzan en 1. pedido_evento tiene acción válida, motivo obligatorio, solicitud/snapshot JSON objeto y unicidad (pedido_id, version).
+- pedido_reembolso: una fila por pedido, monto positivo y estado PENDIENTE/REGISTRADO con actor/fecha/motivo coherentes. No transfiere dinero ni borra pagos aprobados.
+- CANCELACION_PEDIDO y DEVOLUCION_PEDIDO identifican entradas compensatorias; no se reescriben salidas VENTA. Pagos pendientes cancelados se marcan ANULADO.
+- Nuevos pedidos/pagos/decisiones/reembolsos/eventos usan timestamptz; el calendario de consulta usa America/Bogota y conserva el fallback antiguo.
 - No hay eliminaciones en cascada del historial de ventas o inventario. Los maestros con estado se desactivan; las restricciones de otras relaciones se responden como HTTP 409.
 
 ## Relaciones principales
@@ -38,6 +42,10 @@ erDiagram
   producto ||--o{ pedido_detalle : vendido
   pedido ||--o{ pago : registra
   proveedor ||--o{ compra : recibe
+  pedido ||--o{ pedido_evento : historial
+  usuario ||--o{ pedido_evento : registra
+  pedido ||--o| pedido_reembolso : reembolsa
+  usuario ||--o{ pedido_reembolso : registra
   usuario ||--o{ compra : registra
   compra ||--o{ compra_detalle : contiene
   compra ||--o{ compra_evento : historial
@@ -199,7 +207,7 @@ El contenido multimedia (`media`) es independiente. La relación empleado–usua
 | `costo_unitario` | numeric(14,2) | No |  |
 | `valor_total` | numeric(14,2) | No |  |
 | `referencia_id` | int | No |  |
-| `tipo_referencia` | enum: COMPRA, RECEPCION_COMPRA, VENTA, AJUSTE | No |  |
+| `tipo_referencia` | enum: COMPRA, RECEPCION_COMPRA, CANCELACION_PEDIDO, DEVOLUCION_PEDIDO, VENTA, AJUSTE | No |  |
 | `fecha_movimiento` | timestamp | No |  |
 | `registrado_en` | timestamptz | Sí |  |
 
@@ -226,8 +234,10 @@ El contenido multimedia (`media`) es independiente. La relación empleado–usua
 | `pedido_id` | Number | No | FK → pedido(pedido_id) |
 | `metodo_pago` | enum: EFECTIVO, TRANSFERENCIA | No |  |
 | `monto` | numeric(14,2) | No |  |
-| `estado` | enum: PENDIENTE, APROBADO, RECHAZADO | No |  |
+| `estado` | enum: PENDIENTE, APROBADO, RECHAZADO, ANULADO | No |  |
 | `fecha_pago` | timestamp | No |  |
+| `registrado_en` | timestamptz | Sí |  |
+| `decidido_en` | timestamptz | Sí |  |
 
 ## pedido
 
@@ -241,6 +251,8 @@ El contenido multimedia (`media`) es independiente. La relación empleado–usua
 | `numero_pedido_usuario` | int | No |  |
 | `numero_pedido_usuario_legacy` | int | Sí |  |
 | `fecha` | timestamp | No |  |
+| `version` | int | No |  |
+| `registrada_en` | timestamptz | Sí |  |
 
 ## pedido_detalle
 
@@ -252,6 +264,32 @@ El contenido multimedia (`media`) es independiente. La relación empleado–usua
 | `cantidad` | int | No |  |
 | `precio_unitario` | numeric(14,2) | No |  |
 | `subtotal` | numeric(14,2) | No |  |
+
+## pedido_evento
+
+| Columna | Tipo | NULL | Observación |
+| --- | --- | --- | --- |
+| `evento_id` | Number | No | PK generada |
+| `pedido_id` | Number | No | FK → pedido(pedido_id) |
+| `usuario_id` | Number | No | FK → usuario(usuario_id) |
+| `version` | int | No |  |
+| `accion` | varchar(32) | No |  |
+| `motivo` | text | No |  |
+| `solicitud` | jsonb | No |  |
+| `snapshot` | jsonb | No |  |
+| `fecha` | timestamptz | No |  |
+
+## pedido_reembolso
+
+| Columna | Tipo | NULL | Observación |
+| --- | --- | --- | --- |
+| `pedido_id` | Number | No | PK; FK → pedido(pedido_id) |
+| `estado` | varchar(16) | No |  |
+| `monto` | numeric(14,2) | No |  |
+| `creada_en` | timestamptz | No |  |
+| `registrada_en` | timestamptz | Sí |  |
+| `registrada_por` | Number | Sí | FK → usuario(usuario_id) |
+| `motivo` | text | Sí |  |
 
 ## producto
 

@@ -263,8 +263,9 @@ function CartSummary(props: {
           <label className="text-sm font-medium" htmlFor="metodoPago">Método de pago</label>
           <Select id="metodoPago" value={metodoPago} onChange={(e) => onMetodoPagoChange(e.target.value as 'EFECTIVO' | 'TRANSFERENCIA')}>
             <option value="TRANSFERENCIA">Transferencia</option>
-            <option value="EFECTIVO">Contra entrega</option>
+            <option value="EFECTIVO">Efectivo</option>
           </Select>
+          <p className="text-xs text-muted-foreground">El pago se registra y verifica antes de enviar el pedido. Confirmar la compra no realiza un cobro bancario.</p>
         </div>
 
         <div className="flex flex-col gap-2">

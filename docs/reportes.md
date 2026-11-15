@@ -8,17 +8,18 @@ La petición de completar los pendientes de la etapa 1 amplió el alcance anteri
 - API `GET /admin/reports?dateFrom=2026-11-01&dateTo=2026-11-12` con JWT de acceso. Sin sesión devuelve 401; cliente y empleado reciben 403.
 - Backend `src/reports`: controlador → caso de uso → contrato de repositorio → adaptador TypeORM. El dominio contiene los tipos del resultado y el puerto; no importa ORM.
 - Frontend `src/modules/reports`: modelos, contrato, casos de uso, adaptador HTTP y presentación. React Query usa usuario y período en la clave; la exportación usa la misma respuesta aplicada, no las fechas todavía sin consultar.
-- Cada respuesta se obtiene dentro de una transacción `REPEATABLE READ`, `READ ONLY`, con consultas secuenciales sobre el mismo manager. No se agregan tablas ni migraciones.
+- Cada respuesta se obtiene dentro de una transacción `REPEATABLE READ`, `READ ONLY`, con consultas secuenciales sobre el mismo manager. El módulo no escribe datos; desde etapa 3 también consulta `pedido_reembolso`, creada por la migración del ciclo de pedidos.
 
 ## Períodos y significado de las cifras
 
-Las fechas tienen formato `YYYY-MM-DD`, deben existir y formar un rango inclusivo de 1 a 366 días. Por defecto se consulta del primer día del mes hasta hoy en `America/Bogota`. SQL compara las fechas calendario almacenadas en la DB e incluye todo el último día con un límite superior exclusivo. No se reconstruye la zona horaria de registros históricos.
+Las fechas tienen formato `YYYY-MM-DD`, deben existir y formar un rango inclusivo de 1 a 366 días. Por defecto se consulta del primer día del mes hasta hoy en `America/Bogota`. SQL convierte los nuevos instantes a ese calendario e incluye todo el último día con un límite superior exclusivo. Conserva las fechas antiguas como fallback; no se reconstruye la zona horaria de registros históricos.
 
 | Resultado | Definición |
 | --- | --- |
-| Pedidos registrados / total | Cantidad y suma de `pedido.total` según `pedido.fecha`, incluyendo todos los estados. No representan ingresos cobrados |
+| Pedidos registrados / total | Cantidad y suma de `pedido.total` según `registrada_en` en America/Bogota, con fallback `fecha`, incluyendo todos los estados. No representan ingresos cobrados |
 | Pedidos por día / estado | Agrupación de esos mismos pedidos, sin multiplicarlos por líneas o pagos |
-| Pagos aprobados / pendientes | Suma de `pago.monto` por estado `APROBADO` / `PENDIENTE`, según `pago.fecha_pago`; cada registro de pago cuenta individualmente |
+| Pagos aprobados / pendientes | Suma de `pago.monto` por estado `APROBADO` / `PENDIENTE`, según `decidido_en` o `registrado_en` en America/Bogota, con fallback `fecha_pago`; cada registro cuenta individualmente. Aprobados son brutos y conservan el cobro al reembolsar |
+| Reembolsos pendientes / registrados | Bloque raíz `refunds.pending` / `refunds.registered`: suma de reembolsos en ese estado, según `creada_en` / `registrada_en` en America/Bogota; no modifica las métricas brutas ni ejecuta transferencias |
 | Pagos por método | Solo aprobados, agrupados por método. Son registros internos, sin certificación bancaria |
 | Productos más pedidos | Hasta 10 productos por unidades, desempate por ID; pedidos `CONFIRMADO`, `COMPLETADO` o `ENVIADO`. Excluye cancelados y devueltos. Suma el subtotal persistido de sus líneas |
 | Inventario actual | Productos activos y sus unidades; independiente del período consultado |
@@ -37,3 +38,5 @@ Los nombres/SKU no confiables que comienzan por indicadores de fórmula, incluso
 `backend: pnpm test:integration` comprueba autorización, fechas inexistentes, rangos invertidos/excesivos, parámetros desconocidos, suma de un pedido con varias líneas/pagos y período sin registros. Las unitarias comprueban sumas monetarias grandes y rechazo de valores inseguros. `frontend: pnpm test:unit` comprueba CSV y orden del catálogo.
 
 El navegador verificó 2 pedidos ficticios por $31.000, $19.000 aprobados, $12.000 pendientes, exportación descargada con esos valores, período vacío y error por rango excesivo. Se revisaron temas claro/oscuro y vista móvil de 390 px. Evidencia privada en `.local/functional-evidence/reports-*-validated.jpg`.
+
+La regresión de etapa 3 comprobó por API fechas nuevas de decisión frente a una fecha antigua diferente y reembolsos separados de aprobados. El navegador y el CSV descargado verificaron 12 pedidos por $69.009, aprobados brutos $50.001, pagos pendientes $8, reembolsos pendientes $12.000 y registrados $38.000, con datos ficticios en DB temporal. Ver [pedidos-y-pagos.md](pedidos-y-pagos.md).

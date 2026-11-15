@@ -18,6 +18,8 @@ const references = {
   COMPRA: 'Compra / referencia histórica',
   AJUSTE: 'Ajuste / registro inicial',
   VENTA: 'Venta',
+  CANCELACION_PEDIDO: 'Cancelación de pedido',
+  DEVOLUCION_PEDIDO: 'Devolución de pedido',
 }
 export function ProductMovements({
   product,
@@ -108,6 +110,8 @@ export function ProductMovements({
                             >
                               Compra #{row.referenciaId}
                             </Link>
+                          ) : ['VENTA','CANCELACION_PEDIDO','DEVOLUCION_PEDIDO'].includes(row.tipoReferencia) ? (
+                            <Link className="text-primary underline" to={`/admin/orders?order=${row.referenciaId}`}>{references[row.tipoReferencia]} · Pedido #{row.referenciaId}</Link>
                           ) : (
                             <span>
                               {references[row.tipoReferencia]} #

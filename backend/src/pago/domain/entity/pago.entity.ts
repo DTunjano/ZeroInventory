@@ -7,6 +7,7 @@ export enum EstadoPagoEnum {
   PENDIENTE = 'PENDIENTE',
   APROBADO = 'APROBADO',
   RECHAZADO = 'RECHAZADO',
+  ANULADO = 'ANULADO',
 }
 
 export class Pago {

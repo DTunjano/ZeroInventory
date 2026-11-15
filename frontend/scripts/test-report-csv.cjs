@@ -20,11 +20,14 @@ test('exported untrusted names cannot become spreadsheet formulas', () => {
 test('the CSV includes the applied period, monetary totals and empty sections', () => {
   const csv = reportsCsv({ period: { dateFrom: '2026-11-01', dateTo: '2026-11-12' },
     summary: { orders: 1, orderTotal: 12.5, approvedPayments: 0, pendingPayments: 12.5 },
+    refunds: {pending:2.5,registered:1.25},
     daily: [], states: [], methods: [], topProducts: [{ name: '=QA', units: 1, total: 12.5 }],
     inventory: { activeProducts: 0, units: 0, lowStock: [] } });
   assert.equal(csv.charCodeAt(0), 0xfeff);
   assert.ok(csv.includes('"2026-11-01";"2026-11-12"'));
   assert.ok(csv.includes('"Pagos internos pendientes";"12.5"'));
+  assert.ok(csv.includes('"Reembolsos internos pendientes";"2.5"'));
+  assert.ok(csv.includes('"Reembolsos internos registrados";"1.25"'));
   assert.ok(csv.includes('"\'=QA";"1";"12.5"'));
   assert.ok(csv.includes('\r\n'));
 });

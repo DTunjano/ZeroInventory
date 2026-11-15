@@ -80,7 +80,7 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
   it('migrates a fresh database and is idempotent', async () => {
     expect(await db.showMigrations()).toBe(false);
     expect(await db.runMigrations()).toHaveLength(0);
-    expect((await db.query(`SELECT tablename FROM pg_tables WHERE schemaname='public'`)).length).toBe(23);
+    expect((await db.query(`SELECT tablename FROM pg_tables WHERE schemaname='public'`)).length).toBe(25);
   });
   it('allows public catalogues and blocks unauthenticated private data', async () => {
     await api().get('/productos').expect(200);
@@ -116,8 +116,8 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
     await add(c, first.productoId); await add(c, second.productoId);
     const order = await checkout(c).expect(201);
     const id = order.body.pedidoId as number;
-    await db.query("UPDATE pedido SET fecha='2026-03-01 23:59:59' WHERE pedido_id=$1", [id]);
-    await db.query("UPDATE pago SET estado='APROBADO',fecha_pago='2026-03-02 23:59:59' WHERE pedido_id=$1", [id]);
+    await db.query("UPDATE pedido SET fecha='2026-03-01 23:59:59',registrada_en=NULL WHERE pedido_id=$1", [id]);
+    await db.query("UPDATE pago SET estado='APROBADO',fecha_pago='2026-03-02 23:59:59',registrado_en=NULL,decidido_en=NULL WHERE pedido_id=$1", [id]);
     await db.query("INSERT INTO pago(pedido_id,metodo_pago,monto,estado,fecha_pago) VALUES($1,'TRANSFERENCIA',5,'PENDIENTE','2026-03-02'),($1,'TRANSFERENCIA',500,'APROBADO','2026-03-03')", [id]);
     const report = await api().get('/admin/reports').set(auth(adminToken)).query({ dateFrom: '2026-03-01', dateTo: '2026-03-02' }).expect(200);
     expect(report.body.summary).toEqual({ orders: 1, orderTotal: 30, approvedPayments: 30, pendingPayments: 5 });
@@ -153,8 +153,8 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
     const first = await product(2, 100); const second = await product(2, 200);
     await add(c, first.productoId); const orderA = await checkout(c).expect(201);
     await add(c, second.productoId); const orderB = await checkout(c).expect(201);
-    await db.query("UPDATE pedido SET fecha='2026-01-02 23:59:59',estado='COMPLETADO' WHERE pedido_id=$1", [orderA.body.pedidoId]);
-    await db.query("UPDATE pedido SET fecha='2026-01-03 00:00:00' WHERE pedido_id=$1", [orderB.body.pedidoId]);
+    await db.query("UPDATE pedido SET fecha='2026-01-02 23:59:59',registrada_en=NULL,estado='COMPLETADO' WHERE pedido_id=$1", [orderA.body.pedidoId]);
+    await db.query("UPDATE pedido SET fecha='2026-01-03 00:00:00',registrada_en=NULL WHERE pedido_id=$1", [orderB.body.pedidoId]);
     const sorted = await api().get('/pedidos/me').set(auth(c.token)).query({ sortBy: 'total_asc' }).expect(200);
     expect(sorted.body.map((order: { total: number }) => order.total)).toEqual([100, 200]);
     const filtered = await api().get('/pedidos/me').set(auth(c.token)).query({ dateFrom: '2026-01-02', dateTo: '2026-01-02', estado: 'COMPLETADO' }).expect(200);
@@ -544,6 +544,138 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
       ids.push(result.body.data[0].ajusteInventarioId as number);
     }
     expect(new Set(ids).size).toBe(3);
+  });
+  async function workflowOrder() {
+    const p=await product(5,1.25),c=await customer();await add(c,p.productoId,2);
+    const result=await checkout(c).expect(201);
+    const view=await api().get(`/pedidos/${result.body.pedidoId}`).set(auth(adminToken)).expect(200);
+    return {p,c,id:view.body.pedidoId as number,paymentId:view.body.pago.pagoId as number};
+  }
+  const orderAction=(id:number,action:string,version:number,extra:Record<string,unknown>={},token=adminToken)=>api().post(`/pedidos/${id}/actions/${action}`).set(auth(token)).send({version,motivo:`QA ${action}`,...extra});
+  it('creates a versioned order with an atomic creation snapshot and retires loose writes',async()=>{
+    const o=await workflowOrder();const detail=await api().get(`/pedidos/${o.id}`).set(auth(adminToken)).expect(200);
+    expect(detail.body.version).toBe(1);expect(detail.body.historial).toHaveLength(1);expect(detail.body.historial[0].usuarioId).toBe(o.c.userId);
+    expect(detail.body.historial[0].snapshot.total).toBe(2.5);
+    await api().post('/pedidos').set(auth(adminToken)).send({total:1}).expect(410);
+    await api().put(`/pedidos/${o.id}`).set(auth(adminToken)).send({total:1}).expect(410);
+    await api().delete(`/pedidos/${o.id}`).set(auth(adminToken)).expect(410);
+    await api().post('/pedido-detalles').set(auth(adminToken)).send({}).expect(410);
+    await api().put(`/pedido-detalles/${detail.body.detalles[0].pedidoDetalleId}`).set(auth(adminToken)).send({cantidad:99}).expect(410);
+    await api().delete(`/pedido-detalles/${detail.body.detalles[0].pedidoDetalleId}`).set(auth(adminToken)).expect(410);
+    await api().post('/pagos').set(auth(adminToken)).send({}).expect(410);
+    await api().put(`/pagos/${o.paymentId}`).set(auth(adminToken)).send({monto:1}).expect(410);
+    await api().delete(`/pagos/${o.paymentId}`).set(auth(adminToken)).expect(410);
+    await api().post(`/pagos/${o.paymentId}/confirm`).set(auth(adminToken)).expect(410);
+    await orderAction(o.id,'APROBAR_PAGO',1,{pagoId:o.paymentId,monto:0}).expect(400);
+    await orderAction(o.id,'APROBAR_PAGO',1,{pagoId:o.paymentId,usuarioId:adminId}).expect(400);
+    for(const query of [{page:1.5},{estado:'INVALIDO'},{clienteId:-1},{limit:101}]) await api().get('/pedidos').set(auth(adminToken)).query(query).expect(400);
+    expect(await balance(o.p.productoId)).toBe(3);
+  });
+  it('separates approval from delivery and restricts financial actions to ADMIN',async()=>{
+    const o=await workflowOrder();const employee=await api().post('/usuarios').set(auth(adminToken)).send({username:`order_employee_${++sequence}`,password,roles:['EMPLOYEE']}).expect(201);
+    const login=await api().post('/auth/login').send({username:employee.body.username,password}).expect(201);const token=login.body.accessToken as string;
+    await orderAction(o.id,'ENVIAR',1).expect(409);await orderAction(o.id,'ENTREGAR',1).expect(409);
+    await orderAction(o.id,'APROBAR_PAGO',1,{pagoId:o.paymentId},token).expect(403);
+    const paid=await orderAction(o.id,'APROBAR_PAGO',1,{pagoId:o.paymentId}).expect(200);
+    expect(paid.body.estado).toBe('CONFIRMADO');expect(paid.body.pago.estado).toBe('APROBADO');
+    await orderAction(o.id,'DEVOLVER',2).expect(409);await orderAction(o.id,'ENVIAR',2,{},token).expect(200);
+    await orderAction(o.id,'CANCELAR',3).expect(409);await orderAction(o.id,'ENTREGAR',3,{},token).expect(200);
+    await orderAction(o.id,'DEVOLVER',4,{},token).expect(403);
+    expect(await balance(o.p.productoId)).toBe(3);
+  });
+  it('preserves rejected attempts and only approves the current full amount',async()=>{
+    const o=await workflowOrder();await orderAction(o.id,'RECHAZAR_PAGO',1,{pagoId:o.paymentId}).expect(200);
+    expect(await balance(o.p.productoId)).toBe(3);await orderAction(o.id,'ENVIAR',2).expect(409);
+    const retry=await orderAction(o.id,'REINTENTAR_PAGO',2).expect(200);expect(retry.body.pagos).toHaveLength(2);
+    expect(retry.body.pagos[1].estado).toBe('RECHAZADO');expect(retry.body.pago.monto).toBe(2.5);
+    await orderAction(o.id,'APROBAR_PAGO',3,{pagoId:o.paymentId}).expect(409);
+    const paid=await orderAction(o.id,'APROBAR_PAGO',3,{pagoId:retry.body.pago.pagoId}).expect(200);
+    expect(paid.body.pagos.filter((p:{estado:string})=>p.estado==='APROBADO')).toHaveLength(1);
+  });
+  it('cancels an owned order once concurrently and never exposes another customer order',async()=>{
+    const o=await workflowOrder(),other=await customer();const route=`/pedidos/me/${o.id}/cancel`;
+    await api().get(`/pedidos/me/${o.id}`).set(auth(other.token)).expect(404);
+    await api().post(route).set(auth(other.token)).send({version:1,motivo:'QA cliente ajeno'}).expect(404);
+    await api().post(route).set(auth(o.c.token)).send({version:1,motivo:'  '}).expect(400);
+    await api().delete(`/productos/${o.p.productoId}`).set(auth(adminToken)).expect(200);
+    const call=()=>api().post(route).set(auth(o.c.token)).send({version:1,motivo:'QA cancelación propia'});
+    const responses=await Promise.all([call(),call()]);expect(responses.map(r=>r.status)).toEqual([200,200]);
+    expect(responses[0].body.estado).toBe('CANCELADO');expect(responses[0].body.pago.estado).toBe('ANULADO');expect(responses[0].body.reembolso).toBeNull();
+    expect(responses[0].body.historial).toHaveLength(2);expect(await balance(o.p.productoId)).toBe(5);
+  });
+  it('keeps paid cancellation and refund as distinct idempotent audited operations',async()=>{
+    const o=await workflowOrder();await orderAction(o.id,'APROBAR_PAGO',1,{pagoId:o.paymentId}).expect(200);
+    const cancelled=await orderAction(o.id,'CANCELAR',2).expect(200);expect(cancelled.body.reembolso.estado).toBe('PENDIENTE');expect(cancelled.body.pago.estado).toBe('APROBADO');
+    expect(await balance(o.p.productoId)).toBe(5);
+    const refunds=await Promise.all([orderAction(o.id,'REGISTRAR_REEMBOLSO',3),orderAction(o.id,'REGISTRAR_REEMBOLSO',3)]);
+    expect(refunds.map(r=>r.status)).toEqual([200,200]);expect(refunds[0].body.reembolso.monto).toBe(2.5);expect(refunds[0].body.historial).toHaveLength(4);
+    await orderAction(o.id,'CANCELAR',2).expect(200);await orderAction(o.id,'ENVIAR',4).expect(409);
+    expect(await balance(o.p.productoId)).toBe(5);
+  });
+  it('receives complete returns once and retains original sale and refund evidence',async()=>{
+    const o=await workflowOrder();await orderAction(o.id,'APROBAR_PAGO',1,{pagoId:o.paymentId}).expect(200);await orderAction(o.id,'ENVIAR',2).expect(200);await orderAction(o.id,'ENTREGAR',3).expect(200);
+    const results=await Promise.all([orderAction(o.id,'DEVOLVER',4),orderAction(o.id,'DEVOLVER',4)]);expect(results.map(r=>r.status)).toEqual([200,200]);
+    expect(results[0].body.estado).toBe('DEVUELTO');expect(results[0].body.reembolso.estado).toBe('PENDIENTE');expect(await balance(o.p.productoId)).toBe(5);
+    const moves=await db.query("SELECT tipo_referencia,SUM(cantidad)::int AS qty FROM kardex WHERE producto_id=$1 AND tipo_referencia IN ('VENTA','DEVOLUCION_PEDIDO') GROUP BY tipo_referencia",[o.p.productoId]);
+    expect(moves).toEqual(expect.arrayContaining([{tipo_referencia:'VENTA',qty:2},{tipo_referencia:'DEVOLUCION_PEDIDO',qty:2}]));
+    await orderAction(o.id,'REGISTRAR_REEMBOLSO',5).expect(200);
+  });
+  it('serializes shipping versus cancellation without a partial stock effect',async()=>{
+    const o=await workflowOrder();await orderAction(o.id,'APROBAR_PAGO',1,{pagoId:o.paymentId}).expect(200);
+    const results=await Promise.all([orderAction(o.id,'ENVIAR',2),orderAction(o.id,'CANCELAR',2)]);expect(results.map(r=>r.status).sort()).toEqual([200,409]);
+    const view=await api().get(`/pedidos/${o.id}`).set(auth(adminToken)).expect(200);expect(await balance(o.p.productoId)).toBe(view.body.estado==='CANCELADO'?5:3);
+  });
+  it('rolls back cancellation, payment, refund and stock when the final event fails',async()=>{
+    const o=await workflowOrder();await orderAction(o.id,'APROBAR_PAGO',1,{pagoId:o.paymentId}).expect(200);
+    await db.query(`CREATE FUNCTION qa_order_event_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.pedido_id=${o.id} AND NEW.accion='CANCELAR' THEN RAISE EXCEPTION 'QA final event'; END IF; RETURN NEW; END $$`);
+    await db.query('CREATE TRIGGER qa_order_event_failure BEFORE INSERT ON pedido_evento FOR EACH ROW EXECUTE FUNCTION qa_order_event_failure()');
+    try {await orderAction(o.id,'CANCELAR',2).expect(500);} finally {await db.query('DROP TRIGGER qa_order_event_failure ON pedido_evento');await db.query('DROP FUNCTION qa_order_event_failure()');}
+    const view=await api().get(`/pedidos/${o.id}`).set(auth(adminToken)).expect(200);expect(view.body.estado).toBe('CONFIRMADO');expect(view.body.version).toBe(2);expect(view.body.reembolso).toBeNull();expect(view.body.historial).toHaveLength(2);expect(await balance(o.p.productoId)).toBe(3);
+  });
+  it('rolls back payment approval when its audit event fails',async()=>{
+    const o=await workflowOrder();
+    await db.query(`CREATE FUNCTION qa_payment_event_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.pedido_id=${o.id} AND NEW.accion='APROBAR_PAGO' THEN RAISE EXCEPTION 'QA payment event'; END IF; RETURN NEW; END $$`);
+    await db.query('CREATE TRIGGER qa_payment_event_failure BEFORE INSERT ON pedido_evento FOR EACH ROW EXECUTE FUNCTION qa_payment_event_failure()');
+    try{await orderAction(o.id,'APROBAR_PAGO',1,{pagoId:o.paymentId}).expect(500);}finally{await db.query('DROP TRIGGER qa_payment_event_failure ON pedido_evento');await db.query('DROP FUNCTION qa_payment_event_failure()');}
+    const view=await api().get(`/pedidos/${o.id}`).set(auth(adminToken)).expect(200);expect(view.body.version).toBe(1);expect(view.body.pago.estado).toBe('PENDIENTE');expect(view.body.historial).toHaveLength(1);expect(await balance(o.p.productoId)).toBe(3);
+  });
+  it('rolls back checkout when its creation event cannot be saved',async()=>{
+    const p=await product(5),c=await customer();await add(c,p.productoId,2);
+    await db.query(`CREATE FUNCTION qa_checkout_event_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.accion='CREADO' AND EXISTS(SELECT 1 FROM pedido WHERE pedido_id=NEW.pedido_id AND cliente_id=${c.clientId}) THEN RAISE EXCEPTION 'QA checkout event'; END IF; RETURN NEW; END $$`);
+    await db.query('CREATE TRIGGER qa_checkout_event_failure BEFORE INSERT ON pedido_evento FOR EACH ROW EXECUTE FUNCTION qa_checkout_event_failure()');
+    try{await checkout(c).expect(500);}finally{await db.query('DROP TRIGGER qa_checkout_event_failure ON pedido_evento');await db.query('DROP FUNCTION qa_checkout_event_failure()');}
+    expect(await balance(p.productoId)).toBe(5);expect((await api().get('/carritos/me').set(auth(c.token)).expect(200)).body.items).toHaveLength(1);
+    expect(await db.query('SELECT pedido_id FROM pedido WHERE cliente_id=$1',[c.clientId])).toHaveLength(0);
+  });
+  it('rolls back a second restitution line and a later refund event',async()=>{
+    const first=await product(5),second=await product(5),c=await customer();await add(c,first.productoId);await add(c,second.productoId);
+    const result=await checkout(c).expect(201),id=result.body.pedidoId as number;
+    const view=await api().get(`/pedidos/${id}`).set(auth(adminToken)).expect(200);
+    await orderAction(id,'APROBAR_PAGO',1,{pagoId:view.body.pago.pagoId}).expect(200);
+    await db.query(`CREATE FUNCTION qa_restore_line_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.tipo_referencia='CANCELACION_PEDIDO' AND NEW.producto_id=${second.productoId} THEN RAISE EXCEPTION 'QA restitution line'; END IF; RETURN NEW; END $$`);
+    await db.query('CREATE TRIGGER qa_restore_line_failure BEFORE INSERT ON kardex FOR EACH ROW EXECUTE FUNCTION qa_restore_line_failure()');
+    try{await orderAction(id,'CANCELAR',2).expect(500);}finally{await db.query('DROP TRIGGER qa_restore_line_failure ON kardex');await db.query('DROP FUNCTION qa_restore_line_failure()');}
+    expect(await balance(first.productoId)).toBe(4);expect(await balance(second.productoId)).toBe(4);
+    await orderAction(id,'CANCELAR',2).expect(200);
+    await db.query(`CREATE FUNCTION qa_refund_event_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.pedido_id=${id} AND NEW.accion='REGISTRAR_REEMBOLSO' THEN RAISE EXCEPTION 'QA refund event'; END IF; RETURN NEW; END $$`);
+    await db.query('CREATE TRIGGER qa_refund_event_failure BEFORE INSERT ON pedido_evento FOR EACH ROW EXECUTE FUNCTION qa_refund_event_failure()');
+    try{await orderAction(id,'REGISTRAR_REEMBOLSO',3).expect(500);}finally{await db.query('DROP TRIGGER qa_refund_event_failure ON pedido_evento');await db.query('DROP FUNCTION qa_refund_event_failure()');}
+    const after=await api().get(`/pedidos/${id}`).set(auth(adminToken)).expect(200);expect(after.body.version).toBe(3);expect(after.body.reembolso.estado).toBe('PENDIENTE');expect(await balance(first.productoId)).toBe(5);
+  });
+  it('reports gross decisions and separate pending/registered refunds on their own calendar',async()=>{
+    const date=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Bogota',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+    const report=()=>api().get('/admin/reports').set(auth(adminToken)).query({dateFrom:date,dateTo:date});
+    const before=await report().expect(200),o=await workflowOrder();await orderAction(o.id,'APROBAR_PAGO',1,{pagoId:o.paymentId}).expect(200);
+    await db.query("UPDATE pago SET fecha_pago='1900-01-01',registrado_en='1900-01-01T00:00:00Z' WHERE pago_id=$1",[o.paymentId]);
+    await orderAction(o.id,'CANCELAR',2).expect(200);
+    const pending=await report().expect(200);expect(pending.body.refunds.pending-before.body.refunds.pending).toBe(2.5);expect(pending.body.summary.approvedPayments-before.body.summary.approvedPayments).toBe(2.5);
+    await orderAction(o.id,'REGISTRAR_REEMBOLSO',3).expect(200);
+    const registered=await report().expect(200);expect(registered.body.refunds.pending).toBe(before.body.refunds.pending);expect(registered.body.refunds.registered-before.body.refunds.registered).toBe(2.5);expect(registered.body.summary.approvedPayments).toBe(pending.body.summary.approvedPayments);
+  });
+  it('preserves pre-workflow orders without inventing stock restitution',async()=>{
+    const c=await customer();const [legacy]=await db.query("INSERT INTO pedido(cliente_id,direccion_id,estado,total,numero_pedido_usuario) VALUES($1,$2,'CONFIRMADO',9,1) RETURNING pedido_id",[c.clientId,c.addressId]);
+    const view=await api().get(`/pedidos/${legacy.pedido_id}`).set(auth(adminToken)).expect(200);expect(view.body.version).toBe(0);expect(view.body.historial).toEqual([]);
+    await orderAction(legacy.pedido_id as number,'CANCELAR',1).expect(409);
   });
   it('allows only one of two customers to buy the final unit', async () => {
     const p = await product(1); const first = await customer(); const second = await customer();

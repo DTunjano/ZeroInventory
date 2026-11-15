@@ -13,7 +13,7 @@ export interface OrderPayment {
   pedidoId: number;
   metodoPago: 'EFECTIVO' | 'TRANSFERENCIA';
   monto: number;
-  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ANULADO';
   fechaPago: Date | string;
 }
 
@@ -29,6 +29,15 @@ export interface Order {
   fecha: Date | string;
   detalles: OrderItem[];
   pago: OrderPayment | null;
+  version: number;
+  pagos: OrderPayment[];
+  reembolso: { estado: 'PENDIENTE' | 'REGISTRADO'; monto: number; creadaEn: string; registradaEn: string | null; registradaPor: number | null; motivo: string | null } | null;
+  historial: { eventoId: number; version: number; accion: OrderAction | 'CREADO'; usuarioId: number; motivo: string; fecha: string; snapshot: { estado: OrderStatus; total: number; detalles: OrderItem[]; pagos: OrderPayment[] } }[];
 }
+
+export type OrderAction = 'ENVIAR' | 'ENTREGAR' | 'CANCELAR' | 'DEVOLVER' | 'APROBAR_PAGO' | 'RECHAZAR_PAGO' | 'REINTENTAR_PAGO' | 'REGISTRAR_REEMBOLSO';
+export interface OrderCommand { version: number; motivo: string; pagoId?: number }
+export interface OrderSummary { pedidoId: number; numeroPedidoUsuario: number; clienteId: number; estado: OrderStatus; total: number; fecha: string; version: number }
+export interface OrderPage { data: OrderSummary[]; total: number; totalPages: number; page: number; limit: number }
 
 export type GetOrdersInput = undefined;

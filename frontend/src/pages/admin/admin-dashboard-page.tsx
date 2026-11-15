@@ -87,9 +87,9 @@ export function AdminDashboardPage() {
           trend={ordersGrowth}
         />
         <DashboardStatCard
-          title="Ingresos"
+          title="Cobros brutos"
           value={formatCurrency(data.summary.totalIngresos)}
-          description="Pagos aprobados"
+          description="Pagos internos aprobados, antes de reembolsos"
           icon={Banknote}
           trend={revenueGrowth}
         />
@@ -126,7 +126,7 @@ export function AdminDashboardPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <DashboardPanelCard title="Resumen de Ingresos" description="Desempeño de ventas mensual">
+        <DashboardPanelCard title="Cobros brutos por mes" description="Desempeño de ventas mensual">
           <div className="mb-4 flex flex-wrap gap-2">
             <DashboardLegendChip label="Ingresos aprobados" color="#3b82f6" />
           </div>

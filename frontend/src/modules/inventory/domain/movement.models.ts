@@ -6,7 +6,7 @@ export interface InventoryMovement {
   costoUnitario: number
   valorTotal: number
   referenciaId: number
-  tipoReferencia: 'COMPRA' | 'VENTA' | 'AJUSTE' | 'RECEPCION_COMPRA'
+  tipoReferencia: 'COMPRA' | 'VENTA' | 'AJUSTE' | 'RECEPCION_COMPRA' | 'CANCELACION_PEDIDO' | 'DEVOLUCION_PEDIDO'
   fechaMovimiento: string
 }
 export interface InventoryMovementPage {

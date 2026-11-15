@@ -100,6 +100,8 @@ export class GetAdminDashboardUseCase {
   async ejecutar(): Promise<AdminDashboardResponse> {
     const periods = getLastPeriods(12)
     const completedOrderConditions = getCompletedOrderConditions()
+    const paymentCalendar = "COALESCE(COALESCE(pago.decididoEn, pago.registradoEn) AT TIME ZONE 'America/Bogota', pago.fechaPago)"
+    const paymentInstant = "COALESCE(pago.decididoEn, pago.registradoEn, pago.fechaPago AT TIME ZONE 'UTC')"
     const movementCalendar = "COALESCE(kardex.registradoEn AT TIME ZONE 'America/Bogota', kardex.fechaMovimiento)"
     // Legacy timestamps keep their previous UTC interpretation in API responses.
     const movementInstant = "COALESCE(kardex.registradoEn, kardex.fechaMovimiento AT TIME ZONE 'UTC')"
@@ -146,23 +148,23 @@ export class GetAdminDashboardUseCase {
         .getRepository(PedidoEntityORM)
         .createQueryBuilder('pedido')
         .innerJoin(PagoEntityORM, 'pago', 'pago.pedidoId = pedido.pedidoId')
-        .select("TO_CHAR(DATE_TRUNC('month', pago.fechaPago), 'YYYY-MM')", 'period')
+        .select(`TO_CHAR(DATE_TRUNC('month', ${paymentCalendar}), 'YYYY-MM')`, 'period')
         .addSelect('SUM(pago.monto)', 'value')
         .andWhere('pago.estado = :paymentState', { paymentState: completedOrderConditions.paymentState })
-        .andWhere(`pago.fechaPago >= (CURRENT_DATE - INTERVAL '5 months')`)
-        .groupBy("DATE_TRUNC('month', pago.fechaPago)")
-        .orderBy("DATE_TRUNC('month', pago.fechaPago)", 'ASC')
+        .andWhere(`${paymentCalendar} >= (CURRENT_DATE - INTERVAL '5 months')`)
+        .groupBy(`DATE_TRUNC('month', ${paymentCalendar})`)
+        .orderBy(`DATE_TRUNC('month', ${paymentCalendar})`, 'ASC')
         .getRawMany<RawValueRow>(),
       this.dataSource
         .getRepository(PedidoEntityORM)
         .createQueryBuilder('pedido')
         .innerJoin(PagoEntityORM, 'pago', 'pago.pedidoId = pedido.pedidoId')
         .andWhere('pago.estado = :paymentState', { paymentState: completedOrderConditions.paymentState })
-        .andWhere(`pago.fechaPago >= (CURRENT_DATE - INTERVAL '5 months')`)
-        .select("TO_CHAR(DATE_TRUNC('month', pago.fechaPago), 'YYYY-MM')", 'period')
+        .andWhere(`${paymentCalendar} >= (CURRENT_DATE - INTERVAL '5 months')`)
+        .select(`TO_CHAR(DATE_TRUNC('month', ${paymentCalendar}), 'YYYY-MM')`, 'period')
         .addSelect('COUNT(*)', 'value')
-        .groupBy("DATE_TRUNC('month', pago.fechaPago)")
-        .orderBy("DATE_TRUNC('month', pago.fechaPago)", 'ASC')
+        .groupBy(`DATE_TRUNC('month', ${paymentCalendar})`)
+        .orderBy(`DATE_TRUNC('month', ${paymentCalendar})`, 'ASC')
         .getRawMany<RawValueRow>(),
       this.dataSource
         .getRepository(KardexEntityORM)
@@ -208,7 +210,7 @@ export class GetAdminDashboardUseCase {
         .select('pedido.pedidoId', 'orderId')
         .addSelect('pedido.total', 'total')
         .addSelect('pedido.estado', 'state')
-        .addSelect('pago.fechaPago', 'date')
+        .addSelect(paymentInstant, 'date')
         .addSelect('pago.estado', 'paymentStatus')
         .addSelect('pago.metodoPago', 'paymentMethod')
         .addSelect('COALESCE(SUM(detalle.cantidad), 0)', 'itemsCount')
@@ -219,13 +221,13 @@ export class GetAdminDashboardUseCase {
         .groupBy('pedido.pedidoId')
         .addGroupBy('pedido.total')
         .addGroupBy('pedido.estado')
-        .addGroupBy('pago.fechaPago')
+        .addGroupBy(paymentInstant)
         .addGroupBy('pago.estado')
         .addGroupBy('pago.metodoPago')
         .addGroupBy('usuario.username')
         .addGroupBy('usuario.primer_nombre')
         .addGroupBy('usuario.primer_apellido')
-        .orderBy('pago.fechaPago', 'DESC')
+        .orderBy(paymentInstant, 'DESC')
         .limit(5)
         .getRawMany<RawOrderRow>(),
       this.dataSource

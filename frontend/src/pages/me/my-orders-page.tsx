@@ -24,11 +24,15 @@ import { Input } from '@/shared/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { DropdownSelect } from '@/shared/components/DropdownSelect'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { useAuthStore } from '@/modules/auth/application/auth.store'
+import { OrderActions } from '@/modules/orders/presentation/order-actions'
+import { OrderHistory } from '@/modules/orders/presentation/order-history'
 
 
 
 function formatDate(date: string | Date): string {
   return new Intl.DateTimeFormat('es-CO', {
+    timeZone: 'America/Bogota',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -55,9 +59,9 @@ function getStatusBadgeVariant(estado: Order['estado']): 'default' | 'secondary'
 function getStatusLabel(estado: Order['estado']): string {
   switch (estado) {
     case 'CONFIRMADO':
-      return 'Pendiente'
+      return 'Confirmado'
     case 'COMPLETADO':
-      return 'Pagado'
+      return 'Entregado'
     case 'ENVIADO':
       return 'Enviado'
     case 'CANCELADO':
@@ -70,7 +74,7 @@ function getStatusLabel(estado: Order['estado']): string {
 }
 
 function getPaymentLabel(metodoPago: NonNullable<Order['pago']>['metodoPago']): string {
-  return metodoPago === 'EFECTIVO' ? 'Contra entrega' : 'Transferencia'
+  return metodoPago === 'EFECTIVO' ? 'Efectivo' : 'Transferencia'
 }
 
 function getPaymentBadgeVariant(estado: NonNullable<Order['pago']>['estado']): 'default' | 'secondary' | 'destructive' {
@@ -116,7 +120,7 @@ function OrderDetailCard(props: { order: Order }) {
   const paymentMethod = order.pago ? getPaymentLabel(order.pago.metodoPago) : 'Sin pago'
 
   return (
-    <Card className="group overflow-hidden border-border/70 bg-card/95 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-950/10">
+    <Card role="article" aria-label={`Pedido #${order.numeroPedidoUsuario}`} className="group overflow-hidden border-border/70 bg-card/95 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-950/10">
       <div className="h-1 bg-gradient-to-r from-blue-500 via-cyan-400 to-slate-300" />
       <CardContent className="space-y-5 p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -164,8 +168,8 @@ function OrderDetailCard(props: { order: Order }) {
           />
           <StatCard
             label="Entrega"
-            value={order.estado === 'ENVIADO' ? 'En camino' : 'En preparación'}
-            description={order.estado === 'ENVIADO' ? 'Tu pedido ya salió' : 'Todavía en proceso'}
+            value={order.estado === 'ENVIADO' ? 'En camino' : order.estado === 'CONFIRMADO' ? 'En preparación' : getStatusLabel(order.estado)}
+            description={order.estado === 'ENVIADO' ? 'Tu pedido ya salió' : order.estado === 'CONFIRMADO' ? 'Pendiente de envío' : order.estado === 'COMPLETADO' ? 'Recepción del cliente confirmada' : order.estado === 'DEVUELTO' ? 'Productos recibidos de vuelta' : 'No se realizará el envío'}
             icon={<Truck className="h-5 w-5" />}
           />
         </div>
@@ -232,7 +236,7 @@ function OrderDetailCard(props: { order: Order }) {
                               ? 'Pendiente'
                               : order.pago.estado === 'APROBADO'
                                 ? 'Aprobado'
-                                : 'Rechazado'}
+                                : order.pago.estado === 'ANULADO' ? 'Anulado' : 'Rechazado'}
                           </Badge>
                         </div>
                       </div>
@@ -241,7 +245,7 @@ function OrderDetailCard(props: { order: Order }) {
                         <p className="mt-1 font-medium text-foreground">{formatPrice(order.pago.monto)}</p>
                       </div>
                       <div className="rounded-xl bg-card/80 p-3">
-                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Fecha de pago</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Fecha del registro o decisión</p>
                         <p className="mt-1 font-medium text-foreground">{formatDate(order.pago.fechaPago)}</p>
                       </div>
                     </div>
@@ -257,6 +261,8 @@ function OrderDetailCard(props: { order: Order }) {
           )}
         </AnimatePresence>
 
+        <OrderActions order={order} customer />
+        <OrderHistory order={order} />
         <div className="flex justify-end">
           <Button
             variant={expanded ? 'secondary' : 'ghost'}
@@ -291,6 +297,7 @@ function EmptyState() {
 }
 
 export function MyOrdersPage() {
+  const user=useAuthStore(state=>state.user)
   // Filters
   const [statusFilter, setStatusFilter] = useState<'ALL' | Order['estado']>('ALL')
   const [dateFrom, setDateFrom] = useState<string | null>(null)
@@ -298,7 +305,7 @@ export function MyOrdersPage() {
   const [sortBy, setSortBy] = useState<'fecha_desc' | 'fecha_asc' | 'total_desc' | 'total_asc'>('fecha_desc')
 
   const ordersQuery = useQuery({
-    queryKey: [...ordersQueryKey, statusFilter, dateFrom ?? '', dateTo ?? '', sortBy],
+    queryKey: [...ordersQueryKey, user?.usuarioId, statusFilter, dateFrom ?? '', dateTo ?? '', sortBy],
     queryFn: () =>
       getMyOrders({
         ...(statusFilter !== 'ALL' ? { estado: statusFilter } : {}),
@@ -362,7 +369,7 @@ export function MyOrdersPage() {
             icon={<ShoppingBag className="h-5 w-5" />}
           />
           <StatCard
-            label="Gastado"
+            label="Total de pedidos"
             value={formatPrice(summary.totalSpent)}
             description="Total de los pedidos mostrados"
             icon={<CircleDollarSign className="h-5 w-5" />}
@@ -411,7 +418,7 @@ export function MyOrdersPage() {
                     options={[
                       { value: 'ALL', label: 'Todos' } as any,
                       { value: 'CONFIRMADO', label: 'Pendiente' } as any,
-                      { value: 'COMPLETADO', label: 'Pagado' } as any,
+                      { value: 'COMPLETADO', label: 'Entregado' } as any,
                       { value: 'ENVIADO', label: 'Enviado' } as any,
                       { value: 'CANCELADO', label: 'Cancelado' } as any,
                       { value: 'DEVUELTO', label: 'Devuelto' } as any,

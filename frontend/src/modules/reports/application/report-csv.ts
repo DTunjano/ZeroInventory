@@ -13,6 +13,7 @@ export function reportsCsv(report: ReportsSnapshot): string {
     ['Métrica', 'Valor COP / cantidad'],
     ['Pedidos registrados', report.summary.orders], ['Total de pedidos', report.summary.orderTotal],
     ['Pagos internos aprobados', report.summary.approvedPayments], ['Pagos internos pendientes', report.summary.pendingPayments],
+    ['Reembolsos internos pendientes', report.refunds?.pending ?? 0], ['Reembolsos internos registrados', report.refunds?.registered ?? 0],
     [], ['Fecha de pedido', 'Pedidos', 'Total COP'], ...report.daily.map((row) => [row.date, row.orders, row.total]),
     [], ['Estado de pedido', 'Pedidos', 'Total COP'], ...report.states.map((row) => [row.state, row.orders, row.total]),
     [], ['Método de pago aprobado', 'Registros', 'Monto COP'], ...report.methods.map((row) => [row.method, row.payments, row.amount]),

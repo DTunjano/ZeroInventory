@@ -21,6 +21,7 @@ const StoreHomePage = lazy(() => import('@/pages/store/store-home-page').then((m
 const LoginPage = lazy(() => import('@/pages/login-page').then((module) => ({ default: module.LoginPage })))
 const MyCartPage = lazy(() => import('@/pages/me/my-cart-page').then((module) => ({ default: module.MyCartPage })))
 const MyOrdersPage = lazy(() => import('@/pages/me/my-orders-page').then((module) => ({ default: module.MyOrdersPage })))
+const AdminOrdersPage = lazy(() => import('@/modules/orders/presentation/admin-orders-page').then(module => ({default:module.AdminOrdersPage})))
 const MyDireccionesPage = lazy(() => import('@/pages/me/my-direcciones-page').then((module) => ({ default: module.MyDireccionesPage })))
 const RegisterPage = lazy(() => import('@/pages/register-page').then((module) => ({ default: module.RegisterPage })))
 const NotFoundPage = lazy(() => import('@/pages/not-found-page').then((module) => ({ default: module.NotFoundPage })))
@@ -60,6 +61,7 @@ export function App() {
               <Route path="admin/inventory-adjustments" element={<AdminInventoryAdjustmentsPage />} />
               <Route path="admin/products" element={<AdminProductsPage />} />
               <Route path="admin/purchases" element={<PurchasesPage />} />
+              <Route path="admin/orders" element={<AdminOrdersPage />} />
               <Route path="admin/suppliers" element={<AdminSuppliersPage />} />
             </Route>
 

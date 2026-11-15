@@ -76,6 +76,16 @@ Al generar 16 ajustes ficticios se comprobó que la auditoría mostraba 16 filas
 
 Al reanudar la sesión Docker Desktop estaba detenido: faltaba el pipe del motor y la primera prueba de actualización no pudo conectar. Tras arrancarlo, la misma prueba pasó conservando las 22 tablas. Este incidente era del entorno; no requirió borrar datos ni modificar el esquema para conseguir conexión.
 
+## Hallazgos del ciclo de pedidos — etapa 3
+
+La composición anterior permitía CRUD independientes de pedido, detalle y pago. La confirmación de pago también completaba la entrega mediante escrituras separadas. Se retiraron esas vías con 410 y se compuso un workflow con autorización por operación, versión, bloqueo de cabecera, evento y escrituras en una sola transacción. Aprobar y entregar son acciones distintas, según la política aprobada.
+
+El diagnóstico real encontró 30 pedidos CONFIRMADO y 30 pagos PENDIENTE, con totales coherentes y sin pagos múltiples; en 5 pedidos las cantidades por producto no coincidían con sus salidas VENTA referenciadas. Esto no equivale a un descuadre del stock actual, que está conciliado. La migración preserva todos los anteriores en versión 0 de solo lectura; no los aprueba, cancela ni devuelve automáticamente. La adopción individual requeriría evidencia adicional. `db:check` informa el conteo histórico aparte de las inconsistencias del nuevo ciclo.
+
+Las regresiones detectaron una referencia SQL no traducida en el dashboard (`pago.registradoen`): el reemplazo de propiedades de QueryBuilder necesitaba espacios entre argumentos de COALESCE. La consulta se corrigió y la suite final de 67 integraciones pasó, incluyendo fechas nuevas de decisión frente a fechas antiguas diferentes. No se ocultó el error con un resultado vacío.
+
+Al reanudar QA coexistían servidores del usuario en IPv6 y servidores ficticios en IPv4. Abrir localhost alcanzaba la API habitual y rechazaba las credenciales ficticias; no era un fallo del login. QA se ejecutó con frontend/API ambos en 127.0.0.1 y `VITE_API_URL` explícita, sin detener los procesos del usuario. Los dos procesos y la DB temporal de QA fueron retirados al terminar.
+
 ## Datos y secretos
 
 El respaldo previo está en `.local/backups/zero-inventory-before-fixes.dump` y se excluye de Git. Los archivos de entorno también se excluyen. No se incluyen contraseñas, tokens, datos de clientes ni contenido del dump en este diagnóstico. Las credenciales de volúmenes ya inicializados deben administrarse en su servicio; editar una variable de inicialización no cambia una contraseña persistida.

@@ -48,6 +48,12 @@ const client = new Client({ host: process.env.DB_HOST, port: Number(process.env.
       before[table] = Number((await ds.query(`SELECT count(*) AS n FROM "${table}"`))[0].n);
     }
     await ds.runMigrations({ transaction: 'all' });
+    if (before.pedido && before.pedido_evento === undefined) {
+      const [adoptedOrders] = await ds.query('SELECT count(*)::int AS n FROM pedido WHERE version=0');
+      if (adoptedOrders.n !== before.pedido) throw new Error('La adopción alteró el ciclo de los pedidos anteriores');
+      const [inventedEvents] = await ds.query('SELECT count(*)::int AS n FROM pedido_evento');
+      if (inventedEvents.n !== 0) throw new Error('Se inventó historial de pedidos anteriores');
+    }
     if (legacyPurchase) {
       const [adopted] = await ds.query('SELECT estado,version,total,recibida_por,recibida_en FROM compra WHERE compra_id=$1', [legacyPurchase]);
       if (adopted.estado !== 'LEGACY' || adopted.version !== 1 || adopted.total !== '20.00' || adopted.recibida_por !== null || adopted.recibida_en !== null) throw new Error('La adopción de compras alteró el historial');

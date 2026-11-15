@@ -7,9 +7,9 @@ export class PagoMapper {
       entity.pagoId,
       entity.pedidoId,
       entity.metodoPago,
-      entity.monto,
+      Number(entity.monto),
       entity.estado,
-      entity.fechaPago,
+      entity.decididoEn ?? entity.registradoEn ?? entity.fechaPago,
     );
   }
 
