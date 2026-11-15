@@ -187,4 +187,4 @@ Las capturas privadas `phase3-return-refund-desktop-dark`, `phase3-employee-deli
 
 Los 30 pedidos previos permanecen consultables sin modificación; las cinco diferencias de trazabilidad requieren revisión específica para adoptarlos al nuevo ciclo. No se hicieron cargas Cloudinary, transferencias, facturación real, cambios de dependencias ni nuevos servicios obligatorios. Continúa el arranque con dos consolas. Build mantiene los avisos informativos de Browserslist/tiempo de Babel; no impiden las validaciones.
 
-La publicación y el CI se registran por el commit concreto después de verificarlos; las ejecuciones previas de etapa 2 no certifican esta entrega.
+La entrega técnica `634d5c10059f7b9f41de274cc278e1645a0e5b32` se publicó sin force push en `dev` y `codex/fix-inventory-consistency`; ambos hashes remotos se comprobaron. [GitHub Actions 43682289138](https://github.com/DTunjano/ZeroInventory/actions/runs/43682289138) terminó con `success` para ese commit, al igual que 43682285926. La nota posterior de evidencia solo cambia documentación; no sustituye la aceptación del responsable.

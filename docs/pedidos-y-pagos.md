@@ -2,6 +2,8 @@
 
 Inicio y reglas aprobadas: 14/11/2026. Rama de implementación: `codex/order-payment-lifecycle`. Etapas 1 y 2 cerradas y aceptadas. Estado: entrega técnica validada, pendiente de aceptación del responsable. La etapa 4 no ha comenzado.
 
+Entrega técnica: `634d5c1`, publicada en `dev` y `codex/fix-inventory-consistency`, con hashes remotos verificados y [CI correcto](https://github.com/DTunjano/ZeroInventory/actions/runs/43682289138). Las notas posteriores de evidencia no cambian código ni esquema.
+
 ## Política elegida por el responsable
 
 - ADMIN/EMPLOYEE gestionan CONFIRMADO → ENVIADO → COMPLETADO; completar representa entrega realizada. Aprobar un pago no completa la entrega.
