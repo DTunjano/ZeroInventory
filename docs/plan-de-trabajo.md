@@ -1,10 +1,10 @@
 # Plan de trabajo y condiciones de cierre
 
-Actualizado: 14 de noviembre de 2026.
+Actualizado: 15 de noviembre de 2026.
 
 ## Regla de avance
 
-Las seis etapas se trabajan en orden. **Las etapas 1 y 2 están cerradas y aceptadas; está activa la etapa 3.** La etapa siguiente comienza cuando la anterior tiene evidencia suficiente, pendientes explícitos y aceptación del responsable del proyecto. Un build correcto no equivale a la aceptación funcional del MVP.
+Las seis etapas se trabajan en orden. **Las etapas 1, 2 y 3 están cerradas y aceptadas; está activa la etapa 4.** La etapa siguiente comienza cuando la anterior tiene evidencia suficiente, pendientes explícitos y aceptación del responsable del proyecto. Un build correcto no equivale a la aceptación funcional del MVP.
 
 La pasarela de pagos está **aplazada por instrucción del usuario**. La consulta de opciones de simulación no autoriza añadir SDKs, endpoints, webhooks, credenciales, métodos de pago, migraciones ni conexiones a un proveedor.
 
@@ -12,8 +12,8 @@ La pasarela de pagos está **aplazada por instrucción del usuario**. La consult
 | --- | --- | --- | --- |
 | 1. Revisión funcional y usabilidad | **Cerrada y aceptada — 12/11/2026** | Inventario de pantallas y permisos, recorridos con datos ficticios, revisión móvil/escritorio, matriz de aceptación y corrección de fallos del alcance actual | Matriz revisada; casos del alcance ejecutados; bloqueos corregidos o excluidos expresamente; aprobación del alcance y resultados por el usuario |
 | 2. Ciclo del inventario | **Cerrada y aceptada — 14/11/2026** | Compras, recepción, entradas, ajustes y bajas coherentes con Kardex y auditoría | Operaciones y reglas aprobadas; pruebas de integridad, concurrencia y reversión correctas |
-| 3. Pedidos y pagos internos | **Entrega técnica validada; aceptación pendiente** | Política aprobada, gestión administrativa, entrega separada del pago, cancelaciones/devoluciones, reembolsos e historial | Matriz ejecutada en [pedidos-y-pagos.md](pedidos-y-pagos.md), 67 integraciones correctas; falta aceptación del responsable. La pasarela requiere autorización posterior separada |
-| 4. Pruebas automáticas de interfaz | Pendiente, sin iniciar | Convertir los recorridos acordados en regresión ejecutable e integrarlos a CI | Casos críticos estables y resultado verificable en CI |
+| 3. Pedidos y pagos internos | **Cerrada y aceptada — 15/11/2026** | Política aprobada, gestión administrativa, entrega separada del pago, cancelaciones/devoluciones, reembolsos e historial | Matriz ejecutada en [pedidos-y-pagos.md](pedidos-y-pagos.md), 67 integraciones correctas y aceptación del responsable. La pasarela requiere autorización posterior separada |
+| 4. Pruebas automáticas de interfaz | **Validación local completa; publicación/CI y aceptación pendientes** | 12 recorridos críticos en escritorio y móvil, entorno aislado y job browser | 24 pruebas locales correctas; falta comprobar CI del commit publicado y aceptación del responsable |
 | 5. Entorno publicado de pruebas | Pendiente, sin iniciar | Preparar despliegue, HTTPS, secretos, CORS, monitoreo y restauración | Acceso externo aprobado, servicios elegidos por el usuario y recuperación probada |
 | 6. Primera entrega | Pendiente, sin iniciar | Alcance final, versión, datos de demostración y documentación de uso | Aceptación del usuario y demostración reproducible de los criterios acordados |
 
@@ -62,7 +62,11 @@ El 14/11/2026 el usuario aceptó «Acepto el cierre y continuar con etapa 3». L
 
 ## Entrega técnica de etapa 3
 
-La etapa 3 ya aplica las tres decisiones del responsable: pago aprobado antes del envío, cancelación de CONFIRMADO por cliente propietario/ADMIN y devolución completa por ADMIN. Se verificaron API/PostgreSQL, rollback/concurrencia, UI por los tres roles, móvil/escritorio, claro/oscuro, Kardex y CSV. La matriz, limitación de históricos y pasos de revisión personal están en [pedidos-y-pagos.md](pedidos-y-pagos.md). La base ficticia y los procesos de QA fueron retirados. Falta la aceptación del responsable para cerrar formalmente la etapa 3; la etapa 4 sigue sin iniciar.
+La etapa 3 aplica las tres decisiones del responsable: pago aprobado antes del envío, cancelación de CONFIRMADO por cliente propietario/ADMIN y devolución completa por ADMIN. Se verificaron API/PostgreSQL, rollback/concurrencia, UI por los tres roles, móvil/escritorio, claro/oscuro, Kardex y CSV. La matriz y limitación de históricos están en [pedidos-y-pagos.md](pedidos-y-pagos.md). La base ficticia y los procesos de QA fueron retirados. El 15/11/2026 el responsable aceptó «Acepto el cierre y continuar con etapa 4», sobre entrega `98ee441` publicada y con CI correcto. Comienza la automatización de recorridos; el despliegue de etapa 5 sigue sin iniciar.
+
+## Entrega técnica de etapa 4
+
+La implementación de etapa 4 está en [pruebas-interfaz.md](pruebas-interfaz.md). La suite arranca sus servidores propios y una DB temporal y los retira al terminar; el arranque de desarrollo conserva las dos consolas habituales. Incluye acceso por roles, catálogo/checkout, compras/recepción, ajustes con conflicto, pedidos/pagos/reembolsos, CSV, tema y menú móvil. Las 24 ejecuciones locales pasaron sin reintentos; no se inicia etapa 5 antes de verificar CI y aceptar esta entrega.
 
 ## Simulación de pagos: decisión futura
 

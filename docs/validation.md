@@ -188,3 +188,30 @@ Las capturas privadas `phase3-return-refund-desktop-dark`, `phase3-employee-deli
 Los 30 pedidos previos permanecen consultables sin modificación; las cinco diferencias de trazabilidad requieren revisión específica para adoptarlos al nuevo ciclo. No se hicieron cargas Cloudinary, transferencias, facturación real, cambios de dependencias ni nuevos servicios obligatorios. Continúa el arranque con dos consolas. Build mantiene los avisos informativos de Browserslist/tiempo de Babel; no impiden las validaciones.
 
 La entrega técnica `634d5c10059f7b9f41de274cc278e1645a0e5b32` se publicó sin force push en `dev` y `codex/fix-inventory-consistency`; ambos hashes remotos se comprobaron. [GitHub Actions 43682289138](https://github.com/DTunjano/ZeroInventory/actions/runs/43682289138) terminó con `success` para ese commit, al igual que 43682285926. La nota posterior de evidencia solo cambia documentación; no sustituye la aceptación del responsable.
+
+## Aceptación de etapa 3 e inicio de etapa 4 — 15/11/2026
+
+El responsable aceptó «Acepto el cierre y continuar con etapa 4», incluyendo la limitación de los 30 pedidos previos de solo lectura y cinco diferencias históricas de trazabilidad. La entrega estaba publicada en `dev`/`codex/fix-inventory-consistency`, commit `98ee441151491b428608aba0bcb5eaaf42facf2d`, con [CI correcto](https://github.com/DTunjano/ZeroInventory/actions/runs/43682419527), también ejecución 43682414667. La etapa 3 queda cerrada y comienza la automatización de interfaz; la pasarela continúa aplazada.
+
+## Validación local de etapa 4 — 15/11/2026
+
+Contrato, comandos y matriz en [pruebas-interfaz.md](pruebas-interfaz.md). Se añadió Playwright Test 1.65.1 como dependencia de desarrollo fijada en frontend y un lanzador de backend para poseer la DB, los puertos, los servidores y la limpieza de cada ejecución. No se modificaron entidades ni migraciones ni se añadieron servicios de desarrollo obligatorios.
+
+| Control | Resultado |
+| --- | --- |
+| Backend: tipos, ESLint, build | Correctos |
+| Backend: unitarias | 33 correctas en 9 suites |
+| Integración PostgreSQL | 67 correctas; conserva las garantías de concurrencia y rollback de etapas anteriores |
+| Frontend: tipos, ESLint, unitarias y build | Correctos; 7 unitarias; build habitual regenerado con su configuración normal |
+| Suite de interfaz: tipos | Correctos con configuración strict propia |
+| Suite de interfaz: escritorio | 12 correctas en Chromium, 1440×1000 |
+| Suite de interfaz: móvil | 12 correctas en Chromium emulado, 390×664; no representa Safari/iOS físico |
+| Errores de navegador | Ninguna excepción pageerror en las 24 ejecuciones finales |
+| Aislamiento | Guard de nombres/identidad: 1 prueba correcta; Playwright sin el lanzador rechazado; red externa bloqueada y Cloudinary sustituido por adaptador que falla localmente |
+| Integridad posterior QA | db:check sin pendientes, diferencias de stock, duplicados ni inconsistencias de compra/pedido/pago/reembolso/eventos/Kardex |
+| Limpieza | DB de cada ejecución retirada y ausencia comprobada; servidores propios cerrados y cero builds privados restantes. También se observó limpieza tras las ejecuciones fallidas iniciales |
+| DB habitual | Diagnóstico de solo lectura correcto; permanece el aviso separado de 5 históricos ya documentado, sin cambios en esos datos |
+
+Se preparan cuentas/documentos ficticios por API real y se verifican las acciones críticas mediante UI; esa distinción está explícita en la matriz. El checkout tiene un caso completo desde catálogo hasta cancelación propia. No hay mocks de respuesta de negocio ni sleeps para ocultar esperas. La suite usa un worker y cero reintentos. Los fallos iniciales de arranque/localizadores se corrigieron antes de registrar la ejecución final de 24 correctas.
+
+Las capturas de devolución completa y catálogo claro se inspeccionaron; reportes, capturas y trazas se excluyen de Git. El job browser de GitHub Actions instala ambos paquetes/Chromium y conserva los artefactos siete días. Su resultado debe verificarse por el commit publicado antes de pedir aceptación del cierre. No se inicia etapa 5 ni se despliega un entorno externo en esta entrega.

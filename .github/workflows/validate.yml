@@ -44,6 +44,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test --runInBand
+      - run: node --test scripts/browser-test-safety.test.cjs
       - run: pnpm test:integration
       - run: pnpm build
 
@@ -66,4 +67,56 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test:unit
+      - run: pnpm typecheck:e2e
       - run: pnpm build
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18.0
+        env:
+          POSTGRES_USER: zero_inventory_ci
+          POSTGRES_PASSWORD: isolated_ci_only
+          POSTGRES_DB: zero_inventory_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U zero_inventory_ci -d zero_inventory_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_PORT: '5432'
+      DB_USER: zero_inventory_ci
+      DB_PASSWORD: isolated_ci_only
+      DB_NAME: zero_inventory_ci
+      DB_SSL: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: |
+            backend/pnpm-lock.yaml
+            frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: backend
+      - run: pnpm install --frozen-lockfile
+        working-directory: frontend
+      - run: pnpm exec playwright install --with-deps chromium
+        working-directory: frontend
+      - run: pnpm test:e2e
+        working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: browser-report
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7

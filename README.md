@@ -2,7 +2,7 @@
 
 Aplicación web para administrar productos e inventario y permitir a clientes comprar desde un catálogo. Incluye tienda, carrito, direcciones, pedidos, pagos registrados, proveedores, empleados, usuarios, panel administrativo y contenido multimedia.
 
-El trabajo siguiente se organiza por etapas en [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md). Las etapas 1 y 2 quedaron cerradas y aceptadas el 12/11/2026 y 14/11/2026, respectivamente; está activa la etapa 3 de pedidos y pagos internos. El ciclo de inventario aceptado está en [docs/ciclo-inventario.md](docs/ciclo-inventario.md). La evidencia funcional de la primera está en [docs/revision-funcional-mvp.md](docs/revision-funcional-mvp.md). Usuarios/roles y reportes operativos tienen gestión funcional; el pedido posterior incorporó REP-01 al cierre. Ver [docs/reportes.md](docs/reportes.md) para permisos, fechas, fórmulas y exportación CSV. La pasarela permanece aplazada.
+El trabajo se organiza por etapas en [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md). Las etapas 1, 2 y 3 quedaron cerradas y aceptadas el 12/11/2026, 14/11/2026 y 15/11/2026; está activa la etapa 4 de pruebas automáticas de interfaz. Los ciclos aceptados están en [docs/ciclo-inventario.md](docs/ciclo-inventario.md) y [docs/pedidos-y-pagos.md](docs/pedidos-y-pagos.md). La evidencia funcional inicial está en [docs/revision-funcional-mvp.md](docs/revision-funcional-mvp.md). Usuarios/roles y reportes operativos tienen gestión funcional. Ver [docs/reportes.md](docs/reportes.md) para permisos, fechas, fórmulas y CSV. La pasarela permanece aplazada.
 
 ## Requisitos
 
@@ -198,7 +198,7 @@ Las acciones utilizan versión, bloqueo y evento en la misma transacción; las l
 
 **Históricos:** los 30 pedidos existentes antes de esta migración tienen versión 0 y son de solo lectura. Cinco carecen de coincidencia completa entre sus líneas y salidas VENTA asociadas; el diagnóstico lo informa por separado. No se inventan movimientos ni se restituyen esas cantidades automáticamente. Adoptarlos al ciclo nuevo requeriría una revisión específica con evidencia por documento.
 
-Contrato, reglas aprobadas, migración y matriz de validación: [docs/pedidos-y-pagos.md](docs/pedidos-y-pagos.md). La entrega técnica de etapa 3 está validada; su aceptación y el comienzo de etapa 4 siguen pendientes del responsable.
+Contrato, reglas aprobadas, migración y matriz de validación: [docs/pedidos-y-pagos.md](docs/pedidos-y-pagos.md). La etapa 3 quedó cerrada y aceptada el 15/11/2026; está autorizada la etapa 4 de pruebas automáticas de interfaz.
 
 ## Base de datos y migraciones
 
@@ -265,6 +265,20 @@ pnpm build
 El script histórico `smoke-customer-cart-checkout.mjs` ya no es el procedimiento de prueba recomendado: asume endpoints de preparación abiertos. Usa la suite aislada.
 
 ESLint del frontend revisa `.ts` y `.tsx`, además de JavaScript. `frontend build` incluye el chequeo de tipos. Los avisos de código histórico se distinguen de los errores; consulta [docs/validation.md](docs/validation.md) para los resultados de esta revisión.
+
+### Regresión de interfaz — etapa 4
+
+Con las dependencias de ambos paquetes instaladas y PostgreSQL activo, desde `frontend`:
+
+```powershell
+pnpm exec playwright install chromium
+pnpm typecheck:e2e
+pnpm test:e2e
+```
+
+`test:e2e` crea su propia DB temporal, compila backend/frontend, inicia API y preview en puertos aleatorios de 127.0.0.1, ejecuta Chromium en escritorio y móvil y limpia sus recursos. No usa las cuentas, DB ni servidores habituales; no necesita una tercera consola permanente. Cloudinary está sustituido por un adaptador que rechaza llamadas externas y las solicitudes del navegador se limitan a los dos servidores de QA. El build ficticio se genera aparte de `frontend/dist`.
+
+Se necesita CREATEDB. `playwright-report` y `test-results` están excluidos de Git; el CI conserva sus artefactos siete días. La configuración rechaza ejecutar Playwright directamente sin el lanzador aislado. Alcance, preparación de datos, instrucciones de depuración y límites en [docs/pruebas-interfaz.md](docs/pruebas-interfaz.md).
 
 ## Comandos adicionales
 

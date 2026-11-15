@@ -35,7 +35,7 @@ No vuelvas a leer secretos para contestar preguntas que pueden resolverse con no
 
 ## Secuencia de trabajo actual
 
-El usuario pidió avanzar en orden por seis etapas. La **etapa 1 quedó cerrada y aceptada el 12/11/2026** y la **etapa 2 quedó cerrada y aceptada el 14/11/2026**, con «Acepto el cierre y continuar con etapa 3». La entrega técnica de etapa 2 es `99406e0`, publicada en `dev` con CI correcto. Está activa la **etapa 3: pedidos y pagos internos**. Antes de cambiar transiciones, cancelaciones, devoluciones o efectos monetarios, documenta la política elegida por el responsable. No inicies la etapa 4 sin documentar el cierre y aceptación de la etapa 3. Ejecutar una regresión existente no inicia una etapa futura.
+El usuario pidió avanzar en orden por seis etapas. La **etapa 1 quedó cerrada y aceptada el 12/11/2026**, la **etapa 2 el 14/11/2026** y la **etapa 3 el 15/11/2026**, con «Acepto el cierre y continuar con etapa 4». La etapa 3 está publicada en `dev`, entrega técnica `634d5c1` y documentación `98ee441`, ambas con CI correcto. Está activa la **etapa 4: pruebas automáticas de interfaz**. Conserva la política aprobada de pedidos/pagos en `docs/pedidos-y-pagos.md`. No inicies la etapa 5 sin documentar cierre y aceptación de la etapa 4; un entorno local de pruebas no autoriza desplegar servicios externos.
 
 La pasarela de pagos está aplazada explícitamente. Puede documentarse la posibilidad de simulación, pero no deben añadirse integraciones, SDKs, endpoints, webhooks, claves, migraciones ni métodos de pago de un proveedor hasta una autorización posterior específica.
 
@@ -320,7 +320,7 @@ Entrega el cambio concreto, sus pruebas y cualquier límite material. Para una c
 
 ## Pedidos y pagos internos — etapa 3
 
-- Política aprobada el 14/11/2026 y contrato/matriz en `docs/pedidos-y-pagos.md`. Entrega técnica validada, pendiente de aceptación; no iniciar etapa 4 sin esa aceptación. La pasarela continúa aplazada.
+- Política aprobada el 14/11/2026 y contrato/matriz en `docs/pedidos-y-pagos.md`. Etapa 3 cerrada y aceptada el 15/11/2026; etapa 4 autorizada. La pasarela continúa aplazada.
 - `PedidoModule` compone controlador/caso de uso/puerto de dominio/adaptador TypeORM del workflow. `PagoModule` y `PedidoDetalleModule` mantienen lecturas; sus escrituras genéricas, las de pedido y confirmación antigua responden 410. No reactives `ConfirmPagoUseCase` ni CRUD independientes de cabecera, pago o líneas.
 - Solo ADMIN aprueba/rechaza el intento pendiente vigente por el total del servidor. Aprobar no entrega. ADMIN/EMPLOYEE gestionan CONFIRMADO → ENVIADO → COMPLETADO; exige pago aprobado antes de enviar, incluido EFECTIVO. COMPLETADO significa entrega realizada.
 - Solo ADMIN reintenta un pago rechazado: crea otro PENDIENTE con total/método preservados y conserva el intento anterior. No permite parciales ni múltiples aprobados. Cancelar anula intentos pendientes, conserva rechazados/aprobados.
@@ -334,3 +334,16 @@ Entrega el cambio concreto, sus pruebas y cualquier límite material. Para una c
 - Nuevos instantes se muestran/filtran en America/Bogota; conserva fallback antiguo. Regenera modelo si cambian entidades, incluidos PK/FK compartidos de reembolso. Tras mutaciones invalida pedidos, detalle, inventario, Kardex, catálogo, carrito, dashboard y reportes.
 - La gestión administrativa está en `/admin/orders?order=<pedido_id>` y el cliente ve su historial/cancelación en Mis pedidos. Protege también en API rol y propiedad; esconder botones no basta. Un documento ajeno responde 404.
 - Mantén regresiones de concurrencia cancelación/envío, idempotencia, rollback de evento/segunda línea/reembolso, propiedad, intentos vigentes, histórico de solo lectura y reporte bruto/reembolsos separados. Las pruebas no ejecutan transferencias reales.
+
+## Pruebas de navegador — etapa 4
+
+- Contrato operativo y matriz en `docs/pruebas-interfaz.md`. Ejecuta `pnpm test:e2e` desde frontend: el lanzador backend compila ambos paquetes, crea una DB nueva por ejecución y posee API/preview/limpieza. No uses servidores existentes, storageState personal ni la DB del usuario para E2E.
+- `browser-test-safety.cjs` exige prefijo exacto `zero_inventory_test_browser_<timestamp>_<12 hex>` y destino distinto del original, tanto al crear como al retirar. No relajes ese guard. Los nombres SQL proceden exclusivamente del generador validado; las entradas del negocio usan parámetros.
+- Puertos aleatorios propios en 127.0.0.1, CORS definido antes de cargar AppModule. Un puerto ocupado hace fallar el arranque, nunca debe reutilizar un servidor ajeno. El desarrollo conserva las dos consolas originales.
+- El build privado de QA vive en `.local/browser-build/<id>` y se retira verificando su directorio padre e identidad. No escribas una URL temporal de QA en un build de entrega ni borres directorios compartidos para limpiar.
+- Sustituye únicamente el provider CLOUDINARY para rechazar llamadas externas; usa DB, API, configuración HTTP y reglas reales. La preparación por API debe distinguirse del paso que se prueba en UI. No simules con mocks el resultado que pretendes verificar de extremo a extremo.
+- Playwright es dependencia de desarrollo fijada, con config y pruebas TypeScript verificadas por `pnpm typecheck:e2e`; conserva strict/noUncheckedIndexedAccess/exactOptionalPropertyTypes. Los callbacks de fixture se llaman `provide` para evitar que la regla de hooks confunda la fixture con React.use.
+- Un contexto nuevo por prueba, datos únicos, worker único y cero reintentos. Usa localizadores por rol/etiqueta y expectativas con espera; evita sleeps, selectores de CSS visual y dependencia del orden de datos de otro caso.
+- El proyecto móvil es emulación Chromium; no lo presentes como prueba física de iOS/Safari. El navegador bloquea red fuera de los dos orígenes de QA y service workers; nunca subas medios reales ni cambies credenciales desde la suite.
+- El hijo de Playwright no recibe variables DB/JWT/Cloudinary/pgAdmin. Capturas/trazas son privadas o artefactos de CI de siete días, con credenciales ficticias efímeras. No agregues reportes, tokens, sesiones o builds a Git.
+- El job `browser` de CI instala ambos paquetes y Chromium, ejecuta el mismo comando y sube reportes incluso al fallar. No conviertas fallos de test/diagnóstico/limpieza en éxitos ni declares cierre antes de verificar el CI del commit publicado.

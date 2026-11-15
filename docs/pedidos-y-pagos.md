@@ -1,6 +1,6 @@
 # Etapa 3 — Pedidos y pagos internos
 
-Inicio y reglas aprobadas: 14/11/2026. Rama de implementación: `codex/order-payment-lifecycle`. Etapas 1 y 2 cerradas y aceptadas. Estado: entrega técnica validada, pendiente de aceptación del responsable. La etapa 4 no ha comenzado.
+Inicio y reglas aprobadas: 14/11/2026. Rama de implementación: `codex/order-payment-lifecycle`. Estado: **etapa 3 cerrada y aceptada el 15/11/2026**, con «Acepto el cierre y continuar con etapa 4». La aceptación incluye la limitación histórica documentada; no autoriza una pasarela.
 
 Entrega técnica: `634d5c1`, publicada en `dev` y `codex/fix-inventory-consistency`, con hashes remotos verificados y [CI correcto](https://github.com/DTunjano/ZeroInventory/actions/runs/43682289138). Las notas posteriores de evidencia no cambian código ni esquema.
 
@@ -96,7 +96,7 @@ Antes de aplicarla se verificó contenedor/configuración, se probó actualizaci
 | PED-12 Listado, vacío y presentación | Verificado | UI: dos páginas de 12 pedidos, filtros y vacío, enlace directo; claro/oscuro, escritorio y 390 px; empleado sin acciones ADMIN |
 | PED-13 Reportes y CSV | Verificado | API + UI/descarga: 12 pedidos por $69.009, aprobados brutos $50.001, pendientes $8, reembolsos pendientes $12.000 y registrados $38.000 |
 | PED-14 Integridad final y limpieza | Verificado | CLI QA: inconsistencias nuevas cero; aviso histórico ficticio 1 esperado; DB temporal retirada, comprobado cero bases de esa sesión |
-| PED-15 Aceptación del responsable | Pendiente | Revisar la entrega y aceptar cierre o indicar ajustes; requisito para comenzar etapa 4 |
+| PED-15 Aceptación del responsable | Aceptado | El 15/11/2026: «Acepto el cierre y continuar con etapa 4» |
 
 Suites finales: **33 unitarias backend, 67 de integración PostgreSQL y 7 frontend**, además de tipos, ESLint y build de ambos paquetes. Las concurrencias y fallos inducidos tienen evidencia API/PostgreSQL, no se presentan como recorridos manuales. Las pantallas tienen revisión manual; automatizar esos recorridos corresponde a la etapa 4.
 

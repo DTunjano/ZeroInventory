@@ -83,6 +83,8 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
+      role="article"
+      aria-label={product.nombre}
       className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-b from-card via-card to-card/80 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-2xl hover:shadow-primary/10"
       style={{
         contentVisibility: 'auto',
