@@ -4,15 +4,15 @@ Actualizado: 14 de noviembre de 2026.
 
 ## Regla de avance
 
-Las seis etapas se trabajan en orden. **La etapa 1 está cerrada; está activa la etapa 2.** La etapa siguiente comienza cuando la anterior tiene evidencia suficiente, pendientes explícitos y aceptación del responsable del proyecto. Un build correcto no equivale a la aceptación funcional del MVP.
+Las seis etapas se trabajan en orden. **Las etapas 1 y 2 están cerradas y aceptadas; está activa la etapa 3.** La etapa siguiente comienza cuando la anterior tiene evidencia suficiente, pendientes explícitos y aceptación del responsable del proyecto. Un build correcto no equivale a la aceptación funcional del MVP.
 
 La pasarela de pagos está **aplazada por instrucción del usuario**. La consulta de opciones de simulación no autoriza añadir SDKs, endpoints, webhooks, credenciales, métodos de pago, migraciones ni conexiones a un proveedor.
 
 | Etapa | Estado | Trabajo técnico | Condición para cerrar |
 | --- | --- | --- | --- |
 | 1. Revisión funcional y usabilidad | **Cerrada y aceptada — 12/11/2026** | Inventario de pantallas y permisos, recorridos con datos ficticios, revisión móvil/escritorio, matriz de aceptación y corrección de fallos del alcance actual | Matriz revisada; casos del alcance ejecutados; bloqueos corregidos o excluidos expresamente; aprobación del alcance y resultados por el usuario |
-| 2. Ciclo del inventario | **En curso** | Compras, recepción, entradas, ajustes y bajas coherentes con Kardex y auditoría | Operaciones y reglas aprobadas; pruebas de integridad, concurrencia y reversión correctas |
-| 3. Pedidos y pagos internos | Pendiente, sin iniciar | Reglas de transición, responsables, cancelaciones, devoluciones y efectos sobre stock | Transiciones autorizadas, efectos una sola vez y pruebas correctas. La pasarela requiere una autorización posterior separada |
+| 2. Ciclo del inventario | **Cerrada y aceptada — 14/11/2026** | Compras, recepción, entradas, ajustes y bajas coherentes con Kardex y auditoría | Operaciones y reglas aprobadas; pruebas de integridad, concurrencia y reversión correctas |
+| 3. Pedidos y pagos internos | **En curso: diagnóstico y definición de política** | Reglas de transición, responsables, cancelaciones, devoluciones y efectos sobre stock | Transiciones autorizadas, efectos una sola vez y pruebas correctas. La pasarela requiere una autorización posterior separada |
 | 4. Pruebas automáticas de interfaz | Pendiente, sin iniciar | Convertir los recorridos acordados en regresión ejecutable e integrarlos a CI | Casos críticos estables y resultado verificable en CI |
 | 5. Entorno publicado de pruebas | Pendiente, sin iniciar | Preparar despliegue, HTTPS, secretos, CORS, monitoreo y restauración | Acceso externo aprobado, servicios elegidos por el usuario y recuperación probada |
 | 6. Primera entrega | Pendiente, sin iniciar | Alcance final, versión, datos de demostración y documentación de uso | Aceptación del usuario y demostración reproducible de los criterios acordados |
@@ -55,6 +55,10 @@ La sesión ficticia se cerró, los procesos de QA se detuvieron y la DB temporal
 ## Inicio de la etapa 2
 
 Diagnóstico, decisiones de recepción y garantías de integridad en [ciclo-inventario.md](ciclo-inventario.md). El cierre aceptado de la etapa 1 está publicado en `dev` y su CI pasó. El 13/11/2026 el usuario eligió borrador sin cambio de stock y recepción completa posterior. Se implementaron compras, historial, Kardex de lectura y ajustes con motivo en `codex/inventory-lifecycle`. La validación y aceptación final de esta entrega se registran en su matriz; no se iniciará la etapa 3 antes de la aceptación del usuario.
+
+## Cierre de la etapa 2 e inicio de la etapa 3
+
+El 14/11/2026 el usuario aceptó «Acepto el cierre y continuar con etapa 3». La entrega `99406e0` está publicada en `dev` y su CI pasó. Se completaron 33 unitarias backend, 54 de integración, 7 frontend, recorridos manuales, actualización de copia, respaldo y diagnóstico final; QA retirado. La etapa 2 queda cerrada y la etapa 3 comienza en `codex/order-payment-lifecycle`, primero con el diagnóstico de las vías activas y la definición explícita de las reglas de pedidos, cancelaciones, devoluciones y pagos internos. No se autoriza una pasarela con esta aceptación.
 
 ## Simulación de pagos: decisión futura
 

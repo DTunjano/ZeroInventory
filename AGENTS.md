@@ -35,7 +35,7 @@ No vuelvas a leer secretos para contestar preguntas que pueden resolverse con no
 
 ## Secuencia de trabajo actual
 
-El usuario pidió avanzar en orden por seis etapas. La **etapa 1 quedó cerrada y aceptada el 12/11/2026** con el mensaje «Acepto el cierre y continuar con etapa 2». Está activa la **etapa 2: ciclo del inventario**. No inicies la etapa 3 sin documentar el cierre de la etapa 2 y su aceptación por el usuario. Ejecutar manualmente un recorrido existente no equivale a iniciar la implementación de una etapa futura.
+El usuario pidió avanzar en orden por seis etapas. La **etapa 1 quedó cerrada y aceptada el 12/11/2026** y la **etapa 2 quedó cerrada y aceptada el 14/11/2026**, con «Acepto el cierre y continuar con etapa 3». La entrega técnica de etapa 2 es `99406e0`, publicada en `dev` con CI correcto. Está activa la **etapa 3: pedidos y pagos internos**. Antes de cambiar transiciones, cancelaciones, devoluciones o efectos monetarios, documenta la política elegida por el responsable. No inicies la etapa 4 sin documentar el cierre y aceptación de la etapa 3. Ejecutar una regresión existente no inicia una etapa futura.
 
 La pasarela de pagos está aplazada explícitamente. Puede documentarse la posibilidad de simulación, pero no deben añadirse integraciones, SDKs, endpoints, webhooks, claves, migraciones ni métodos de pago de un proveedor hasta una autorización posterior específica.
 

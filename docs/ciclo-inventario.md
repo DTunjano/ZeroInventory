@@ -1,6 +1,6 @@
 # Etapa 2 — Compras, recepción e inventario
 
-Fecha de las decisiones: 13 de noviembre de 2026. Rama: `codex/inventory-lifecycle`. Estado: implementación y validación; aceptación final pendiente. Etapa 1 cerrada, aceptada y publicada en `dev`. Etapa 3 y pasarela sin iniciar.
+Fecha de las decisiones: 13 de noviembre de 2026. Rama de implementación: `codex/inventory-lifecycle`. Estado: **cerrada y aceptada el 14/11/2026**, entrega `99406e0` publicada en `dev`. Etapa 3 autorizada; pasarela aplazada.
 
 ## Reglas aprobadas
 
@@ -90,4 +90,4 @@ Validación técnica del 14/11/2026: tipos, lint y build de ambos paquetes corre
 
 Capturas locales privadas en `.local/functional-evidence`: `phase2-receipt-desktop-dark.png`, `phase2-kardex-receipt-validated.png`, `phase2-purchases-mobile-light.png`, `phase2-stale-stock-rejected.png`, `phase2-adjustment-kardex-mobile.png`, `phase2-employee-receipt-mobile-dark.png` y `phase2-audit-instant-light.png`. No se publican cuentas ficticias ni capturas en Git. La evidencia API de concurrencia, rollback y LEGACY no se presenta como una prueba manual del navegador.
 
-La etapa 2 permanece abierta hasta recibir aceptación del usuario sobre la entrega verificada; la aprobación de las dos reglas iniciales no equivale a aceptación de la implementación. No se ha añadido pasarela ni comenzado la etapa 3.
+El 14/11/2026 el usuario aceptó expresamente «Acepto el cierre y continuar con etapa 3». La etapa 2 queda cerrada. La entrega `99406e0603dccc827e097218421e0b04316d9ae4` está publicada en `dev` y `codex/fix-inventory-consistency`, con hashes remotos comprobados y [CI correcto](https://github.com/DTunjano/ZeroInventory/actions/runs/43655149323). Los procesos y la DB temporal de QA se retiraron. La etapa 3 queda autorizada; la pasarela permanece aplazada.

@@ -153,3 +153,7 @@ Durante la verificación se corrigieron dos defectos adicionales: dashboard leí
 Límites: fechas históricas sin zona conservan el fallback previo; no se certifica su zona ni se calcula costo promedio contable. La DB habitual no tenía cabeceras de compra antiguas: LEGACY tiene evidencia de integración y copia preparada antes de aplicar el ciclo, no una operación manual sobre un documento real. El navegador emitió avisos iniciales de tamaño de Recharts; el panel renderizó correctamente. Build conserva avisos informativos de Browserslist antiguo y tiempo de Babel. No se añadieron dependencias ni se incorporó una pasarela.
 
 La entrega técnica no sustituye la aceptación del responsable. La etapa 2 espera esa aceptación; la etapa 3 permanece sin iniciar. El estado remoto/CI de la publicación debe comprobarse por el commit entregado, sin atribuir a esta entrega el CI previo de etapa 1.
+
+## Aceptación del ciclo de inventario — 14/11/2026
+
+El usuario aceptó «Acepto el cierre y continuar con etapa 3». Se cierra la etapa 2 sobre `99406e0603dccc827e097218421e0b04316d9ae4`, publicado en `dev` y `codex/fix-inventory-consistency`; ambos hashes remotos se comprobaron. [GitHub Actions](https://github.com/DTunjano/ZeroInventory/actions/runs/43655149323) terminó con `success` para ese commit (también pasó la ejecución 43655145545). Esta aceptación no cambia código ni esquema y no requiere repetir las suites ya aprobadas. Comienza la definición de la etapa 3; la pasarela sigue aplazada.
