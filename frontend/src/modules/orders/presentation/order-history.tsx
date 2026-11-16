@@ -14,7 +14,7 @@ export function OrderHistory({ order }: { order: Order }) {
               Versión {event.version} ·{' '}
               {event.accion === 'CREADO'
                 ? 'Pedido creado'
-                : actionLabels[event.accion]}
+                : event.accion === 'WOMPI_VERIFICADO' ? 'Pago verificado por Wompi Sandbox' : actionLabels[event.accion]}
             </p>
             <p>
               {new Intl.DateTimeFormat('es-CO', {
@@ -22,7 +22,7 @@ export function OrderHistory({ order }: { order: Order }) {
                 timeStyle: 'short',
                 timeZone: 'America/Bogota',
               }).format(new Date(event.fecha))}{' '}
-              · Usuario #{event.usuarioId}
+              · {event.origen === 'WOMPI' ? 'Confirmación automática de Wompi' : `Usuario #${event.usuarioId}`}
             </p>
             <p>{event.motivo}</p>
             <p>

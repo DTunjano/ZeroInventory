@@ -217,3 +217,31 @@ Se preparan cuentas/documentos ficticios por API real y se verifican las accione
 Las capturas de devolución completa y catálogo claro se inspeccionaron; reportes, capturas y trazas se excluyen de Git. El job browser de GitHub Actions instala ambos paquetes/Chromium y conserva los artefactos siete días. Su resultado debe verificarse por el commit publicado antes de pedir aceptación del cierre. No se inicia etapa 5 ni se despliega un entorno externo en esta entrega.
 
 La entrega técnica `2cb9e0f12dab27054cb5fcf3f35a46911367f631` se publicó sin force push en `dev` y `codex/fix-inventory-consistency`; ambos hashes remotos se comprobaron. [GitHub Actions 43686420276](https://github.com/DTunjano/ZeroInventory/actions/runs/43686420276) completó correctamente backend, frontend y browser, con el reporte de navegador subido como artefacto. La nota de evidencia posterior solo modifica documentación. La etapa 4 queda técnicamente validada y espera aceptación del responsable; la etapa 5 sigue sin iniciar.
+
+## Aceptación de etapa 4, pausa de despliegue y Wompi Sandbox — 15/11/2026
+
+El responsable aceptó «Acepto el cierre y continuar con etapa 5» sobre `aef06e8`, con [CI correcto](https://github.com/DTunjano/ZeroInventory/actions/runs/43686728947). Posteriormente pidió «detengámonos aquí por ahora» al consultar presupuesto y eligió acceso futuro solo para invitados. No se ha contratado ni desplegado infraestructura; etapa 6 sin iniciar.
+
+Después autorizó específicamente Wompi para compras simuladas y preparación de una integración real futura. Aprobó confirmación automática solo tras verificación en backend y aclaró que necesita crear la cuenta. La matriz y pasos personales están en [wompi-sandbox.md](wompi-sandbox.md). No se autorizaron cobros de producción.
+
+| Control | Resultado local |
+| --- | --- |
+| Backend tipos / lint / build | Correctos |
+| Backend unitarias | 40 correctas en 10 suites, incluidas firmas dinámicas, validación de entorno y consulta privada con fetch sustituido |
+| API + PostgreSQL temporal | 78 correctas, incluidas propiedad, referencia concurrente, importe, callback/webhook, resultado canónico, reintentos, cancelación simultánea, aprobación tardía y rollback de auditoría |
+| Frontend tipos / lint / build / tipos E2E | Correctos |
+| Frontend unitarias | 7 correctas |
+| Guard de aislamiento de DB | 1 correcto |
+| Navegador | Suite completa de 28 correctas, cero reintentos; checkout y gateway Wompi controlados, sin consultar el servicio real |
+| Actualización de copia real antes de migrar | 24 tablas existentes conservadas, inventario conciliado y segunda ejecución sin cambios |
+| Respaldo previo | Contenedor verificado por labels zeroinventory/db; archivo custom privado de 90.872 bytes verificado con pg_restore --list |
+| Instalación habitual | WompiSandbox1794700800000 aplicada; 25 tablas de negocio; modelo regenerado; conteos de las 24 tablas anteriores idénticos y cero intentos del proveedor |
+| Diagnóstico habitual | Sin pendientes, inconsistencias de stock, números duplicados ni diferencias nuevas de compra/pedido/pago/reembolso/Wompi; conserva el aviso de cinco pedidos históricos |
+| Configuración local Wompi | `pnpm wompi:check` confirma disabled; no se leyeron llaves para mostrarlas ni se hicieron solicitudes al proveedor |
+| Wompi real, webhook público y producción | Cuenta/Sandbox externo pendientes; webhook HTTPS depende del alojamiento autorizado; producción bloqueada |
+
+La primera ejecución de integración no pudo conectar dentro del sandbox del entorno; la ejecución con acceso autorizado a PostgreSQL pasó. Lint detectó comparaciones de enum y anotaciones de pruebas, que se corrigieron; la validación final pasó sin desactivar reglas. El frontend no incluye Prettier como dependencia: el formato del archivo nuevo se aplicó con el Prettier ya instalado del backend, sin agregar paquetes. Permanecen los avisos informativos conocidos de Browserslist y tiempo de Babel; no impiden compilar.
+
+El recorrido nuevo de recuperación de pendiente inicialmente esperaba «Aprobado» aunque la tarjeta muestra «APROBADO». El pago, versión y estado estaban correctos; se ajustó la aserción al texto real y se repitió la suite completa, con 28 aprobadas. La revisión detectó además que Reportes clasificaba cualquier método no efectivo como Transferencia: se añadió la etiqueta específica Wompi Sandbox y una comprobación del reporte al final del recorrido Wompi. Los cuatro recorridos Wompi se repitieron después de ese ajuste y pasaron en ambos tamaños. No se alteran fórmulas ni CSV: este ya conserva el método WOMPI como valor propio. El checkout invalida también pedidos y las vistas compartidas de inventario/catálogo/reportes al confirmar, evitando conservar datos remotos anteriores mientras el cliente inicia el pago.
+
+Las pruebas aisladas sustituyen credenciales Wompi por valores ficticios y WompiGateway por un doble; los tests de navegador bloquean red ajena y no heredan secretos del proveedor. No prueban la aceptación de una cuenta, autenticación real, checkout externo ni entrega de webhook desde Wompi. El servicio real queda expresamente sin certificar hasta completar esos pasos con la cuenta del responsable. La configuración no habilita producción y los reembolsos siguen siendo anotaciones internas.

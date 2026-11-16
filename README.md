@@ -2,7 +2,7 @@
 
 Aplicación web para administrar productos e inventario y permitir a clientes comprar desde un catálogo. Incluye tienda, carrito, direcciones, pedidos, pagos registrados, proveedores, empleados, usuarios, panel administrativo y contenido multimedia.
 
-El trabajo se organiza por etapas en [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md). Las etapas 1, 2 y 3 quedaron cerradas y aceptadas el 12/11/2026, 14/11/2026 y 15/11/2026; está activa la etapa 4 de pruebas automáticas de interfaz. Los ciclos aceptados están en [docs/ciclo-inventario.md](docs/ciclo-inventario.md) y [docs/pedidos-y-pagos.md](docs/pedidos-y-pagos.md). La evidencia funcional inicial está en [docs/revision-funcional-mvp.md](docs/revision-funcional-mvp.md). Usuarios/roles y reportes operativos tienen gestión funcional. Ver [docs/reportes.md](docs/reportes.md) para permisos, fechas, fórmulas y CSV. La pasarela permanece aplazada.
+El trabajo se organiza por etapas en [docs/plan-de-trabajo.md](docs/plan-de-trabajo.md). Las etapas 1–4 están cerradas y aceptadas. El despliegue de la etapa 5 está pausado por petición del usuario; su acceso futuro será solo para invitados. Se autorizó por separado [Wompi Sandbox](docs/wompi-sandbox.md) para simular compras; producción continúa bloqueada. Los ciclos aceptados están en [docs/ciclo-inventario.md](docs/ciclo-inventario.md) y [docs/pedidos-y-pagos.md](docs/pedidos-y-pagos.md). La evidencia funcional inicial está en [docs/revision-funcional-mvp.md](docs/revision-funcional-mvp.md). Usuarios/roles y reportes operativos tienen gestión funcional. Ver [docs/reportes.md](docs/reportes.md) para permisos, fechas, fórmulas y CSV.
 
 ## Requisitos
 
@@ -96,6 +96,10 @@ Nest y los comandos de base de datos comparten la configuración. Las variables 
 | `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD` | Inicialización de pgAdmin |
 | `CLOUDINARY_NAME`, `CLOUDINARY_KEY`, `CLOUDINARY_SECRET` | Almacenamiento de medios |
 | `VITE_API_URL` | Variable pública del frontend; nunca incluir secretos bajo `VITE_` |
+| `WOMPI_MODE` | `disabled` por defecto o `sandbox`; cualquier modo de producción falla al arrancar |
+| `WOMPI_PUBLIC_KEY`, `WOMPI_PRIVATE_KEY` | Llaves `pub_test_` y `prv_test_`; solo la pública llega al checkout alojado |
+| `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET` | Secretos `test_integrity_` y `test_events_`; permanecen en backend |
+| `WOMPI_REDIRECT_URL` | Retorno a `/me/orders`; HTTP solo para localhost en desarrollo; HTTPS fuera del entorno local |
 
 `JWT_SECRET` y `JWT_EXPIRES_IN`, presentes en configuraciones antiguas, no son las variables usadas por el sistema actual. No publiques archivos `.env`, respaldos, tokens ni volcados. `.gitignore` los excluye.
 
@@ -128,6 +132,7 @@ flowchart LR
 | Autenticación | Passport JWT, bcrypt, cookie HttpOnly de renovación |
 | Contratos HTTP | DTOs, class-validator, class-transformer y Swagger |
 | Medios | Multer y Cloudinary |
+| Pagos simulados | Wompi Sandbox, checkout alojado y consulta privada desde backend, sin SDK adicional |
 | Calidad | TypeScript, ESLint, Jest, ts-jest y Supertest |
 
 ### Organización
@@ -163,7 +168,7 @@ La pantalla **Usuarios y roles** permite a ADMIN crear/editar cuentas, asignar l
 
 Las altas de producto exigen proveedor, al menos una categoría y precio mayor que cero; **la imagen es opcional** (PNG/JPEG/WebP de hasta 5 MB). Producto, categorías, SKU y movimiento inicial se guardan atómicamente. La edición conserva campos omitidos y los datos históricos existentes. Si falla una carga de imagen posterior, se informa que el producto sí quedó guardado para evitar creaciones duplicadas.
 
-Los contratos HTTP, transacciones y límites del catálogo están en [docs/usuarios-y-productos.md](docs/usuarios-y-productos.md). Se conservan las dos consolas habituales. Los filtros de pedidos por estado/fecha/orden están validados en la API y conservan controles para limpiar resultados vacíos. No se integra pasarela de pagos.
+Los contratos HTTP, transacciones y límites del catálogo están en [docs/usuarios-y-productos.md](docs/usuarios-y-productos.md). Se conservan las dos consolas habituales. Los filtros de pedidos por estado/fecha/orden están validados en la API y conservan controles para limpiar resultados vacíos. Wompi Sandbox es una ampliación posterior optativa.
 
 ## Roles y autenticación
 
@@ -198,7 +203,22 @@ Las acciones utilizan versión, bloqueo y evento en la misma transacción; las l
 
 **Históricos:** los 30 pedidos existentes antes de esta migración tienen versión 0 y son de solo lectura. Cinco carecen de coincidencia completa entre sus líneas y salidas VENTA asociadas; el diagnóstico lo informa por separado. No se inventan movimientos ni se restituyen esas cantidades automáticamente. Adoptarlos al ciclo nuevo requeriría una revisión específica con evidencia por documento.
 
-Contrato, reglas aprobadas, migración y matriz de validación: [docs/pedidos-y-pagos.md](docs/pedidos-y-pagos.md). La etapa 3 quedó cerrada y aceptada el 15/11/2026; está autorizada la etapa 4 de pruebas automáticas de interfaz.
+Contrato, reglas aprobadas, migración y matriz de validación: [docs/pedidos-y-pagos.md](docs/pedidos-y-pagos.md). Las etapas 3 y 4 quedaron cerradas y aceptadas el 15/11/2026. Los pagos internos conservan su gestión manual.
+
+## Wompi Sandbox: compras simuladas
+
+La pasarela está deshabilitada hasta configurar una cuenta. Desde `backend`, incorpora las variables de [wompi.env.example](backend/wompi.env.example) en tu `.env` **sin reemplazar sus valores de DB/JWT/Cloudinary**. Completa las cuatro credenciales de Sandbox en privado, cambia `WOMPI_MODE=sandbox` y ejecuta:
+
+```powershell
+pnpm wompi:check
+pnpm start:dev
+```
+
+La segunda consola sigue usando `cd frontend` y `pnpm dev`. No necesitas un tercer proceso. En el carrito aparece «Wompi Sandbox · Simulación» cuando está configurado; confirma la compra y en Mis pedidos pulsa «Pagar con Wompi (prueba)». El navegador abre el checkout alojado por Wompi. Usa exclusivamente sus datos de prueba.
+
+El backend firma referencia/importe COP calculado por servidor y consulta la transacción con la llave privada antes de aprobar. Redirecciones y eventos falsificados no aprueban pagos. Pago aprobado, envío y entrega son acciones distintas; los pagos Wompi no admiten aprobación manual. Cancelaciones/devoluciones conservan las garantías de stock y reembolso interno; no se ejecutan reembolsos bancarios.
+
+La cuenta y la validación externa requieren configuración del responsable. En localhost funciona la conciliación al volver del checkout, pero Wompi no puede llamar un webhook local. El webhook necesita una URL HTTPS accesible al proveedor cuando se acuerde el alojamiento; la etapa 5 sigue pausada. Pruebas, endpoints, casos pendientes y preparación de producción están en [docs/wompi-sandbox.md](docs/wompi-sandbox.md). Activar pagos reales exige otra autorización y revisión; no basta con cambiar llaves.
 
 ## Base de datos y migraciones
 

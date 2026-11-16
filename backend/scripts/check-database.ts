@@ -45,10 +45,18 @@ async function main() {
       const [legacy]=await dataSource.query<{n:number}[]>(`WITH lines AS (SELECT d.pedido_id,d.producto_id,SUM(d.cantidad) AS qty FROM pedido_detalle d JOIN pedido o USING(pedido_id) WHERE o.version=0 GROUP BY d.pedido_id,d.producto_id) SELECT COUNT(DISTINCT pedido_id)::int AS n FROM lines l WHERE l.qty<>COALESCE((SELECT SUM(k.cantidad) FROM kardex k WHERE k.tipo_referencia='VENTA' AND k.tipo_movimiento='SALIDA' AND k.referencia_id=l.pedido_id AND k.producto_id=l.producto_id),0)`);
       legacyOrdersWithoutMatchingSale=legacy.n;
     }
+    let wompiInconsistencies: unknown[] = [];
+    if (tables.some(t => t.tablename === 'wompi_intento')) {
+      wompiInconsistencies = await dataSource.query(`SELECT i.pago_id FROM wompi_intento i JOIN pago p USING(pago_id) JOIN pedido o USING(pedido_id)
+        WHERE i.ambiente<>'sandbox' OR p.metodo_pago<>'WOMPI' OR p.monto<>o.total
+        OR (i.estado_proveedor='APPROVED' AND p.estado<>'APROBADO')
+        OR (i.estado_proveedor IN ('DECLINED','VOIDED','ERROR') AND p.estado NOT IN ('RECHAZADO','ANULADO'))
+        OR (i.estado_proveedor='PENDING' AND p.estado NOT IN ('PENDIENTE','ANULADO'))`);
+    }
     console.log(JSON.stringify({ tables: tables.map((t) => t.tablename), migrationsPending, stockInconsistencies: inconsistencies, duplicateOrderNumbers: duplicates,
       purchaseTotalInconsistencies: purchaseTotals, purchaseReceiptInconsistencies: purchaseReceipts, purchaseEventInconsistencies: purchaseEvents,
-      orderEventInconsistencies:orderEvents,orderTotalInconsistencies:orderTotals,orderPaymentInconsistencies:orderPayments,orderLedgerInconsistencies:orderLedger,orderRefundInconsistencies:orderRefunds,legacyOrdersWithoutMatchingSale }, null, 2));
-    if (migrationsPending || inconsistencies.length || duplicates.length || purchaseTotals.length || purchaseReceipts.length || purchaseEvents.length || orderEvents.length || orderTotals.length || orderPayments.length || orderLedger.length || orderRefunds.length) process.exitCode = 1;
+      orderEventInconsistencies:orderEvents,orderTotalInconsistencies:orderTotals,orderPaymentInconsistencies:orderPayments,orderLedgerInconsistencies:orderLedger,orderRefundInconsistencies:orderRefunds,wompiInconsistencies,legacyOrdersWithoutMatchingSale }, null, 2));
+    if (migrationsPending || inconsistencies.length || duplicates.length || purchaseTotals.length || purchaseReceipts.length || purchaseEvents.length || orderEvents.length || orderTotals.length || orderPayments.length || orderLedger.length || orderRefunds.length || wompiInconsistencies.length) process.exitCode = 1;
   } finally { await dataSource.destroy(); }
 }
 void main().catch((error: Error) => { console.error(error.message); process.exitCode = 1; });

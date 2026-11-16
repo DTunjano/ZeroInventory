@@ -11,10 +11,11 @@ export interface OrderItem {
 export interface OrderPayment {
   pagoId: number;
   pedidoId: number;
-  metodoPago: 'EFECTIVO' | 'TRANSFERENCIA';
+  metodoPago: 'EFECTIVO' | 'TRANSFERENCIA' | 'WOMPI';
   monto: number;
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ANULADO';
   fechaPago: Date | string;
+  wompi?: { environment: 'sandbox'; reference: string; transactionId: string | null; status: string | null };
 }
 
 export type OrderStatus = 'CONFIRMADO' | 'COMPLETADO' | 'ENVIADO' | 'CANCELADO' | 'DEVUELTO';
@@ -32,7 +33,7 @@ export interface Order {
   version: number;
   pagos: OrderPayment[];
   reembolso: { estado: 'PENDIENTE' | 'REGISTRADO'; monto: number; creadaEn: string; registradaEn: string | null; registradaPor: number | null; motivo: string | null } | null;
-  historial: { eventoId: number; version: number; accion: OrderAction | 'CREADO'; usuarioId: number; motivo: string; fecha: string; snapshot: { estado: OrderStatus; total: number; detalles: OrderItem[]; pagos: OrderPayment[] } }[];
+  historial: { eventoId: number; version: number; accion: OrderAction | 'CREADO' | 'WOMPI_VERIFICADO'; usuarioId: number | null; origen: 'USUARIO' | 'WOMPI'; motivo: string; fecha: string; snapshot: { estado: OrderStatus; total: number; detalles: OrderItem[]; pagos: OrderPayment[] } }[];
 }
 
 export type OrderAction = 'ENVIAR' | 'ENTREGAR' | 'CANCELAR' | 'DEVOLVER' | 'APROBAR_PAGO' | 'RECHAZAR_PAGO' | 'REINTENTAR_PAGO' | 'REGISTRAR_REEMBOLSO';

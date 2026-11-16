@@ -1,6 +1,7 @@
 export enum MetodoPagoEnum {
   EFECTIVO = 'EFECTIVO',
   TRANSFERENCIA = 'TRANSFERENCIA',
+  WOMPI = 'WOMPI',
 }
 
 export enum EstadoPagoEnum {

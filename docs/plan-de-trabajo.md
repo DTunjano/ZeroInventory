@@ -4,17 +4,17 @@ Actualizado: 15 de noviembre de 2026.
 
 ## Regla de avance
 
-Las seis etapas se trabajan en orden. **Las etapas 1, 2 y 3 están cerradas y aceptadas; está activa la etapa 4.** La etapa siguiente comienza cuando la anterior tiene evidencia suficiente, pendientes explícitos y aceptación del responsable del proyecto. Un build correcto no equivale a la aceptación funcional del MVP.
+Las seis etapas se trabajan en orden. **Las etapas 1, 2, 3 y 4 están cerradas y aceptadas; la etapa 5 está pausada por petición del usuario.** La etapa siguiente comienza cuando la anterior tiene evidencia suficiente, pendientes explícitos y aceptación del responsable del proyecto. Un build correcto no equivale a la aceptación funcional del MVP.
 
-La pasarela de pagos está **aplazada por instrucción del usuario**. La consulta de opciones de simulación no autoriza añadir SDKs, endpoints, webhooks, credenciales, métodos de pago, migraciones ni conexiones a un proveedor.
+Ampliación autorizada después de pausar el despliegue: **Wompi Sandbox para compras simuladas**, con aprobación automática verificada en backend. Producción sigue sin autorizar. El usuario necesita crear la cuenta y configurar sus llaves test en privado; ver [wompi-sandbox.md](wompi-sandbox.md). Esta ampliación no inicia etapa 6 ni autoriza alojamiento, costos o cobros reales.
 
 | Etapa | Estado | Trabajo técnico | Condición para cerrar |
 | --- | --- | --- | --- |
 | 1. Revisión funcional y usabilidad | **Cerrada y aceptada — 12/11/2026** | Inventario de pantallas y permisos, recorridos con datos ficticios, revisión móvil/escritorio, matriz de aceptación y corrección de fallos del alcance actual | Matriz revisada; casos del alcance ejecutados; bloqueos corregidos o excluidos expresamente; aprobación del alcance y resultados por el usuario |
 | 2. Ciclo del inventario | **Cerrada y aceptada — 14/11/2026** | Compras, recepción, entradas, ajustes y bajas coherentes con Kardex y auditoría | Operaciones y reglas aprobadas; pruebas de integridad, concurrencia y reversión correctas |
 | 3. Pedidos y pagos internos | **Cerrada y aceptada — 15/11/2026** | Política aprobada, gestión administrativa, entrega separada del pago, cancelaciones/devoluciones, reembolsos e historial | Matriz ejecutada en [pedidos-y-pagos.md](pedidos-y-pagos.md), 67 integraciones correctas y aceptación del responsable. La pasarela requiere autorización posterior separada |
-| 4. Pruebas automáticas de interfaz | **Entrega técnica validada y publicada; aceptación pendiente** | 12 recorridos críticos en escritorio y móvil, entorno aislado y job browser | 24 pruebas locales correctas y CI de backend/frontend/browser correcto en `2cb9e0f`; falta aceptación del responsable |
-| 5. Entorno publicado de pruebas | Pendiente, sin iniciar | Preparar despliegue, HTTPS, secretos, CORS, monitoreo y restauración | Acceso externo aprobado, servicios elegidos por el usuario y recuperación probada |
+| 4. Pruebas automáticas de interfaz | **Cerrada y aceptada — 15/11/2026** | 12 recorridos críticos en escritorio y móvil, entorno aislado y job browser | 24 pruebas locales correctas, CI de backend/frontend/browser correcto y aceptación del responsable sobre `aef06e8` |
+| 5. Entorno publicado de pruebas | **Pausada por el usuario; acceso futuro solo para invitados** | Proveedor y presupuesto pendientes; despliegue, HTTPS, secretos, CORS, monitoreo y restauración por preparar cuando se retome | Acceso externo aprobado, servicios elegidos por el usuario y recuperación probada |
 | 6. Primera entrega | Pendiente, sin iniciar | Alcance final, versión, datos de demostración y documentación de uso | Aceptación del usuario y demostración reproducible de los criterios acordados |
 
 ## Reparto de responsabilidades
@@ -66,15 +66,15 @@ La etapa 3 aplica las tres decisiones del responsable: pago aprobado antes del e
 
 ## Entrega técnica de etapa 4
 
-La entrega de etapa 4 está en [pruebas-interfaz.md](pruebas-interfaz.md). La suite arranca sus servidores propios y una DB temporal y los retira al terminar; el arranque de desarrollo conserva las dos consolas habituales. Incluye acceso por roles, catálogo/checkout, compras/recepción, ajustes con conflicto, pedidos/pagos/reembolsos, CSV, tema y menú móvil. Las 24 ejecuciones locales pasaron sin reintentos y el CI de los tres trabajos pasó en la entrega `2cb9e0f`, publicada en dev. No se inicia etapa 5 antes de aceptar esta entrega.
+La entrega de etapa 4 está en [pruebas-interfaz.md](pruebas-interfaz.md). La suite arranca sus servidores propios y una DB temporal y los retira al terminar; el arranque de desarrollo conserva las dos consolas habituales. Incluye acceso por roles, catálogo/checkout, compras/recepción, ajustes con conflicto, pedidos/pagos/reembolsos, CSV, tema y menú móvil. Las 24 ejecuciones locales pasaron sin reintentos y el CI de los tres trabajos pasó en la entrega `2cb9e0f`, publicada en dev. El usuario aceptó el cierre sobre `aef06e8` y autorizó iniciar etapa 5; después pidió detenerse al consultar presupuesto, definiendo acceso solo para invitados. No se ha desplegado ni contratado ningún servicio.
 
-## Simulación de pagos: decisión futura
+## Simulación de pagos: decisión posterior
 
-Hay dos alternativas distintas que pueden evaluarse cuando corresponda:
+Se evaluaron dos alternativas:
 
 1. **Simulador local:** resultados ficticios de aprobado, rechazado o pendiente, sin cuenta de un proveedor ni solicitudes externas. No genera comisiones de pasarela ni cargos sobre tarjetas; su costo adicional de proveedor es cero.
 2. **Sandbox de un proveedor:** reproduce una integración externa con credenciales y datos de prueba. Por ejemplo, [Wompi documenta un ambiente Sandbox independiente de producción](https://docs.wompi.co/docs/colombia/ambientes-y-llaves/) para transacciones ficticias y resultados simulados. [Mercado Pago también documenta compras con tarjetas de prueba](https://www.mercadopago.com.co/developers/es/docs/checkout-pro-preferences/integration-test/test-purchases).
 
 El sandbox no mueve dinero real cuando se emplean su entorno y credenciales correctos. Antes de conectar una cuenta se revisarán sus condiciones y cualquier servicio contratado: no se debe presentar una pasarela de producción como gratuita ni introducir facturación real accidentalmente.
 
-Si se autoriza posteriormente, la integración debe comprobar el modo de prueba, rechazar credenciales/URLs de producción en el entorno de demostración, mostrar claramente que es una simulación y utilizar datos de prueba. Estas son condiciones propuestas, **no funcionalidades ya implementadas**.
+El usuario eligió Wompi y autorizó su Sandbox el 15/11/2026. Se implementan modo de prueba, rechazo de producción, firma/verificación en servidor y señalización visible de simulación. La matriz distingue pruebas automatizadas con proveedor controlado de la prueba externa pendiente de cuenta/llaves. No se reabre ninguna etapa aceptada ni se presume autorización para producción.

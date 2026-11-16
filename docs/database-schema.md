@@ -2,7 +2,7 @@
 
 Diccionario generado desde las entidades ORM canónicas. Incluye el estado esperado después de aplicar las migraciones; no contiene registros ni credenciales.
 
-Hay 24 tablas de negocio y la tabla técnica `migrations`. Las PK son numéricas; pedido_reembolso comparte la identidad del pedido, las demás se generan. Las relaciones que se muestran abajo son claves foráneas declaradas en TypeORM. `empleado.usuario_id` es una referencia lógica opcional que actualmente no tiene una FK declarada.
+Hay 25 tablas de negocio y la tabla técnica `migrations`. Las PK son numéricas; pedido_reembolso comparte la identidad del pedido y wompi_intento la del pago, las demás se generan. Las relaciones que se muestran abajo son claves foráneas declaradas en TypeORM. `empleado.usuario_id` es una referencia lógica opcional que actualmente no tiene una FK declarada.
 
 ## Reglas adicionales de las migraciones
 
@@ -16,6 +16,8 @@ Hay 24 tablas de negocio y la tabla técnica `migrations`. Las PK son numéricas
 - RECEPCION_COMPRA distingue entradas de compras confirmadas de referencias históricas COMPRA/AJUSTE.
 - Pedidos: versión 0 conserva históricos de solo lectura; nuevos pedidos comienzan en 1. pedido_evento tiene acción válida, motivo obligatorio, solicitud/snapshot JSON objeto y unicidad (pedido_id, version).
 - pedido_reembolso: una fila por pedido, monto positivo y estado PENDIENTE/REGISTRADO con actor/fecha/motivo coherentes. No transfiere dinero ni borra pagos aprobados.
+- wompi_intento: PK/FK pago_id, referencia y transaccion_id únicas; ambiente solo sandbox. Identidad/estado/fecha verificada deben existir juntos o ser todos nulos. No guarda datos de tarjeta ni payloads del proveedor.
+- pedido_evento.origen distingue USUARIO (usuario_id obligatorio) y WOMPI (actor nulo). WOMPI_VERIFICADO es una conciliación automática, sin atribuirla a un administrador ficticio.
 - CANCELACION_PEDIDO y DEVOLUCION_PEDIDO identifican entradas compensatorias; no se reescriben salidas VENTA. Pagos pendientes cancelados se marcan ANULADO.
 - Nuevos pedidos/pagos/decisiones/reembolsos/eventos usan timestamptz; el calendario de consulta usa America/Bogota y conserva el fallback antiguo.
 - No hay eliminaciones en cascada del historial de ventas o inventario. Los maestros con estado se desactivan; las restricciones de otras relaciones se responden como HTTP 409.
@@ -43,9 +45,10 @@ erDiagram
   pedido ||--o{ pago : registra
   proveedor ||--o{ compra : recibe
   pedido ||--o{ pedido_evento : historial
-  usuario ||--o{ pedido_evento : registra
+  usuario |o--o{ pedido_evento : registra
   pedido ||--o| pedido_reembolso : reembolsa
   usuario ||--o{ pedido_reembolso : registra
+  pago ||--o| wompi_intento : concilia
   usuario ||--o{ compra : registra
   compra ||--o{ compra_detalle : contiene
   compra ||--o{ compra_evento : historial
@@ -232,7 +235,7 @@ El contenido multimedia (`media`) es independiente. La relación empleado–usua
 | --- | --- | --- | --- |
 | `pago_id` | Number | No | PK generada |
 | `pedido_id` | Number | No | FK → pedido(pedido_id) |
-| `metodo_pago` | enum: EFECTIVO, TRANSFERENCIA | No |  |
+| `metodo_pago` | enum: EFECTIVO, TRANSFERENCIA, WOMPI | No |  |
 | `monto` | numeric(14,2) | No |  |
 | `estado` | enum: PENDIENTE, APROBADO, RECHAZADO, ANULADO | No |  |
 | `fecha_pago` | timestamp | No |  |
@@ -271,9 +274,10 @@ El contenido multimedia (`media`) es independiente. La relación empleado–usua
 | --- | --- | --- | --- |
 | `evento_id` | Number | No | PK generada |
 | `pedido_id` | Number | No | FK → pedido(pedido_id) |
-| `usuario_id` | Number | No | FK → usuario(usuario_id) |
+| `usuario_id` | Number | Sí | FK → usuario(usuario_id) |
 | `version` | int | No |  |
 | `accion` | varchar(32) | No |  |
+| `origen` | varchar(16) | No |  |
 | `motivo` | text | No |  |
 | `solicitud` | jsonb | No |  |
 | `snapshot` | jsonb | No |  |
@@ -364,6 +368,18 @@ El contenido multimedia (`media`) es independiente. La relación empleado–usua
 | `usuario_rol_id` | Number | No | PK generada |
 | `usuario_id` | Number | No | FK → usuario(usuario_id) |
 | `rol_id` | Number | No | FK → rol(rol_id) |
+
+## wompi_intento
+
+| Columna | Tipo | NULL | Observación |
+| --- | --- | --- | --- |
+| `pago_id` | Number | No | PK; FK → pago(pago_id) |
+| `referencia` | varchar(100) | No | UNIQUE |
+| `ambiente` | varchar(16) | No |  |
+| `transaccion_id` | varchar(100) | Sí | UNIQUE |
+| `estado_proveedor` | varchar(16) | Sí |  |
+| `creado_en` | timestamptz | No |  |
+| `verificado_en` | timestamptz | Sí |  |
 
 ## Mantenimiento
 

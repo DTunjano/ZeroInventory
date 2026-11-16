@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
+import { WompiIntentoEntityORM } from '../../../wompi/infrastructure/wompi-intento.orm-entity';
 import { PedidoEntityORM } from './pedido.orm-entity';
 import { PedidoEventoEntityORM } from './pedido-evento.orm-entity';
 import { PedidoReembolsoEntityORM } from './pedido-reembolso.orm-entity';
@@ -44,6 +45,7 @@ export async function loadPedidoView(
     where: { pedidoId: id },
     order: { version: 'ASC' },
   });
+  const intents = await manager.findBy(WompiIntentoEntityORM, { pagoId: In(payments.map(p => p.pagoId)) });
   const pagos = payments.map((p) => ({
     pagoId: p.pagoId,
     pedidoId: p.pedidoId,
@@ -51,6 +53,10 @@ export async function loadPedidoView(
     estado: p.estado,
     monto: Number(p.monto),
     fechaPago: p.decididoEn ?? p.registradoEn ?? p.fechaPago,
+    ...(() => {
+      const intent = intents.find(i => i.pagoId === p.pagoId);
+      return intent ? { wompi: { environment: intent.ambiente, reference: intent.referencia, transactionId: intent.transaccionId, status: intent.estadoProveedor } } : {};
+    })(),
   }));
   return {
     ...pedidoSummary(order),
@@ -80,6 +86,7 @@ export async function loadPedidoView(
       version: e.version,
       accion: e.accion,
       usuarioId: e.usuarioId,
+      origen: e.origen,
       motivo: e.motivo,
       fecha: e.fecha,
       snapshot: e.snapshot,
@@ -89,7 +96,7 @@ export async function loadPedidoView(
 export async function recordPedidoEvent(
   manager: EntityManager,
   id: number,
-  actor: number,
+  actor: number | null,
   action: PedidoEvent['accion'],
   motivo: string,
   pagoId?: number,
@@ -98,6 +105,7 @@ export async function recordPedidoEvent(
   await manager.insert(PedidoEventoEntityORM, {
     pedidoId: id,
     usuarioId: actor,
+    origen: actor === null ? 'WOMPI' : 'USUARIO',
     version: view.version,
     accion: action,
     motivo,

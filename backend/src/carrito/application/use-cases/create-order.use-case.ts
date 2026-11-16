@@ -13,16 +13,19 @@ import { ValidatedCartStockItem } from './validate-cart-stock.use-case';
 import { StockInsufficientException } from '../errors/stock-insufficient.exception';
 import { amount, cents } from '../../../shared/money';
 import { ClienteEntityORM } from '../../../cliente/infrastructure/persistence/cliente.orm-entity';
+import { ConfigService } from '@nestjs/config';
 import { recordPedidoEvent } from '../../../pedido/infrastructure/persistence/pedido-workflow.helpers';
 
 @Injectable()
 export class CreateOrderUseCase {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(private readonly dataSource: DataSource, private readonly config: ConfigService) {}
 
   async ejecutar(params: {
     clienteId: number; carritoId: number; direccionId: number;
     metodoPago: MetodoPagoEnum; total: number; items: ValidatedCartStockItem[];
   }): Promise<{ pedidoId: number; total: number; numeroPedidoUsuario: number }> {
+    if (params.metodoPago === MetodoPagoEnum.WOMPI && this.config.get('WOMPI_MODE') !== 'sandbox')
+      throw new ConflictException('Wompi Sandbox no está configurado');
     return this.dataSource.transaction(async (manager) => {
       await manager.query('SELECT pg_advisory_xact_lock(4970, $1)', [params.clienteId]);
       const cart = await manager.findOne(CarritoEntityORM, {

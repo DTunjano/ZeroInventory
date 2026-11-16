@@ -1,6 +1,8 @@
 import { formatCOP as formatPrice } from '@/shared/lib/currency'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useWompiAvailability } from '@/modules/orders/presentation/wompi-payment'
+import { invalidateInventory } from '@/modules/inventory/application/invalidate-inventory'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2, Minus, Plus, ShoppingBag, Trash2, ArrowLeft, Search, CreditCard, MapPin, AlertTriangle, PackageX, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
@@ -171,14 +173,14 @@ function CartSummary(props: {
   total: number
   direcciones: DireccionView[]
   direccionId: string
-  metodoPago: 'EFECTIVO' | 'TRANSFERENCIA'
+  metodoPago: 'EFECTIVO' | 'TRANSFERENCIA' | 'WOMPI'
   isAddressesLoading: boolean
   isCreatingAddress: boolean
   isBusy?: boolean
   showNewAddressForm: boolean
   newDireccion: CreateDireccionInput
   onDireccionIdChange: (value: string) => void
-  onMetodoPagoChange: (value: 'EFECTIVO' | 'TRANSFERENCIA') => void
+  onMetodoPagoChange: (value: 'EFECTIVO' | 'TRANSFERENCIA' | 'WOMPI') => void
   onToggleNewAddressForm: () => void
   onNewDireccionChange: (field: keyof CreateDireccionInput, value: string) => void
   onCreateAddress: () => void
@@ -186,6 +188,7 @@ function CartSummary(props: {
   onClearCart: () => void
 }) {
   const { subtotal, total, direcciones, direccionId, metodoPago, isAddressesLoading, isCreatingAddress, isBusy, showNewAddressForm, newDireccion, onDireccionIdChange, onMetodoPagoChange, onToggleNewAddressForm, onNewDireccionChange, onCreateAddress, onCheckout, onClearCart } = props
+  const wompi = useWompiAvailability()
 
   return (
     <Card className="border bg-card/80 shadow-sm">
@@ -261,9 +264,10 @@ function CartSummary(props: {
 
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="metodoPago">Método de pago</label>
-          <Select id="metodoPago" value={metodoPago} onChange={(e) => onMetodoPagoChange(e.target.value as 'EFECTIVO' | 'TRANSFERENCIA')}>
+          <Select id="metodoPago" value={metodoPago} onChange={(e) => onMetodoPagoChange(e.target.value as 'EFECTIVO' | 'TRANSFERENCIA' | 'WOMPI')}>
             <option value="TRANSFERENCIA">Transferencia</option>
             <option value="EFECTIVO">Efectivo</option>
+            {wompi.data?.enabled && <option value="WOMPI">Wompi Sandbox · Simulación sin dinero real</option>}
           </Select>
           <p className="text-xs text-muted-foreground">El pago se registra y verifica antes de enviar el pedido. Confirmar la compra no realiza un cobro bancario.</p>
         </div>
@@ -319,12 +323,13 @@ function VirtualCartList(props: {
 }
 
 export function MyCartPage() {
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [searchText, setSearchText] = useState('')
   const [checkoutStockIssue, setCheckoutStockIssue] = useState<CheckoutStockInsufficientResponse | null>(null)
   const stockErrorRef = useRef<HTMLDivElement | null>(null)
   const [direccionId, setDireccionId] = useState('')
-  const [metodoPago, setMetodoPago] = useState<'EFECTIVO' | 'TRANSFERENCIA'>('TRANSFERENCIA')
+  const [metodoPago, setMetodoPago] = useState<'EFECTIVO' | 'TRANSFERENCIA' | 'WOMPI'>('TRANSFERENCIA')
   const [showNewAddressForm, setShowNewAddressForm] = useState(false)
   const [newDireccion, setNewDireccion] = useState<CreateDireccionInput>({ lineaDir: '', barrio: '', codigoPostal: '', infoAdiccional: '' })
 
@@ -392,8 +397,10 @@ export function MyCartPage() {
       setCheckoutStockIssue(null)
       const nextCart = await getMyCart()
       refreshCart(nextCart)
-      await queryClient.invalidateQueries({ queryKey: cartQueryKey })
+      await invalidateInventory(queryClient)
+      await queryClient.invalidateQueries({ predicate: query => ['orders', 'admin-orders', 'order-detail'].includes(String(query.queryKey[0])) })
       toast.success(`Compra confirmada. Pedido #${result.numeroPedidoUsuario} por ${formatPrice(result.total)}`)
+      if (metodoPago === 'WOMPI') navigate('/me/orders')
     },
     onError: () => {
       setCheckoutStockIssue(null)

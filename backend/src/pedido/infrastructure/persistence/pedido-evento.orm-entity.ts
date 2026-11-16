@@ -18,12 +18,13 @@ export class PedidoEventoEntityORM {
   @ManyToOne(() => PedidoEntityORM)
   @JoinColumn({ name: 'pedido_id' })
   pedido!: PedidoEntityORM;
-  @Column({ name: 'usuario_id', type: 'int' }) usuarioId!: number;
+  @Column({ name: 'usuario_id', type: 'int', nullable: true }) usuarioId!: number | null;
   @ManyToOne(() => UsuarioEntityORM)
   @JoinColumn({ name: 'usuario_id' })
   usuario!: UsuarioEntityORM;
   @Column({ type: 'int' }) version!: number;
-  @Column({ type: 'varchar', length: 32 }) accion!: PedidoAction | 'CREADO';
+  @Column({ type: 'varchar', length: 32 }) accion!: PedidoAction | 'CREADO' | 'WOMPI_VERIFICADO';
+  @Column({ type: 'varchar', length: 16, default: 'USUARIO' }) origen!: 'USUARIO' | 'WOMPI';
   @Column({ type: 'text' }) motivo!: string;
   @Column({ type: 'jsonb' }) solicitud!: { pagoId?: number };
   @Column({ type: 'jsonb' }) snapshot!: PedidoSnapshot;

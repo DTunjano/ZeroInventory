@@ -8,7 +8,7 @@ import { FiltersMyOrdersDTO } from '../dto/filters-my-orders.dto';
 export type OrderPaymentView = {
   pagoId: number;
   pedidoId: number;
-  metodoPago: 'EFECTIVO' | 'TRANSFERENCIA';
+  metodoPago: 'EFECTIVO' | 'TRANSFERENCIA' | 'WOMPI';
   monto: number;
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ANULADO';
   fechaPago: Date;

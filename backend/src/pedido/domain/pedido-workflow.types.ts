@@ -54,10 +54,11 @@ export interface PedidoLine {
 export interface PedidoPayment {
   pagoId: number;
   pedidoId: number;
-  metodoPago: 'EFECTIVO' | 'TRANSFERENCIA';
+  metodoPago: 'EFECTIVO' | 'TRANSFERENCIA' | 'WOMPI';
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ANULADO';
   monto: number;
   fechaPago: Date;
+  wompi?: { environment: 'sandbox'; reference: string; transactionId: string | null; status: string | null };
 }
 export interface PedidoRefund {
   estado: 'PENDIENTE' | 'REGISTRADO';
@@ -77,8 +78,9 @@ export interface PedidoSnapshot {
 export interface PedidoEvent {
   eventoId: number;
   version: number;
-  accion: PedidoAction | 'CREADO';
-  usuarioId: number;
+  accion: PedidoAction | 'CREADO' | 'WOMPI_VERIFICADO';
+  usuarioId: number | null;
+  origen: 'USUARIO' | 'WOMPI';
   motivo: string;
   fecha: Date;
   snapshot: PedidoSnapshot;

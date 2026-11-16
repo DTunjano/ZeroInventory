@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'node:http';
 import { Test } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import request from 'supertest';
 import * as bcrypt from 'bcrypt';
@@ -12,6 +13,8 @@ import { CreateOrderUseCase } from '../src/carrito/application/use-cases/create-
 import { ValidateCartStockUseCase } from '../src/carrito/application/use-cases/validate-cart-stock.use-case';
 import { MetodoPagoEnum } from '../src/pago/domain/entity/pago.entity';
 import { configureHttp } from '../config/http.config';
+import { createHash } from 'node:crypto';
+import { WompiGateway, WompiTransaction } from '../src/wompi/domain/wompi.types';
 
 jest.setTimeout(60000);
 
@@ -30,6 +33,12 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
   };
   const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
   const api = () => request(app.getHttpServer());
+  const providerTransactions = new Map<string, WompiTransaction>();
+  const providerLookup = jest.fn((id: string) => {
+    const result = providerTransactions.get(id);
+    if (!result) throw new Error('Transacción QA no preparada: no se permiten llamadas externas');
+    return Promise.resolve(result);
+  });
 
   beforeAll(async () => {
     if (!process.env.TEST_DATABASE_NAME?.startsWith('zero_inventory_test_') || process.env.DB_NAME !== process.env.TEST_DATABASE_NAME) {
@@ -38,7 +47,8 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
     await dataSource.initialize();
     await dataSource.runMigrations({ transaction: 'all' });
     await dataSource.destroy();
-    const module = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const module = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(WompiGateway).useValue({ transaction: providerLookup }).compile();
     app = module.createNestApplication();
     configureHttp(app);
     await app.init();
@@ -80,7 +90,7 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
   it('migrates a fresh database and is idempotent', async () => {
     expect(await db.showMigrations()).toBe(false);
     expect(await db.runMigrations()).toHaveLength(0);
-    expect((await db.query(`SELECT tablename FROM pg_tables WHERE schemaname='public'`)).length).toBe(25);
+    expect((await db.query(`SELECT tablename FROM pg_tables WHERE schemaname='public'`)).length).toBe(26);
   });
   it('allows public catalogues and blocks unauthenticated private data', async () => {
     await api().get('/productos').expect(200);
@@ -544,6 +554,150 @@ describe('Inventory and customer flows on isolated PostgreSQL', () => {
       ids.push(result.body.data[0].ajusteInventarioId as number);
     }
     expect(new Set(ids).size).toBe(3);
+  });
+  async function wompiOrder() {
+    const p = await product(5, 1.25), c = await customer(); await add(c, p.productoId, 2);
+    const result = await api().post('/carritos/me/checkout').set(auth(c.token)).send({ direccionId: c.addressId, metodoPago: 'WOMPI' }).expect(201);
+    const id = result.body.pedidoId as number;
+    const intent = await api().post(`/payments/wompi/orders/${id}/checkout`).set(auth(c.token)).expect(200);
+    const transaction: WompiTransaction = { id: `qa-${++sequence}`, reference: intent.body.reference as string, amountInCents: 250, currency: 'COP', status: 'APPROVED' };
+    providerTransactions.set(transaction.id, transaction);
+    return { p, c, id, intent: intent.body as { reference: string; pagoId: number; checkoutUrl: string }, transaction };
+  }
+  function signedWompiEvent(t: WompiTransaction) {
+    const timestamp = 1794700800;
+    const transaction = { id: t.id, reference: t.reference, amount_in_cents: t.amountInCents, currency: t.currency, status: t.status };
+    return { event: 'transaction.updated', environment: 'test', timestamp, data: { transaction }, signature: {
+      properties: ['transaction.id', 'transaction.status', 'transaction.amount_in_cents'],
+      checksum: createHash('sha256').update(`${t.id}${t.status}${t.amountInCents}${timestamp}${process.env.WOMPI_EVENTS_SECRET}`).digest('hex'),
+    } };
+  }
+  const reconcileWompi = (o: { id: number; c: { token: string }; transaction: WompiTransaction }) =>
+    api().post(`/payments/wompi/orders/${o.id}/reconcile`).set(auth(o.c.token)).send({ transactionId: o.transaction.id });
+  it('creates one signed sandbox reference for concurrent checkouts without exposing private credentials', async () => {
+    const o = await wompiOrder();
+    const results = await Promise.all([1, 2].map(() => api().post(`/payments/wompi/orders/${o.id}/checkout`).set(auth(o.c.token)).expect(200)));
+    expect(results.map(r => r.body.reference as string)).toEqual([o.intent.reference, o.intent.reference]);
+    const url = new URL(o.intent.checkoutUrl);
+    expect(url.origin).toBe('https://checkout.wompi.co');
+    expect(url.searchParams.get('public-key')).toBe(process.env.WOMPI_PUBLIC_KEY);
+    expect(url.searchParams.get('amount-in-cents')).toBe('250');
+    expect(url.searchParams.get('signature:integrity')).toBe(createHash('sha256').update(`${o.intent.reference}250COP${process.env.WOMPI_INTEGRITY_SECRET}`).digest('hex'));
+    expect(o.intent.checkoutUrl).not.toContain(process.env.WOMPI_PRIVATE_KEY!);
+    expect(o.intent.checkoutUrl).not.toContain(process.env.WOMPI_EVENTS_SECRET!);
+    expect((await db.query('SELECT 1 FROM wompi_intento WHERE pago_id=$1', [o.intent.pagoId]))).toHaveLength(1);
+    expect(await balance(o.p.productoId)).toBe(3);
+  });
+  it('rejects foreign customers and manual decisions on provider payments before consulting Wompi', async () => {
+    const o = await wompiOrder(), other = await customer(), calls = providerLookup.mock.calls.length;
+    await api().post(`/payments/wompi/orders/${o.id}/checkout`).set(auth(other.token)).expect(404);
+    await api().post(`/payments/wompi/orders/${o.id}/reconcile`).set(auth(other.token)).send({ transactionId: o.transaction.id }).expect(404);
+    expect(providerLookup.mock.calls.length).toBe(calls);
+    await api().post(`/payments/wompi/orders/${o.id}/checkout`).set(auth(adminToken)).expect(403);
+    await api().post(`/payments/wompi/orders/${o.id}/reconcile`).set(auth(o.c.token)).send({ transactionId: '../another' }).expect(400);
+    await orderAction(o.id, 'APROBAR_PAGO', 1, { pagoId: o.intent.pagoId }).expect(409);
+    await orderAction(o.id, 'RECHAZAR_PAGO', 1, { pagoId: o.intent.pagoId }).expect(409);
+    await orderAction(o.id, 'ENVIAR', 1).expect(409);
+  });
+  it('rejects forged webhooks and ignores signed references outside this application', async () => {
+    const o = await wompiOrder(), calls = providerLookup.mock.calls.length;
+    const invalid = signedWompiEvent(o.transaction); invalid.signature.checksum = '0'.repeat(64);
+    await api().post('/payments/wompi/events').send(invalid).expect(401);
+    await api().post('/payments/wompi/events').send({ ...signedWompiEvent(o.transaction), environment: 'prod' }).expect(401);
+    await api().post('/payments/wompi/events').send(signedWompiEvent({ ...o.transaction, reference: 'unknown-reference' })).expect(200);
+    expect(providerLookup.mock.calls.length).toBe(calls);
+    const detail = await api().get(`/pedidos/me/${o.id}`).set(auth(o.c.token)).expect(200);
+    expect(detail.body.pago.estado).toBe('PENDIENTE'); expect(detail.body.version).toBe(1);
+  });
+  it('uses the provider lookup instead of the event status and applies concurrent callbacks exactly once', async () => {
+    const o = await wompiOrder();
+    providerTransactions.set(o.transaction.id, { ...o.transaction, status: 'PENDING' });
+    await api().post('/payments/wompi/events').send(signedWompiEvent(o.transaction)).expect(200);
+    const pending = await api().get(`/pedidos/me/${o.id}`).set(auth(o.c.token)).expect(200);
+    expect(pending.body.pago.estado).toBe('PENDIENTE'); expect(pending.body.version).toBe(1);
+    providerTransactions.set(o.transaction.id, o.transaction);
+    await Promise.all([reconcileWompi(o).expect(200), api().post('/payments/wompi/events').send(signedWompiEvent({ ...o.transaction, status: 'DECLINED' })).expect(200)]);
+    await reconcileWompi(o).expect(200);
+    const paid = await api().get(`/pedidos/me/${o.id}`).set(auth(o.c.token)).expect(200);
+    expect(paid.body.estado).toBe('CONFIRMADO'); expect(paid.body.pago.estado).toBe('APROBADO'); expect(paid.body.version).toBe(2);
+    expect(paid.body.historial).toHaveLength(2);
+    expect(paid.body.historial[1]).toMatchObject({ accion: 'WOMPI_VERIFICADO', usuarioId: null, origen: 'WOMPI' });
+    expect(paid.body.pago.wompi).toMatchObject({ transactionId: o.transaction.id, status: 'APPROVED' });
+    expect(await balance(o.p.productoId)).toBe(3);
+    await orderAction(o.id, 'ENVIAR', 2).expect(200); await orderAction(o.id, 'ENTREGAR', 3).expect(200);
+    await reconcileWompi(o).expect(200);
+  });
+  it('rejects amount, reference and transaction identity substitution without approving anything', async () => {
+    const o = await wompiOrder();
+    for (const transaction of [{ ...o.transaction, amountInCents: 249 }, { ...o.transaction, reference: 'foreign-reference' }]) {
+      providerTransactions.set(o.transaction.id, transaction); await reconcileWompi(o).expect(409);
+    }
+    providerTransactions.set(o.transaction.id, { ...o.transaction, status: 'PENDING' }); await reconcileWompi(o).expect(200);
+    const second = { ...o.transaction, id: `qa-${++sequence}` }; providerTransactions.set(second.id, second);
+    await reconcileWompi({ ...o, transaction: second }).expect(409);
+    const detail = await api().get(`/pedidos/me/${o.id}`).set(auth(o.c.token)).expect(200);
+    expect(detail.body.pago.estado).toBe('PENDIENTE'); expect(detail.body.version).toBe(1);
+  });
+  it('preserves a declined attempt and creates exactly one new attempt when retrying concurrently', async () => {
+    const o = await wompiOrder(); providerTransactions.set(o.transaction.id, { ...o.transaction, status: 'DECLINED' });
+    await reconcileWompi(o).expect(200);
+    await orderAction(o.id, 'REINTENTAR_PAGO', 2).expect(409);
+    const attempts = await Promise.all([1, 2].map(() => api().post(`/payments/wompi/orders/${o.id}/checkout`).set(auth(o.c.token)).expect(200)));
+    expect(attempts[0].body.reference).not.toBe(o.intent.reference); expect(attempts[1].body.reference).toBe(attempts[0].body.reference);
+    const next = { ...o.transaction, id: `qa-${++sequence}`, reference: attempts[0].body.reference as string }; providerTransactions.set(next.id, next);
+    await reconcileWompi({ ...o, transaction: next }).expect(200);
+    const detail = await api().get(`/pedidos/me/${o.id}`).set(auth(o.c.token)).expect(200);
+    expect(detail.body.pagos.map((p: { estado: string }) => p.estado)).toEqual(['APROBADO', 'RECHAZADO']); expect(detail.body.version).toBe(4);
+    expect(await balance(o.p.productoId)).toBe(3);
+  });
+  it('records a pending internal refund for approval after cancellation without restoring stock twice', async () => {
+    const o = await wompiOrder();
+    await api().post(`/pedidos/me/${o.id}/cancel`).set(auth(o.c.token)).send({ version: 1, motivo: 'Cancelación antes del aviso Wompi' }).expect(200);
+    expect(await balance(o.p.productoId)).toBe(5);
+    await reconcileWompi(o).expect(200); await reconcileWompi(o).expect(200);
+    const detail = await api().get(`/pedidos/me/${o.id}`).set(auth(o.c.token)).expect(200);
+    expect(detail.body.estado).toBe('CANCELADO'); expect(detail.body.pago.estado).toBe('APROBADO'); expect(detail.body.reembolso.estado).toBe('PENDIENTE');
+    expect(detail.body.version).toBe(3); expect(await balance(o.p.productoId)).toBe(5);
+    await orderAction(o.id, 'REGISTRAR_REEMBOLSO', 3).expect(200);
+  });
+  it('fails closed on conflicting terminal results while preserving the previous verified result', async () => {
+    const o = await wompiOrder(); await reconcileWompi(o).expect(200);
+    providerTransactions.set(o.transaction.id, { ...o.transaction, status: 'DECLINED' }); await reconcileWompi(o).expect(409);
+    const detail = await api().get(`/pedidos/me/${o.id}`).set(auth(o.c.token)).expect(200);
+    expect(detail.body.pago.estado).toBe('APROBADO'); expect(detail.body.pago.wompi.status).toBe('APPROVED'); expect(detail.body.version).toBe(2);
+  });
+  it('rolls back payment, provider binding, order version and event if Wompi audit insertion fails', async () => {
+    const o = await wompiOrder();
+    await db.query("CREATE FUNCTION qa_wompi_event_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.accion='WOMPI_VERIFICADO' THEN RAISE EXCEPTION 'QA Wompi audit'; END IF; RETURN NEW; END $$");
+    await db.query('CREATE TRIGGER qa_wompi_event_failure BEFORE INSERT ON pedido_evento FOR EACH ROW EXECUTE FUNCTION qa_wompi_event_failure()');
+    try { await reconcileWompi(o).expect(500); }
+    finally { await db.query('DROP TRIGGER qa_wompi_event_failure ON pedido_evento'); await db.query('DROP FUNCTION qa_wompi_event_failure()'); }
+    const detail = await api().get(`/pedidos/me/${o.id}`).set(auth(o.c.token)).expect(200);
+    expect(detail.body.version).toBe(1); expect(detail.body.pago.estado).toBe('PENDIENTE'); expect(detail.body.pago.wompi.transactionId).toBeNull();
+    expect(await balance(o.p.productoId)).toBe(3);
+    await reconcileWompi(o).expect(200);
+  });
+  it('blocks new Wompi orders when disabled without changing cart or stock', async () => {
+    const c = await customer(), p = await product(2); await add(c, p.productoId);
+    const config = app.get(ConfigService); config.set('WOMPI_MODE', 'disabled');
+    try {
+      const availability = await api().get('/payments/wompi/availability').expect(200); expect(availability.body.enabled).toBe(false);
+      await api().post('/carritos/me/checkout').set(auth(c.token)).send({ direccionId: c.addressId, metodoPago: 'WOMPI' }).expect(409);
+      expect(await balance(p.productoId)).toBe(2);
+      expect((await api().get('/carritos/me').set(auth(c.token)).expect(200)).body.items).toHaveLength(1);
+    } finally { config.set('WOMPI_MODE', 'sandbox'); }
+  });
+  it('serializes cancellation against verified approval without duplicate stock or missing refund', async () => {
+    const o = await wompiOrder();
+    const [paid, cancelled] = await Promise.all([
+      reconcileWompi(o), api().post(`/pedidos/me/${o.id}/cancel`).set(auth(o.c.token)).send({ version: 1, motivo: 'QA carrera pago/cancelación' }),
+    ]);
+    expect(paid.status).toBe(200); expect([200, 409]).toContain(cancelled.status);
+    if (cancelled.status === 409) await api().post(`/pedidos/me/${o.id}/cancel`).set(auth(o.c.token)).send({ version: 2, motivo: 'QA cancelación tras aprobación concurrente' }).expect(200);
+    const detail = await api().get(`/pedidos/me/${o.id}`).set(auth(o.c.token)).expect(200);
+    expect(detail.body.estado).toBe('CANCELADO'); expect(detail.body.pago.estado).toBe('APROBADO'); expect(detail.body.reembolso.estado).toBe('PENDIENTE');
+    expect(await balance(o.p.productoId)).toBe(5);
+    expect((await db.query("SELECT 1 FROM kardex WHERE tipo_referencia='CANCELACION_PEDIDO' AND referencia_id=$1", [o.id]))).toHaveLength(1);
   });
   async function workflowOrder() {
     const p=await product(5,1.25),c=await customer();await add(c,p.productoId,2);

@@ -19,7 +19,7 @@ import { PedidoEventoEntityORM } from './pedido-evento.orm-entity';
 import { PedidoReembolsoEntityORM } from './pedido-reembolso.orm-entity';
 import { EstadoPedidoEnum } from '../../domain/entity/pedido.entity';
 import { PagoEntityORM } from '../../../pago/infrastructure/persistence/pago.orm-entity';
-import { EstadoPagoEnum } from '../../../pago/domain/entity/pago.entity';
+import { EstadoPagoEnum, MetodoPagoEnum } from '../../../pago/domain/entity/pago.entity';
 import { ProductoEntityORM } from '../../../producto/infrastructure/persistence/producto.orm-entity';
 import { PedidoDetalleEntityORM } from '../../../pedido-detalle/infrastructure/persistence/pedido-detalle.orm-entity';
 import {
@@ -165,6 +165,7 @@ export class TypeOrmPedidoWorkflowRepository implements PedidoWorkflowRepository
       const latest = payments[0];
       if (!latest) throw new ConflictException('Pedido sin pago interno');
       if (['APROBAR_PAGO', 'RECHAZAR_PAGO'].includes(action)) {
+        if (latest.metodoPago === MetodoPagoEnum.WOMPI) throw new ConflictException('Wompi debe verificarse con el proveedor; no admite aprobación manual');
         this.state(order, EstadoPedidoEnum.CONFIRMADO);
         if (
           latest.pagoId !== command.pagoId ||
@@ -185,6 +186,7 @@ export class TypeOrmPedidoWorkflowRepository implements PedidoWorkflowRepository
           throw new BadRequestException('Esta operación no admite pagoId');
         switch (action) {
           case 'REINTENTAR_PAGO':
+            if (latest.metodoPago === MetodoPagoEnum.WOMPI) throw new ConflictException('El cliente reintenta Wompi desde Mis pedidos');
             this.state(order, EstadoPedidoEnum.CONFIRMADO);
             if (latest.estado !== EstadoPagoEnum.RECHAZADO || approved.length)
               throw new ConflictException(

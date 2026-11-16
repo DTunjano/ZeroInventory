@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 import { resolve } from 'node:path';
+import { parseWompiConfig } from './wompi.config';
 
 // Both Nest and the CLI load the same files. Existing process variables win.
 export function loadEnvironment() {
@@ -7,6 +8,7 @@ export function loadEnvironment() {
 }
 
 export function validateEnvironment(values: Record<string, unknown>) {
+  parseWompiConfig(values);
   for (const name of ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET']) {
     if (typeof values[name] !== 'string' || (values[name]).length < 32) {
       throw new Error(`${name} debe contener al menos 32 caracteres. Ejecuta pnpm setup:env.`);

@@ -88,9 +88,9 @@ export function OrderActions({
     if (customer || admin) allowed.push('CANCELAR')
     if (!customer) {
       if (order.pago?.estado === 'APROBADO') allowed.push('ENVIAR')
-      if (admin && order.pago?.estado === 'PENDIENTE')
+      if (admin && order.pago?.metodoPago !== 'WOMPI' && order.pago?.estado === 'PENDIENTE')
         allowed.push('APROBAR_PAGO', 'RECHAZAR_PAGO')
-      if (admin && order.pago?.estado === 'RECHAZADO')
+      if (admin && order.pago?.metodoPago !== 'WOMPI' && order.pago?.estado === 'RECHAZADO')
         allowed.push('REINTENTAR_PAGO')
     }
   }

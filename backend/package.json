@@ -27,7 +27,8 @@
     "test:integration": "node scripts/test-integration.cjs",
     "test:upgrade": "node scripts/test-upgrade.cjs",
     "db:docs": "ts-node scripts/document-schema.ts",
-    "admin:create": "ts-node scripts/create-admin.ts"
+    "admin:create": "ts-node scripts/create-admin.ts",
+    "wompi:check": "ts-node scripts/check-wompi.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

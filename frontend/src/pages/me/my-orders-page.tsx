@@ -27,6 +27,7 @@ import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useAuthStore } from '@/modules/auth/application/auth.store'
 import { OrderActions } from '@/modules/orders/presentation/order-actions'
 import { OrderHistory } from '@/modules/orders/presentation/order-history'
+import { WompiPayment, WompiReturn } from '@/modules/orders/presentation/wompi-payment'
 
 
 
@@ -74,7 +75,7 @@ function getStatusLabel(estado: Order['estado']): string {
 }
 
 function getPaymentLabel(metodoPago: NonNullable<Order['pago']>['metodoPago']): string {
-  return metodoPago === 'EFECTIVO' ? 'Efectivo' : 'Transferencia'
+  return metodoPago === 'EFECTIVO' ? 'Efectivo' : metodoPago === 'WOMPI' ? 'Wompi Sandbox (prueba)' : 'Transferencia'
 }
 
 function getPaymentBadgeVariant(estado: NonNullable<Order['pago']>['estado']): 'default' | 'secondary' | 'destructive' {
@@ -262,6 +263,7 @@ function OrderDetailCard(props: { order: Order }) {
         </AnimatePresence>
 
         <OrderActions order={order} customer />
+        <WompiPayment order={order} />
         <OrderHistory order={order} />
         <div className="flex justify-end">
           <Button
@@ -347,6 +349,7 @@ export function MyOrdersPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
+      <WompiReturn />
       <Card className="overflow-hidden border-border/70 bg-gradient-to-br from-card via-card to-card shadow-[0_24px_80px_rgba(15,23,42,0.12)]">
         <CardContent className="grid gap-5 p-6 lg:grid-cols-[minmax(0,1.35fr)_repeat(3,minmax(0,1fr))] lg:items-center lg:p-8">
           <div className="space-y-3">

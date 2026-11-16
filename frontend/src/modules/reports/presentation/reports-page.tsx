@@ -67,7 +67,7 @@ export function ReportsPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <ReportTable title="Pedidos por día" headers={['Fecha', 'Pedidos', 'Total']} rows={data.daily.map((row) => [row.date, row.orders, formatCOP(row.total)])} />
         <ReportTable title="Pedidos por estado" headers={['Estado', 'Pedidos', 'Total']} rows={data.states.map((row) => [stateNames[row.state] ?? row.state, row.orders, formatCOP(row.total)])} />
-        <ReportTable title="Pagos aprobados por método" headers={['Método', 'Registros', 'Monto']} rows={data.methods.map((row) => [row.method === 'EFECTIVO' ? 'Efectivo' : 'Transferencia', row.payments, formatCOP(row.amount)])} />
+        <ReportTable title="Pagos aprobados por método" headers={['Método', 'Registros', 'Monto']} rows={data.methods.map((row) => [row.method === 'EFECTIVO' ? 'Efectivo' : row.method === 'WOMPI' ? 'Wompi Sandbox (simulación)' : row.method === 'TRANSFERENCIA' ? 'Transferencia' : row.method, row.payments, formatCOP(row.amount)])} />
         <ReportTable title="Productos más pedidos" headers={['Producto', 'Unidades', 'Total']} rows={data.topProducts.map((row) => [row.name, row.units, formatCOP(row.total)])} />
       </div>
       <p className="text-sm text-muted-foreground">Productos de pedidos confirmados, completados o enviados; excluye cancelados y devueltos. Máximo 10 productos.</p>

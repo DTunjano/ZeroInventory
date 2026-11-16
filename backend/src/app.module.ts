@@ -29,6 +29,7 @@ import { validateEnvironment } from '../config/environment';
 import { APP_GUARD } from '@nestjs/core';
 import { ApiAccessGuard } from './auth/adapters/guards/api-access.guard';
 import { ReportsModule } from './reports/reports.module';
+import { WompiModule } from './wompi/wompi.module';
 
 @Module({
   providers: [{ provide: APP_GUARD, useClass: ApiAccessGuard }],
@@ -64,6 +65,7 @@ import { ReportsModule } from './reports/reports.module';
     SettingsModule,
     MediaModule,
     ReportsModule,
+    WompiModule,
   ],
 })
 export class AppModule {}

@@ -18,7 +18,10 @@ const client = new Client(process.env.DATABASE_URL ? { connectionString: process
     await client.query(`CREATE DATABASE "${name}"`);
     created = true;
     const env = { ...process.env, DB_NAME: name, TEST_DATABASE_NAME: name, NODE_ENV: 'test',
-      JWT_ACCESS_SECRET: randomBytes(48).toString('hex'), JWT_REFRESH_SECRET: randomBytes(48).toString('hex') };
+      JWT_ACCESS_SECRET: randomBytes(48).toString('hex'), JWT_REFRESH_SECRET: randomBytes(48).toString('hex'),
+      WOMPI_MODE: 'sandbox', WOMPI_PUBLIC_KEY: 'pub_test_integration_only', WOMPI_PRIVATE_KEY: 'prv_test_integration_only',
+      WOMPI_INTEGRITY_SECRET: 'test_integrity_integration_only', WOMPI_EVENTS_SECRET: 'test_events_integration_only',
+      WOMPI_REDIRECT_URL: 'http://localhost:5173/me/orders' };
     if (env.DATABASE_URL) { const url = new URL(env.DATABASE_URL); url.pathname = `/${name}`; env.DATABASE_URL = url.toString(); }
     const result = spawnSync(process.execPath, [process.env.npm_execpath, 'exec', 'jest', '--config', './test/jest-e2e.json', '--runInBand'], { env, stdio: 'inherit' });
     if (result.error) throw result.error;

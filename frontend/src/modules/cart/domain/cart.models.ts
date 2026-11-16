@@ -38,7 +38,7 @@ export interface UpdateCartItemQuantityInput {
 
 export interface CheckoutCartInput {
   direccionId: number
-  metodoPago: 'EFECTIVO' | 'TRANSFERENCIA'
+  metodoPago: 'EFECTIVO' | 'TRANSFERENCIA' | 'WOMPI'
 }
 
 export interface CheckoutCartResult {
