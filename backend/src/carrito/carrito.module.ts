@@ -9,9 +9,33 @@ import { GetAllCarritosUseCase } from './application/use-cases/get-all-carrito.u
 import { GetCarritoByIdUseCase } from './application/use-cases/get-carrito-by-id.use-case';
 import { UpdateCarritoUseCase } from './application/use-cases/update-carrito.use-case';
 import { DeleteCarritoUseCase } from './application/use-cases/delete-carrito.use-case';
+import { CarritoDetalleModule } from '../carrito-detalle/carrito-detalle.module';
+import { ProductoModule } from '../producto/producto.module';
+import { ClienteModule } from '../cliente/cliente.module';
+import { DireccionModule } from '../direccion/direccion.module';
+import { PedidoModule } from '../pedido/pedido.module';
+import { PedidoDetalleModule } from '../pedido-detalle/pedido-detalle.module';
+import { PagoModule } from '../pago/pago.module';
+import { GetOpenCartByUsuarioUseCase } from './application/use-cases/get-open-cart-by-usuario.use-case';
+import { AddItemToCartUseCase } from './application/use-cases/add-item-to-cart.use-case';
+import { CheckoutCartUseCase } from './application/use-cases/checkout-cart.use-case';
+import { CreateOrderUseCase } from './application/use-cases/create-order.use-case';
+import { UpdateCartItemQuantityUseCase } from './application/use-cases/update-cart-item-quantity.use-case';
+import { RemoveProductFromCartUseCase } from './application/use-cases/remove-product-from-cart.use-case';
+import { ClearCartUseCase } from './application/use-cases/clear-cart.use-case';
+import { ValidateCartStockUseCase } from './application/use-cases/validate-cart-stock.use-case';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CarritoEntityORM])],
+  imports: [
+    TypeOrmModule.forFeature([CarritoEntityORM]),
+    CarritoDetalleModule,
+    ProductoModule,
+    ClienteModule,
+    DireccionModule,
+    PedidoModule,
+    PedidoDetalleModule,
+    PagoModule,
+  ],
   controllers: [CarritoController],
   providers: [
     CreateCarritoUseCase,
@@ -19,10 +43,19 @@ import { DeleteCarritoUseCase } from './application/use-cases/delete-carrito.use
     DeleteCarritoUseCase,
     GetAllCarritosUseCase,
     GetCarritoByIdUseCase,
+    GetOpenCartByUsuarioUseCase,
+    ValidateCartStockUseCase,
+    CreateOrderUseCase,
+    AddItemToCartUseCase,
+    CheckoutCartUseCase,
+    UpdateCartItemQuantityUseCase,
+    RemoveProductFromCartUseCase,
+    ClearCartUseCase,
     {
       provide: CarritoRepository,
       useClass: CarritoRepositoryImpl,
     },
   ],
+  exports: [CarritoRepository],
 })
 export class CarritoModule {}

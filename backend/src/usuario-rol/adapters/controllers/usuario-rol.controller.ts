@@ -1,3 +1,4 @@
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
 import {
   Body,
   Controller,
@@ -28,6 +29,7 @@ import { GetUsuarioRolByIdSwagger } from '../documentation/get-usuario-rol-by-id
 
 @ApiTags('Usuario Roles')
 @Controller('usuario-roles')
+@Roles('ADMIN')
 export class UsuarioRolController {
   constructor(
     private readonly createUsuarioRolUseCase: CreateUsuarioRolUseCase,
@@ -74,11 +76,7 @@ export class UsuarioRolController {
     @Param('id', ParseIntPipe) usuarioRolId: number,
     @Body() dto: UpdateUsuarioRolDTO,
   ): Promise<UsuarioRol> {
-    try {
-      return await this.updateUsuarioRolUseCase.ejecutar(usuarioRolId, dto);
-    } catch {
-      throw new NotFoundException('Asignación usuario-rol no encontrada');
-    }
+    return this.updateUsuarioRolUseCase.ejecutar(usuarioRolId, dto);
   }
   @Delete(':id')
   @DeleteUsuarioRolSwagger()

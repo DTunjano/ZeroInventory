@@ -1,3 +1,4 @@
+import { Public } from '../../../auth/adapters/decorators/public.decorator';
 import {
   Body,
   Controller,
@@ -9,6 +10,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateProductUseCase } from '../../application/use-cases/create-product.use-case';
@@ -25,6 +27,11 @@ import { GetAllProductSwagger } from '../documentation/get-all-product.swagger';
 import { UpdateProductSwagger } from '../documentation/update-product.swagger';
 import { DeleteProductSwagger } from '../documentation/delete-product.swagger';
 import { GetProductByIdSwagger } from '../documentation/get-product-by-id.swagger';
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
+import { CurrentUser } from '../../../auth/adapters/decorators/current-user.decorator';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 
 @ApiTags('Productos')
 @Controller('productos')
@@ -38,6 +45,8 @@ export class ProductoController {
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @CreateProductSwagger()
   async create(@Body() body: CreateProductDTO): Promise<Producto> {
     const producto = await this.createProductUseCase.ejecutar(body);
@@ -47,6 +56,7 @@ export class ProductoController {
     return producto;
   }
 
+  @Public()
   @Get()
   @GetAllProductSwagger()
   async getAll(@Query() filters?: FiltersProductDTO): Promise<{
@@ -59,6 +69,7 @@ export class ProductoController {
     return this.getAllProductosUseCase.ejecutar(filters);
   }
 
+  @Public()
   @Get(':id')
   @GetProductByIdSwagger()
   async getById(
@@ -72,12 +83,15 @@ export class ProductoController {
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UpdateProductSwagger()
   async update(
     @Param('id', ParseIntPipe) productoId: number,
     @Body() body: UpdateProductDTO,
+    @CurrentUser() usuarioId: number,
   ): Promise<Producto> {
-    const producto = await this.updateProductUseCase.ejecutar(productoId, body);
+    const producto = await this.updateProductUseCase.ejecutar(productoId, usuarioId, body);
     if (!producto) {
       throw new NotFoundException('Producto no encontrado');
     }
@@ -85,6 +99,8 @@ export class ProductoController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.ADMIN)
   @DeleteProductSwagger()
   async remove(@Param('id', ParseIntPipe) productoId: number): Promise<void> {
     return this.deleteProductUseCase.ejecutar(productoId);

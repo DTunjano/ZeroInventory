@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class FiltersPedidoDetalleDTO {
   @ApiPropertyOptional({
@@ -10,7 +10,8 @@ export class FiltersPedidoDetalleDTO {
   })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
+  @Min(1) @Max(2147483647)
   pedidoId?: number;
 
   @ApiPropertyOptional({
@@ -20,7 +21,8 @@ export class FiltersPedidoDetalleDTO {
   })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
+  @Min(1) @Max(2147483647)
   productoId?: number;
 
   @ApiPropertyOptional({
@@ -30,8 +32,9 @@ export class FiltersPedidoDetalleDTO {
   })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @Min(1)
+  @Max(1000000)
   page?: number = 1;
 
   @ApiPropertyOptional({
@@ -41,7 +44,7 @@ export class FiltersPedidoDetalleDTO {
   })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @Min(1)
   @Max(100)
   limit?: number = 10;

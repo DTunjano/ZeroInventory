@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DireccionEntityORM } from './direccion.orm-entity';
+import { PedidoEntityORM } from '../../../pedido/infrastructure/persistence/pedido.orm-entity';
 import { DireccionRepository } from '../../domain/repository/direccion.repository';
 import { DireccionMapper } from '../mappers/direccion.mapper';
 import { Direccion } from '../../domain/entity/direccion.entity';
@@ -12,23 +13,43 @@ export class DireccionRepositoryImpl implements DireccionRepository {
   constructor(
     @InjectRepository(DireccionEntityORM)
     private readonly repo: Repository<DireccionEntityORM>,
+    @InjectRepository(PedidoEntityORM)
+    private readonly pedidoRepo: Repository<PedidoEntityORM>,
   ) {}
 
   async create(direccion: Direccion): Promise<Direccion> {
     const entity = DireccionMapper.toPersistence(direccion);
+    
+    // Si es predeterminada, desmarcar las otras del mismo cliente
+    if (entity.esPredeterminada && entity.clienteId) {
+      await this.repo.update(
+        { clienteId: entity.clienteId, esPredeterminada: true },
+        { esPredeterminada: false },
+      );
+    }
+    
     const saved = await this.repo.save(entity);
     return DireccionMapper.toDomain(saved);
   }
 
   async update(direccion: Direccion): Promise<Direccion> {
     const entity = DireccionMapper.toPersistence(direccion);
+    
+    // Si es predeterminada, desmarcar las otras del mismo cliente
+    if (entity.esPredeterminada && entity.clienteId) {
+      await this.repo.update(
+        { clienteId: entity.clienteId, esPredeterminada: true },
+        { esPredeterminada: false },
+      );
+    }
+    
     const saved = await this.repo.save(entity);
     return DireccionMapper.toDomain(saved);
   }
 
   async getById(direccionId: number): Promise<Direccion | null> {
     const entity = await this.repo.findOne({
-      where: { direccionId: direccionId },
+      where: { direccionId: direccionId, estado: true },
     });
     return entity ? DireccionMapper.toDomain(entity) : null;
   }
@@ -41,6 +62,8 @@ export class DireccionRepositoryImpl implements DireccionRepository {
     totalPages: number;
   }> {
     const query = this.repo.createQueryBuilder('direccion');
+
+    query.andWhere('direccion.estado = true');
 
     if (filters?.clienteId) {
       query.andWhere('direccion.clienteId = :clienteId', {
@@ -72,7 +95,28 @@ export class DireccionRepositoryImpl implements DireccionRepository {
   }
 
   async delete(direccionId: number): Promise<boolean> {
-    const result = await this.repo.delete({ direccionId: direccionId });
+    const direccion = await this.repo.findOne({
+      where: { direccionId },
+      select: { direccionId: true, estado: true },
+    });
+
+    if (!direccion) {
+      return false;
+    }
+
+    const pedidosUsandoDireccion = await this.pedidoRepo.count({
+      where: { direccionId },
+    });
+
+    if (pedidosUsandoDireccion > 0) {
+      const result = await this.repo.update(
+        { direccionId },
+        { estado: false, esPredeterminada: false },
+      );
+      return (result.affected ?? 0) > 0;
+    }
+
+    const result = await this.repo.delete({ direccionId });
     return (result.affected ?? 0) > 0;
   }
 }

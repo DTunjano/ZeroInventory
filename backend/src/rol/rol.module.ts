@@ -24,5 +24,6 @@ import { RolController } from './adapters/controllers/rol.controller';
       useClass: RolRepositoryImpl,
     },
   ],
+  exports: [RolRepository],
 })
 export class RolModule {}

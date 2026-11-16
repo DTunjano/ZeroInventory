@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsuarioRolRepository } from '../../domain/repository/usuario-rol.repository';
 import { UsuarioRol } from '../../domain/entity/usuario-rol.entity';
 
@@ -14,7 +14,7 @@ export class UpdateUsuarioRolUseCase {
   ): Promise<UsuarioRol> {
     const usuarioRol = await this.usuarioRolRepo.getById(usuarioRolId);
     if (!usuarioRol) {
-      throw new Error('Usuario rol no encontrado');
+      throw new NotFoundException('Asignación usuario-rol no encontrada');
     }
 
     const updated = new UsuarioRol(

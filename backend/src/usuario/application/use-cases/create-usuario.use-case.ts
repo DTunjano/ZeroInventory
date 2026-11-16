@@ -2,13 +2,16 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { UsuarioRepository } from '../../domain/repository/usuario.repository';
 import { Usuario } from '../../domain/entity/usuario.entity';
 import * as bcrypt from 'bcrypt';
+import { UsuarioAccess } from '../../domain/entity/usuario-access';
 
 @Injectable()
 export class CreateUsuarioUseCase {
   constructor(private readonly usuarioRepo: UsuarioRepository) {}
 
-  async ejecutar(data: {
+  async ejecutar(data: UsuarioAccess & {
     username: string;
+    email?: string | null;
+    telefono?: string | null;
     password: string;
     primerNombre: string | null;
     segundoNombre: string | null;
@@ -22,20 +25,30 @@ export class CreateUsuarioUseCase {
       );
     }
 
+    if (data.email) {
+      const existingEmail = await this.usuarioRepo.getByEmail(data.email);
+      if (existingEmail) {
+        throw new ConflictException('Ya existe un usuario con ese correo electrónico');
+      }
+    }
+
     const hashPassword = await bcrypt.hash(data.password, 10);
 
     const usuario = new Usuario(
       0,
       data.username,
+      data.email ?? null,
+      data.telefono ?? null,
       hashPassword,
       data.primerNombre ?? null,
       data.segundoNombre ?? null,
       data.primerApellido ?? null,
       data.segundoApellido ?? null,
+      'dark',
       true,
       new Date(),
       new Date(),
     );
-    return this.usuarioRepo.create(usuario);
+    return this.usuarioRepo.create(usuario, { roles: data.roles, ...(data.documento ? { documento: data.documento } : {}) });
   }
 }

@@ -47,7 +47,8 @@ export class ProveedorRepositoryImpl implements ProveedorRepository {
     limit: number;
     totalPages: number;
   }> {
-    const query = this.repo.createQueryBuilder('proveedor');
+    const query = this.repo.createQueryBuilder('proveedor')
+      .leftJoinAndSelect('proveedor.direcciones', 'direccion');
 
     if (filters?.nombre) {
       query.andWhere('proveedor.nombre ILIKE :nombre', {
@@ -58,6 +59,12 @@ export class ProveedorRepositoryImpl implements ProveedorRepository {
     if (filters?.email) {
       query.andWhere('proveedor.email ILIKE :email', {
         email: `%${filters.email}%`,
+      });
+    }
+
+    if (filters?.isActive !== undefined) {
+      query.andWhere('proveedor.isActive = :isActive', {
+        isActive: filters.isActive,
       });
     }
 
@@ -79,7 +86,36 @@ export class ProveedorRepositoryImpl implements ProveedorRepository {
   }
 
   async delete(proveedorId: number): Promise<boolean> {
-    const result = await this.repo.delete({ proveedorId: proveedorId });
+    const result = await this.repo.update({ proveedorId }, { isActive: false });
     return (result.affected ?? 0) > 0;
+  }
+
+  async toggleActive(proveedorId: number): Promise<Proveedor> {
+    const proveedor = await this.getById(proveedorId);
+    if (!proveedor) {
+      throw new (await import('@nestjs/common')).NotFoundException('Proveedor no encontrado');
+    }
+    const updated = new Proveedor(
+      proveedor.proveedorId,
+      proveedor.nombre,
+      proveedor.nombreTitular,
+      proveedor.telefono,
+      proveedor.email,
+      !proveedor.isActive,
+    );
+    return this.update(updated);
+  }
+
+  async getSuppliedProductCount(proveedorId: number): Promise<number> {
+    const result = await this.repo
+      .createQueryBuilder('proveedor')
+      .innerJoin('proveedor.compras', 'compra')
+      .innerJoin('compra.detalles', 'detalle')
+      .where('proveedor.proveedorId = :proveedorId', { proveedorId })
+      .andWhere('compra.estado = :estado', { estado: 'RECIBIDA' })
+      .select('COALESCE(SUM(detalle.cantidad), 0)', 'total')
+      .getRawOne<{ total: string }>();
+
+    return parseInt(result?.total || '0', 10);
   }
 }

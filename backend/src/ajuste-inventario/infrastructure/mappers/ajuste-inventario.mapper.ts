@@ -15,7 +15,7 @@ export class AjusteInventarioMapper {
 
   static toPersistence(domain: AjusteInventario): AjusteInventarioEntityORM {
     const entity = new AjusteInventarioEntityORM();
-    entity.ajusteInventarioId = domain.ajusteInventarioId;
+    if (domain.ajusteInventarioId > 0) entity.ajusteInventarioId = domain.ajusteInventarioId;
     entity.productoId = domain.productoId;
     entity.usuarioId = domain.usuarioId;
     entity.cantidad = domain.cantidad;

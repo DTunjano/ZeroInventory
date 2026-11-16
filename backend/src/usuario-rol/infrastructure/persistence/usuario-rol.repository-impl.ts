@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
+import { lockAccess, preserveAdmin } from '../../../usuario/infrastructure/persistence/access-policy';
+import { RolEntityORM } from '../../../rol/infrastructure/persistence/rol.orm-entity';
+import { ClienteEntityORM } from '../../../cliente/infrastructure/persistence/cliente.orm-entity';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 import { UsuarioRolRepository } from '../../domain/repository/usuario-rol.repository';
 import { UsuarioRol } from '../../domain/entity/usuario-rol.entity';
 import { UsuarioRolMapper } from '../mappers/usuario-rol.mapper';
@@ -15,9 +19,21 @@ export class UsuarioRolRepositoryImpl implements UsuarioRolRepository {
   ) {}
 
   async create(usuarioRol: UsuarioRol): Promise<UsuarioRol> {
-    const entity = UsuarioRolMapper.toPersistence(usuarioRol);
-    const saved = await this.repo.save(entity);
-    return UsuarioRolMapper.toDomain(saved);
+    return this.repo.manager.transaction(async (manager) => {
+      await lockAccess(manager);
+      await this.validateCustomer(manager, usuarioRol);
+      if (await manager.existsBy(UsuarioRolEntityORM, { usuarioId: usuarioRol.usuarioId, rolId: usuarioRol.rolId })) throw new ConflictException('El usuario ya tiene este rol');
+      const saved = await manager.save(UsuarioRolEntityORM, UsuarioRolMapper.toPersistence(usuarioRol));
+      return UsuarioRolMapper.toDomain(saved);
+    });
+  }
+
+  private async validateCustomer(manager: EntityManager, assignment: UsuarioRol) {
+    const role = await manager.findOneBy(RolEntityORM, { rolId: assignment.rolId });
+    if (!role) throw new NotFoundException('Rol no encontrado');
+    if (role.nombre === RolNombreEnum.CUSTOMER && !await manager.existsBy(ClienteEntityORM, { usuarioId: assignment.usuarioId })) {
+      throw new ConflictException('Crea el perfil de cliente desde la gestión de usuarios antes de asignar CUSTOMER');
+    }
   }
 
   async getById(usuarioRolId: number): Promise<UsuarioRol | null> {
@@ -26,14 +42,28 @@ export class UsuarioRolRepositoryImpl implements UsuarioRolRepository {
   }
 
   async update(usuarioRol: UsuarioRol): Promise<UsuarioRol> {
-    const entity = UsuarioRolMapper.toPersistence(usuarioRol);
-    const updated = await this.repo.save(entity);
-    return UsuarioRolMapper.toDomain(updated);
+    return this.repo.manager.transaction(async (manager) => {
+      const previousCount = await lockAccess(manager);
+      if (!await manager.existsBy(UsuarioRolEntityORM, { usuarioRolId: usuarioRol.usuarioRolId })) throw new NotFoundException('Asignación no encontrada');
+      await this.validateCustomer(manager, usuarioRol);
+      const duplicate = await manager.findOneBy(UsuarioRolEntityORM, { usuarioId: usuarioRol.usuarioId, rolId: usuarioRol.rolId });
+      if (duplicate && duplicate.usuarioRolId !== usuarioRol.usuarioRolId) throw new ConflictException('El usuario ya tiene este rol');
+      const updated = await manager.save(UsuarioRolEntityORM, UsuarioRolMapper.toPersistence(usuarioRol));
+      await preserveAdmin(manager, previousCount);
+      return UsuarioRolMapper.toDomain(updated);
+    });
   }
 
   async delete(usuarioRolId: number): Promise<boolean> {
-    const result = await this.repo.delete(usuarioRolId);
-    return (result.affected ?? 0) > 0;
+    return this.repo.manager.transaction(async (manager) => {
+      const previousCount = await lockAccess(manager);
+      const current = await manager.findOneBy(UsuarioRolEntityORM, { usuarioRolId });
+      if (!current) return false;
+      if (await manager.countBy(UsuarioRolEntityORM, { usuarioId: current.usuarioId }) <= 1) throw new ConflictException('El usuario debe conservar al menos un rol');
+      await manager.delete(UsuarioRolEntityORM, { usuarioRolId });
+      await preserveAdmin(manager, previousCount);
+      return true;
+    });
   }
 
   async getAll(filters?: FiltersUsuarioRolDTO): Promise<{

@@ -9,8 +9,17 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import type { Request } from 'express';
+
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 import { CreateDireccionUseCase } from '../../application/use-cases/create-direccion.use-case';
 import { Direccion } from '../../domain/entity/direccion.entity';
 import { CreateDireccionDTO } from '../../application/dto/create-direccion-dto';
@@ -20,10 +29,15 @@ import { FiltersDireccionDTO } from '../../application/dto/filters-direccion-dto
 import { UpdateDireccionUseCase } from '../../application/use-cases/update-direccion.use-case';
 import { DeleteDireccionUseCase } from '../../application/use-cases/delete-direccion.use-case';
 import { UpdateDireccionDTO } from '../../application/dto/update-direccion-dto';
+import { CreateMyDireccionDTO } from '../../application/dto/create-my-direccion.dto';
+import { CreateMyDireccionUseCase } from '../../application/use-cases/create-my-direccion.use-case';
+import { GetMyDireccionesUseCase } from '../../application/use-cases/get-my-direcciones.use-case';
+import { SetPredeterminadaDireccionUseCase } from '../../application/use-cases/set-predeterminada-direccion.use-case';
 import { CreateDireccionSwagger } from '../documentation/create-direccion.swagger';
 import { GetAllDireccionSwagger } from '../documentation/get-all-direccion.swagger';
 import { UpdateDireccionSwagger } from '../documentation/update-direccion.swagger';
 import { DeleteDireccionSwagger } from '../documentation/delete-direccion.swagger';
+import { ClienteRepository } from '../../../cliente/domain/repository/cliente.repository';
 import { GetDireccionByIdSwagger } from '../documentation/get-direccion-by-id.swagger';
 
 @ApiTags('Direcciones')
@@ -31,10 +45,14 @@ import { GetDireccionByIdSwagger } from '../documentation/get-direccion-by-id.sw
 export class DireccionController {
   constructor(
     private readonly createDireccionUseCase: CreateDireccionUseCase,
+    private readonly createMyDireccionUseCase: CreateMyDireccionUseCase,
     private readonly getDireccionByIdUseCase: GetDireccionByIdUseCase,
     private readonly getAllDireccionesUseCase: GetAllDireccionesUseCase,
+    private readonly getMyDireccionesUseCase: GetMyDireccionesUseCase,
     private readonly updateDireccionUseCase: UpdateDireccionUseCase,
     private readonly deleteDireccionUseCase: DeleteDireccionUseCase,
+    private readonly setPredeterminadaDireccionUseCase: SetPredeterminadaDireccionUseCase,
+    private readonly clienteRepo: ClienteRepository,
   ) {}
 
   @Post()
@@ -45,6 +63,40 @@ export class DireccionController {
       throw new NotFoundException('No se pudo crear la dirección');
     }
     return direccion;
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.CUSTOMER)
+  async getMy(@Req() req: Request): Promise<Direccion[]> {
+    const authRequest = req as Request & { user: { sub: number } }
+    return this.getMyDireccionesUseCase.ejecutar(authRequest.user.sub);
+  }
+
+  @Post('me')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.CUSTOMER)
+  async createMy(
+    @Req() req: Request,
+    @Body() body: CreateMyDireccionDTO,
+  ): Promise<Direccion> {
+    const authRequest = req as Request & { user: { sub: number } }
+    const direccion = await this.createMyDireccionUseCase.ejecutar(authRequest.user.sub, body);
+    if (!direccion) {
+      throw new NotFoundException('No se pudo crear la dirección');
+    }
+    return direccion;
+  }
+
+  @Post('me/:id/predeterminada')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RolNombreEnum.CUSTOMER)
+  async setPredeterminada(
+    @Req() req: Request,
+    @Param('id', ParseIntPipe) direccionId: number,
+  ): Promise<void> {
+    const authRequest = req as Request & { user: { sub: number } }
+    return this.setPredeterminadaDireccionUseCase.ejecutar(authRequest.user.sub, direccionId);
   }
 
   @Get()
@@ -60,10 +112,13 @@ export class DireccionController {
   }
 
   @Get(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE, RolNombreEnum.CUSTOMER)
   @GetDireccionByIdSwagger()
   async getById(
     @Param('id', ParseIntPipe) direccionId: number,
+    @Req() req: { user: { sub: number; roles: string[] } },
   ): Promise<Direccion> {
+    await this.assertAccess(direccionId, req.user);
     const direccion = await this.getDireccionByIdUseCase.ejecutar(direccionId);
     if (!direccion) {
       throw new NotFoundException('Dirección no encontrada');
@@ -72,11 +127,14 @@ export class DireccionController {
   }
 
   @Put(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE, RolNombreEnum.CUSTOMER)
   @UpdateDireccionSwagger()
   async update(
     @Param('id', ParseIntPipe) direccionId: number,
     @Body() body: UpdateDireccionDTO,
+    @Req() req: { user: { sub: number; roles: string[] } },
   ): Promise<Direccion> {
+    await this.assertAccess(direccionId, req.user);
     const direccion = await this.updateDireccionUseCase.ejecutar(
       direccionId,
       body,
@@ -88,8 +146,20 @@ export class DireccionController {
   }
 
   @Delete(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE, RolNombreEnum.CUSTOMER)
   @DeleteDireccionSwagger()
-  async remove(@Param('id', ParseIntPipe) direccionId: number): Promise<void> {
+  async remove(@Param('id', ParseIntPipe) direccionId: number, @Req() req: { user: { sub: number; roles: string[] } }): Promise<void> {
+    await this.assertAccess(direccionId, req.user);
     return this.deleteDireccionUseCase.ejecutar(direccionId);
+  }
+
+  private async assertAccess(id: number, user: { sub: number; roles: string[] }) {
+    if (user.roles.some((role) => ['ADMIN', 'EMPLOYEE'].includes(role))) return;
+    const [address, customer] = await Promise.all([
+      this.getDireccionByIdUseCase.ejecutar(id), this.clienteRepo.getByUsuarioId(user.sub),
+    ]);
+    if (!address || !customer || address.clienteId !== customer.clienteId) {
+      throw new ForbiddenException('La dirección no pertenece al cliente');
+    }
   }
 }

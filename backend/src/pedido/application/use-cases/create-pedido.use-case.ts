@@ -18,6 +18,7 @@ export class CreatePedidoUseCase {
       data.direccionId,
       data.estado ?? EstadoPedidoEnum.CONFIRMADO,
       data.total ?? 0,
+      0,
       new Date(),
     );
     return this.pedidoRepo.create(pedido);

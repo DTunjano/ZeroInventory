@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNumber, IsEnum, IsOptional, Max, Min } from 'class-validator';
+import { IsInt, IsEnum, IsOptional, Max, Min } from 'class-validator';
 import {
   EstadoPagoEnum,
   MetodoPagoEnum,
@@ -14,7 +14,8 @@ export class FiltersPagoDTO {
   })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
+  @Min(1) @Max(2147483647)
   pedidoId?: number;
 
   @ApiPropertyOptional({
@@ -42,8 +43,9 @@ export class FiltersPagoDTO {
   })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @Min(1)
+  @Max(1000000)
   page?: number = 1;
 
   @ApiPropertyOptional({
@@ -53,7 +55,7 @@ export class FiltersPagoDTO {
   })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @Min(1)
   @Max(100)
   limit?: number = 10;

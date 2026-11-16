@@ -1,3 +1,4 @@
+import { UsuarioResponseDTO } from '../../application/dto/usuario-response.dto';
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { UpdateUsuarioDTO } from '../../application/dto/update-usuario-dto';
@@ -19,8 +20,8 @@ export function UpdateUsuarioSwagger() {
 
     ApiResponse({
       status: 200,
-      description: 'Usuario actualizado exitosamente',
-      type: UpdateUsuarioDTO,
+      description: 'Usuario actualizado; sin contraseña en la respuesta',
+      type: UsuarioResponseDTO,
     }),
 
     ApiResponse({

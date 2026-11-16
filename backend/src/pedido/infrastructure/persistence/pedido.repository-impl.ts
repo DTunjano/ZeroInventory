@@ -15,9 +15,15 @@ export class PedidoRepositoryImpl implements PedidoRepository {
   ) {}
 
   async create(pedido: Pedido): Promise<Pedido> {
-    const entity = PedidoMapper.toPersistence(pedido);
-    const saved = await this.repo.save(entity);
-    return PedidoMapper.toDomain(saved);
+    return this.repo.manager.transaction(async (manager) => {
+      await manager.query('SELECT pg_advisory_xact_lock(4970, $1)', [pedido.clienteId]);
+      const next = await manager.getRepository(PedidoEntityORM).createQueryBuilder('pedido')
+        .select('COALESCE(MAX(pedido.numeroPedidoUsuario), 0)', 'max')
+        .where('pedido.clienteId = :clienteId', { clienteId: pedido.clienteId }).getRawOne<{ max: string }>();
+      const entity = PedidoMapper.toPersistence(pedido);
+      entity.numeroPedidoUsuario = Number(next?.max ?? 0) + 1;
+      return PedidoMapper.toDomain(await manager.save(PedidoEntityORM, entity));
+    });
   }
 
   async update(pedido: Pedido): Promise<Pedido> {

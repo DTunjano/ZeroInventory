@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RolRepository } from '../../domain/repository/rol.repository';
@@ -26,12 +26,15 @@ export class RolRepositoryImpl implements RolRepository {
   }
 
   async update(rol: Rol): Promise<Rol> {
+    const current = await this.repo.findOneBy({ rolId: rol.rolId });
+    if (current && current.nombre !== rol.nombre) throw new ConflictException('Los roles del sistema son fijos; administra sus asignaciones');
     const entity = RolMapper.toPersistence(rol);
     const updated = await this.repo.save(entity);
     return RolMapper.toDomain(updated);
   }
 
   async delete(rolId: number): Promise<boolean> {
+    if (await this.repo.existsBy({ rolId })) throw new ConflictException('Los roles del sistema no se pueden eliminar');
     const result = await this.repo.delete(rolId);
     return (result.affected ?? 0) > 0;
   }

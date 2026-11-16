@@ -22,10 +22,10 @@ export class PedidoDetalleEntityORM {
   @Column({ name: 'cantidad', type: 'int' })
   cantidad!: number;
 
-  @Column({ name: 'precio_unitario', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'precio_unitario', precision: 14, scale: 2, type: 'numeric' })
   precioUnitario!: number;
 
-  @Column({ name: 'subtotal', precision: 10, scale: 2, type: 'numeric' })
+  @Column({ name: 'subtotal', precision: 14, scale: 2, type: 'numeric' })
   subtotal!: number;
 
   @ManyToOne(() => PedidoEntityORM, (pedido) => pedido.detalles)

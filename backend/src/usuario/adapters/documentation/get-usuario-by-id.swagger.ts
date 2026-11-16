@@ -1,6 +1,6 @@
+import { UsuarioResponseDTO } from '../../application/dto/usuario-response.dto';
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { CreateUsuarioDTO } from '../../application/dto/create-usuario-dto';
 
 export function GetUsuarioByIdSwagger() {
   return applyDecorators(
@@ -19,7 +19,7 @@ export function GetUsuarioByIdSwagger() {
     ApiResponse({
       status: 200,
       description: 'Usuario obtenido exitosamente',
-      type: CreateUsuarioDTO,
+      type: UsuarioResponseDTO,
     }),
 
     ApiResponse({ status: 404, description: 'Usuario no encontrado' }),

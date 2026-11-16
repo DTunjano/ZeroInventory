@@ -15,7 +15,7 @@ export class ClienteMapper {
 
   static toPersistence(domain: Cliente): ClienteEntityORM {
     const entity = new ClienteEntityORM();
-    entity.clienteId = domain.clienteId;
+    if (domain.clienteId > 0) entity.clienteId = domain.clienteId;
     entity.usuarioId = domain.usuarioId;
     entity.tipoDocumento = domain.tipoDocumento;
     entity.documento = domain.documento;

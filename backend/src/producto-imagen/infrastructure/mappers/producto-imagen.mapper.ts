@@ -15,7 +15,7 @@ export class ProductoImagenMapper {
 
   static toPersistence(domain: ProductoImagen): ProductoImagenEntityORM {
     const entity = new ProductoImagenEntityORM();
-    entity.imagenProductoId = domain.imagenProductoId;
+    if (domain.imagenProductoId > 0) entity.imagenProductoId = domain.imagenProductoId;
     entity.productoId = domain.productoId;
     entity.url = domain.url;
     entity.publicId = domain.publicId;

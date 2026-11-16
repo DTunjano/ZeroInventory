@@ -11,6 +11,11 @@ backend/tsconfig.build.tsbuildinfo
 
 # Environment variables
 .env
+.env.*
+!.env.example
+.local/
+*.dump
+backend/coverage/
 .env.development.local
 .env.test.local
 .env.production.local
@@ -34,6 +39,8 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # Tests
 /coverage
 /.nyc_output
+frontend/test-results/
+frontend/playwright-report/
 
 # Temp directory
 .temp

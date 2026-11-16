@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class UpdateDireccionDTO {
   @ApiPropertyOptional({
@@ -38,4 +38,13 @@ export class UpdateDireccionDTO {
   })
   @IsOptional()
   infoAdiccional!: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Indica si es la dirección predeterminada',
+    example: false,
+    type: Boolean,
+  })
+  @IsOptional()
+  @IsBoolean()
+  esPredeterminada!: boolean | undefined;
 }

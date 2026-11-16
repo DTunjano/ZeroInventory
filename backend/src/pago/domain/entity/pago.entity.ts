@@ -1,12 +1,14 @@
 export enum MetodoPagoEnum {
   EFECTIVO = 'EFECTIVO',
   TRANSFERENCIA = 'TRANSFERENCIA',
+  WOMPI = 'WOMPI',
 }
 
 export enum EstadoPagoEnum {
   PENDIENTE = 'PENDIENTE',
   APROBADO = 'APROBADO',
   RECHAZADO = 'RECHAZADO',
+  ANULADO = 'ANULADO',
 }
 
 export class Pago {

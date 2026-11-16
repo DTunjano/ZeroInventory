@@ -15,7 +15,7 @@ export class CompraDetalleMapper {
 
   static toPersistence(domain: CompraDetalle): CompraDetalleEntityORM {
     const entity = new CompraDetalleEntityORM();
-    entity.compraDetalleId = domain.compraDetalleId;
+    if (domain.compraDetalleId > 0) entity.compraDetalleId = domain.compraDetalleId;
     entity.compraId = domain.compraId;
     entity.productoId = domain.productoId;
     entity.cantidad = domain.cantidad;

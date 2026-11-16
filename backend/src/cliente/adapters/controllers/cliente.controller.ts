@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateClienteUseCase } from '../../application/use-cases/create-cliente.use-case';
@@ -25,8 +26,13 @@ import { GetAllClientesSwagger } from '../documentation/get-all-cliente.swagger'
 import { UpdateClienteSwagger } from '../documentation/update-cliente.swagger';
 import { DeleteClienteSwagger } from '../documentation/delete-cliente.swagger';
 import { GetClienteByIdSwagger } from '../documentation/get-cliente-by-id.swagger';
+import { JwtAuthGuard } from '../../../auth/adapters/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/adapters/guards/roles.guard';
+import { Roles } from '../../../auth/adapters/decorators/roles.decorator';
+import { RolNombreEnum } from '../../../rol/domain/entity/rol.entity';
 
 @ApiTags('Clientes')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('clientes')
 export class ClienteController {
   constructor(
@@ -38,6 +44,7 @@ export class ClienteController {
   ) {}
 
   @Post()
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @CreateClienteSwagger()
   async create(@Body() body: CreateClienteDTO): Promise<Cliente> {
     const cliente = await this.createClienteUseCase.ejecutar(body);
@@ -48,6 +55,7 @@ export class ClienteController {
   }
 
   @Get()
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetAllClientesSwagger()
   async getAll(@Query() filters?: FiltersClienteDTO): Promise<{
     data: Cliente[];
@@ -60,6 +68,7 @@ export class ClienteController {
   }
 
   @Get(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @GetClienteByIdSwagger()
   async getById(
     @Param('id', ParseIntPipe) clienteId: number,
@@ -72,6 +81,7 @@ export class ClienteController {
   }
 
   @Put(':id')
+  @Roles(RolNombreEnum.ADMIN, RolNombreEnum.EMPLOYEE)
   @UpdateClienteSwagger()
   async update(
     @Param('id', ParseIntPipe) clienteId: number,
@@ -85,6 +95,7 @@ export class ClienteController {
   }
 
   @Delete(':id')
+  @Roles(RolNombreEnum.ADMIN)
   @DeleteClienteSwagger()
   async remove(@Param('id', ParseIntPipe) clienteId: number): Promise<void> {
     return this.deleteClienteUseCase.ejecutar(clienteId);

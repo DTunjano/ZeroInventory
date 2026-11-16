@@ -8,7 +8,7 @@ export class RolMapper {
 
   static toPersistence(domain: Rol): RolEntityORM {
     const entity = new RolEntityORM();
-    entity.rolId = domain.rolId;
+    if (domain.rolId > 0) entity.rolId = domain.rolId;
     entity.nombre = domain.nombre;
     return entity;
   }

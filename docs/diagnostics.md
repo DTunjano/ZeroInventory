@@ -1,0 +1,93 @@
+# Diagnóstico comprobado — 12 de noviembre de 2026
+
+## Rechazo de Git
+
+La rama local de trabajo original era `feature/products`, commit `d5c666e`. `origin/dev` apuntaba a `008b80e`; las dos ramas habían avanzado desde un ancestro común. La rama `dev` local también estaba atrasada respecto a su remoto.
+
+Se ejecutó `git push --dry-run origin feature/products:dev`, sin publicar cambios. El remoto rechazó la operación con `non-fast-forward`. Esto reproduce un impedimento concreto para subir el trabajo original a `dev`. El reflog conserva además un intento anterior de rebase que luego fue revertido. No se dispone de la salida completa del push histórico para afirmar que este fuera su único error.
+
+Se integró el remoto dentro de `codex/fix-inventory-consistency`. Hubo conflictos en `app.module.ts` y entidades de producto/ajustes. Se conservaron las funcionalidades de la rama de trabajo y las entidades de los módulos remotos, unificando imports. Los CRUD históricos que eluden la escritura transaccional de inventario permanecen sin registrar en la aplicación activa.
+
+No se encontró un hook del repositorio que vincule el push a la DB. Publicar código y migrar la DB son operaciones independientes. La solución al rechazo conserva las dos historias y no requiere forzar el remoto.
+
+## Diferencia de ejecución de pruebas en Linux
+
+El primer workflow publicado detectó que `pnpm test -- --runInBand` terminaba en Linux como `jest -- --runInBand`; Jest interpretaba la opción como un patrón y devolvía `No tests found`. El fallo se reprodujo en un contenedor oficial Node 22/Linux. Se corrigieron el workflow y los comandos de documentación para usar `pnpm test --runInBand`, sin desactivar pruebas ni aceptar una ejecución sin tests.
+
+## Contenedor identificado
+
+Docker confirmó el contenedor `postgres-zero-inventory`, imagen `postgres:18.0`, activo en `5432`. Sus labels indicaban proyecto Compose `zeroinventory`, servicio `db` y este directorio de proyecto. `pgadmin-zero-inventory` estaba activo en `8082`.
+
+Los otros PostgreSQL presentes pertenecen a proyectos distintos. No se utilizaron para ejecutar pruebas ni se borraron sus datos.
+
+## Errores históricos reales de PostgreSQL
+
+Los logs guardados en el contenedor incluían:
+
+| Evidencia | Causa y resolución |
+| --- | --- |
+| `ALTER TABLE producto ADD proveedor_id integer NOT NULL` con registros nulos | El arranque con sincronización intentaba imponer un campo obligatorio a datos existentes. Proveedor sigue siendo opcional; se desactivó `synchronize` y se usan migraciones explícitas. |
+| `ALTER TABLE ajuste_inventario ADD stock_anterior integer NOT NULL` | Había auditoría antigua sin esos valores. Se conservó su nulabilidad y se evita reconstruir columnas al arrancar. |
+| Intentos de añadir `tipo_movimiento` y errores por nulos | Diferencias entre entidades, esquema y correcciones manuales. Se mantiene una entidad canónica y la migración rellena el tipo histórico faltante con `AJUSTE`, preservando los registros. |
+| `numeric field overflow` al insertar `pedido.total` | `numeric(10,2)` no admitía esos totales. Se amplió la cadena monetaria a `numeric(14,2)` y se calculan totales críticos en centavos con validación de rango. |
+| Borrado de `direccion` rechazado por FK de `pedido` | Los pedidos deben conservar su dirección. La eliminación de una dirección utilizada la desactiva; el checkout rechaza direcciones inactivas. |
+| Asignación de rol rechazada por FK | No existía el rol referenciado. La migración asegura los roles base y las operaciones mantienen las FKs. |
+
+Las repeticiones de estos mensajes explican el arranque con múltiples errores, pero no son mensajes de Git. No se resolvieron eliminando tablas o anulando restricciones.
+
+## Datos descubiertos al probar la migración
+
+La primera prueba sobre una copia de la DB falló al crear el índice único de numeración por cliente. Se encontraron grupos de 17, 7 y 2 pedidos con número `0` repetido. No había productos con stock negativo ni líneas de pedido con cantidad no positiva en esa revisión.
+
+La migración reconcilia los números cero o duplicados usando números libres superiores al máximo de cada cliente y conserva el valor anterior en `numero_pedido_usuario_legacy`. No cambia `pedido_id`, no borra pedidos y no altera las FKs de detalles o pagos.
+
+Los saldos de productos y movimientos históricos tampoco se borran. Se agregan movimientos compensatorios de referencia `AJUSTE` donde haga falta para adoptar el saldo materializado existente. Esto hace coherentes los saldos actuales y conserva la evidencia anterior; no certifica el costo contable de operaciones históricas.
+
+La prueba de actualización, ya corregida, confirmó que las 21 tablas de negocio conservaron su número de filas, que el Kardex quedó conciliado y que una segunda ejecución no aplicó cambios. Posteriormente se aplicaron las migraciones a la DB del proyecto con respaldo previo y `db:check` confirmó ausencia de pendientes, diferencias de stock y números duplicados.
+
+## Hallazgos de código corregidos
+
+- Creación/ajuste de producto, saldo y trazabilidad participan en una transacción, con bloqueo de filas y sin ocultar errores de auditoría.
+- Las reducciones manuales generan una salida de Kardex.
+- Checkout revalida disponibilidad dentro de la transacción y serializa la numeración por cliente.
+- Un envío concurrente del mismo carrito no genera dos compras.
+- Producto, proveedor y usuario se desactivan para preservar referencias.
+- Cookie segura en producción, CORS por entorno, TLS con verificación de certificado y validación de configuración.
+- Guard de API global y control de propiedad de las direcciones.
+- Los scripts de diagnóstico usan la configuración compartida; se retiraron credenciales de conexión escritas en el código de esos scripts.
+- Mappers de entidades nuevas omiten PKs marcador de valor cero.
+- El frontend diferencia errores de stock de otros conflictos y valida una sesión nula al renovar.
+- Se corrigieron errores de tipos, referencias inexistentes de vistas, refs de contenedores y API antigua de React Query.
+- ESLint del frontend ahora incluye TypeScript; el build también comprueba tipos.
+
+## Corrección al análisis inicial
+
+El análisis inicial solo había examinado el `.env` raíz, que contenía nombres JWT antiguos. `backend/.env` sí contenía las variables de acceso y renovación correctas. No era evidencia de secretos faltantes. La revisión operativa comprobó ambos archivos, mantuvo su precedencia y agregó plantillas y validación para evitar ambigüedad en otras instalaciones.
+
+## Hallazgos del ciclo de inventario — 14/11/2026
+
+La compra publicada anteriormente era un CRUD de cabecera, sin recepción transaccional ni vínculo verificable a entradas. La escritura genérica de Kardex permitía registrar referencias sin pasar por el ciclo de compra. Se sustituyó la composición activa por borrador/recepción completa con líneas, versión e historial; las vías genéricas de escritura quedaron retiradas con 410. No se activaron los módulos históricos de detalles ni se eliminaron sus datos.
+
+La comprobación de UI detectó cinco horas de diferencia al serializar timestamps sin zona. Se añadieron instantes nuevos en compras, Kardex y auditoría; las fechas antiguas se conservan sin atribuirles una zona no demostrada. También se corrigió la lectura de actividad/agregados del dashboard para que consuma esos instantes. Una regresión modifica solo la fecha antigua en DB temporal y comprueba que prevalece el instante registrado.
+
+El contador de proveedor sumaba existencias/movimientos que no representaban entregas recibidas. Ahora suma únicamente detalles de compras RECIBIDA por el proveedor de su cabecera. Los ajustes compensatorios no lo inflan y cambiar el proveedor actual del producto no reasigna su recepción anterior.
+
+Al generar 16 ajustes ficticios se comprobó que la auditoría mostraba 16 filas aunque solicitaba 15: la consulta con joins y `getRawMany` no aplicaba la paginación `skip/take`. Se usa `offset/limit` sobre las filas seleccionadas; la regresión PostgreSQL solicita tres páginas de una fila y comprueba que son distintas. Los filtros de fecha se verificaron con el control nativo de calendario; la primera carga automática del campo cambiaba su valor visible sin emitir el cambio de React, lo que era una limitación de esa interacción de prueba.
+
+Al reanudar la sesión Docker Desktop estaba detenido: faltaba el pipe del motor y la primera prueba de actualización no pudo conectar. Tras arrancarlo, la misma prueba pasó conservando las 22 tablas. Este incidente era del entorno; no requirió borrar datos ni modificar el esquema para conseguir conexión.
+
+## Hallazgos del ciclo de pedidos — etapa 3
+
+La composición anterior permitía CRUD independientes de pedido, detalle y pago. La confirmación de pago también completaba la entrega mediante escrituras separadas. Se retiraron esas vías con 410 y se compuso un workflow con autorización por operación, versión, bloqueo de cabecera, evento y escrituras en una sola transacción. Aprobar y entregar son acciones distintas, según la política aprobada.
+
+El diagnóstico real encontró 30 pedidos CONFIRMADO y 30 pagos PENDIENTE, con totales coherentes y sin pagos múltiples; en 5 pedidos las cantidades por producto no coincidían con sus salidas VENTA referenciadas. Esto no equivale a un descuadre del stock actual, que está conciliado. La migración preserva todos los anteriores en versión 0 de solo lectura; no los aprueba, cancela ni devuelve automáticamente. La adopción individual requeriría evidencia adicional. `db:check` informa el conteo histórico aparte de las inconsistencias del nuevo ciclo.
+
+Las regresiones detectaron una referencia SQL no traducida en el dashboard (`pago.registradoen`): el reemplazo de propiedades de QueryBuilder necesitaba espacios entre argumentos de COALESCE. La consulta se corrigió y la suite final de 67 integraciones pasó, incluyendo fechas nuevas de decisión frente a fechas antiguas diferentes. No se ocultó el error con un resultado vacío.
+
+Al reanudar QA coexistían servidores del usuario en IPv6 y servidores ficticios en IPv4. Abrir localhost alcanzaba la API habitual y rechazaba las credenciales ficticias; no era un fallo del login. QA se ejecutó con frontend/API ambos en 127.0.0.1 y `VITE_API_URL` explícita, sin detener los procesos del usuario. Los dos procesos y la DB temporal de QA fueron retirados al terminar.
+
+## Datos y secretos
+
+El respaldo previo está en `.local/backups/zero-inventory-before-fixes.dump` y se excluye de Git. Los archivos de entorno también se excluyen. No se incluyen contraseñas, tokens, datos de clientes ni contenido del dump en este diagnóstico. Las credenciales de volúmenes ya inicializados deben administrarse en su servicio; editar una variable de inicialización no cambia una contraseña persistida.
+
+Se rotó la contraseña débil de PostgreSQL, que aparecía en scripts históricos, mediante una operación transaccional del rol y una actualización coordinada de los archivos de entorno. Se conservó el usuario de conexión y la DB. También se respaldó la configuración SQLite de pgAdmin en `.local/backups/pgadmin-before-fixes.db` y se actualizó explícitamente su contraseña de administrador. El acceso web con el secreto generado se verificó mediante un login válido con CSRF. Las contraseñas actuales solo están en `.env`; las conexiones de pgAdmin que guardaron la contraseña anterior pueden requerir ingresarla de nuevo.

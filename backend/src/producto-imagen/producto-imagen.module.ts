@@ -12,12 +12,15 @@ import { DeleteProductoImagenUseCase } from './application/use-cases/delete-prod
 import { MulterModule } from '@nestjs/platform-express';
 import { CloudinaryModule } from '../../infrastructure/cloudinary/cloudinary.module';
 import { memoryStorage } from 'multer';
+import { ProductoModule } from '../producto/producto.module';
+import { MAX_PRODUCT_IMAGE_BYTES } from './application/validate-product-image';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ProductoImagenEntityORM]),
-    MulterModule.register({ storage: memoryStorage() }),
+    MulterModule.register({ storage: memoryStorage(), limits: { fileSize: MAX_PRODUCT_IMAGE_BYTES, files: 1 } }),
     CloudinaryModule,
+    ProductoModule,
   ],
   controllers: [ProductoImagenController],
   providers: [

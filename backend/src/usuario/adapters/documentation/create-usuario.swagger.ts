@@ -1,3 +1,4 @@
+import { UsuarioResponseDTO } from '../../application/dto/usuario-response.dto';
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateUsuarioDTO } from '../../application/dto/create-usuario-dto';
@@ -15,8 +16,8 @@ export function CreateUsuarioSwagger() {
 
     ApiResponse({
       status: 201,
-      description: 'Usuario creado exitosamente',
-      type: CreateUsuarioDTO,
+      description: 'Usuario y roles guardados atómicamente; sin contraseña en la respuesta',
+      type: UsuarioResponseDTO,
     }),
 
     ApiResponse({
